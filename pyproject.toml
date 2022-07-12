@@ -1,0 +1,151 @@
+[build-system]
+requires = [
+    'setuptools',
+    # toml is in standard library in 3.11+
+    'toml>=0.10.1;python_version<"3.11"',
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+name = "pymatic"
+authors = [{name = "sterliakov", email = "terlya.stas@gmail.com"}]
+readme = "README.md"
+description = "Python port of matic.js - "
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+keywords = ["blockchain", "sdk", "ethereum"]
+dependencies = [
+]
+requires-python = ">=3.7"
+
+[tool.setuptools.dynamic]
+version = {attr = "matic.__version__"}
+
+[project.optional-dependencies]
+test = [
+    'pytest>=6.4.0',
+    "pytest-cov",
+    "pytest-mock",
+    "mypy>=0.961",
+    "pre-commit",
+]
+docs = [
+    'docutils>=0.14,<0.18',  # Sphinx haven't upgraded yet
+    "sphinx>=4.5.0,<5.0.0",
+    "sphinx-rtd-theme",
+    "autodocsumm>=0.2.8,<0.3.0",
+]
+
+[project.urls]
+Home = "https://github.com/sterliakov/pymatic"
+Source = "https://github.com/sterliakov/pymatic"
+Issues = "https://github.com/sterliakov/pymatic/issues"
+Documentation = "https://github.com/sterliakov/pymatic"  # FIXME: move to RTD
+
+
+[tool.pytest.ini_options]
+addopts = """
+    --cov=matic
+    --no-cov-on-fail
+    --cov-report=term-missing
+    --cov-branch
+    --doctest-modules
+    --doctest-continue-on-failure
+    --ignore=docs
+"""
+
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    # Explicitly ignored
+    "pragma: no cover",
+    # Often used in abstract classes
+    "raise NotImplementedError",
+    # Debug code
+    'if self\.debug:',
+    "def __repr__",
+    # Scripts entrypoints
+    "if __name__ == .__main__.:",
+    # Should never run
+    '@(abc\.)?abstractmethod',
+    # Typing artifact, that has no implementation
+    "@overload",
+    # Typing artifact, False at runtime
+    'if (typing\.)?TYPE_CHECKING:'
+]
+
+
+[tool.mypy]
+# This applies to all files (not very strict, used for scripts, etc.)
+allow_redefinition = true
+check_untyped_defs = true
+ignore_missing_imports = true
+incremental = true
+strict_optional = true
+no_implicit_optional = true
+show_traceback = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unreachable = true
+
+# Enforce stricter validation for library code
+[[tool.mypy.overrides]]
+module = "pymatic.*"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_generics = true
+warn_no_return = true
+
+
+[tool.flake8]
+exclude = """
+    .git,
+    .github,
+    __pycache__,
+    .pytest_cache,
+    .env,
+    env,
+    .pyenv,
+    pyenv,
+    *.egg_info,
+"""
+max_line_length = 88
+extend_ignore = [
+    "SIM905",  # Allow statement "hello world".split() instead of list literal
+    "N806",  # Allow non-"lower_underscore" variables (it's too stupid rule)
+    "PIE798",  # Allow class with only static methods for namespacing
+    "D105",  # Magic methods may remain unannotated
+    "D401",  # Imperative mood of first docstring line is not always encouraged
+    "RST306",  # Plugin can't resolve links defined in other docstrings.
+    "RST304",  # No builtin roles, so too much to do manually.
+    "E203",  # Invalid. Expressions like `[len(x) :]` conform with PEP8, but raise this.
+]
+# Ignore
+per-file-ignores = [
+    "tests/*:D,RST",  # We don't care about docstrings in tests.
+]
+max-complexity = 10
+
+# Docstring validation
+docstring-convention = "numpy"
+
+
+[tool.isort]
+profile = "black"
+
