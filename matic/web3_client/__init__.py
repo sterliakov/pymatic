@@ -193,9 +193,7 @@ class Web3Client(BaseWeb3Client):
         )
 
     def send_RPC_request(self, request: IJsonRpcRequestPayload):
-        return self._web3.provider.make_request(
-            cast(dict[str, Any], request).pop('method'), request
-        )
+        return self._web3.provider.make_request(request['method'], request['params'])
 
     def encode_parameters(self, params: Sequence[Any], types: Sequence[Any]):
         return encode_abi(types, params)

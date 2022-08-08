@@ -4,8 +4,6 @@ from typing import Any
 
 import requests
 
-# FIXME: types
-
 DEFAULT_ABI_STORE_URL: str = 'https://static.matic.network/network'
 """Default url of ABI store. Can be altered if needed."""
 
@@ -20,7 +18,7 @@ def get_ABI(
     contract_name: str,
     base_url: str | None = None,
 ) -> dict[str, Any]:
-    base_url = base_url or DEFAULT_ABI_STORE_URL
+    base_url = (base_url or DEFAULT_ABI_STORE_URL).removesuffix('/')
     url = f'{base_url}/{network}/{version}/artifacts/{bridge_type}/{contract_name}.json'
     return requests.get(url).json()['abi']
 
@@ -28,23 +26,21 @@ def get_ABI(
 def get_address(
     network: str, version: str, base_url: str | None = None
 ) -> dict[str, Any]:
-    base_url = (base_url or DEFAULT_ABI_STORE_URL).removeprefix('/')
+    base_url = (base_url or DEFAULT_ABI_STORE_URL).removesuffix('/')
     url = f'{base_url}/{network}/{version}/index.json'
     return requests.get(url).json()
 
 
-def _create_url(network: str, url: str, base_url: str | None = None):
-    base_url = base_url or DEFAULT_PROOF_API_URL
+def _create_proof_url(network: str, url: str, base_url: str | None = None):
+    base_url = (base_url or DEFAULT_PROOF_API_URL).removesuffix('/')
     if not base_url:
         raise RuntimeError('Please set DEFAULT_PROOF_API_URL or pass base_url.')
-    return base_url + ('matic' if network == 'mainnet' else 'mumbai') + url
+    url = url.removeprefix('/')
+    return f'{base_url}/{"matic" if network == "mainnet" else "mumbai"}/{url}'
 
 
 def get_block_included(network: str, block_number: int, base_url: str | None = None):
-    base_url = base_url or DEFAULT_PROOF_API_URL
-    if not base_url:
-        raise RuntimeError('Please set DEFAULT_PROOF_API_URL or pass base_url.')
-    url = _create_url(base_url, network, f'/block-included/{block_number}')
+    url = _create_proof_url(network, f'/block-included/{block_number}')
     return requests.get(url).json()
     # FIXME: need to cast?
 
@@ -52,16 +48,12 @@ def get_block_included(network: str, block_number: int, base_url: str | None = N
     # decimalHeaderBlockNumber = headerBlockNumber.slice(0, 2) === '0x' ? parseInt(
     #     header_block_number, 16
     # ) : header_block_number
-    # result.header_block_number = new utils.BN(decimalHeaderBlockNumber)
+    # result.header_block_number = new BN(decimalHeaderBlockNumber)
     # return result
 
 
 def get_proof(network: str, start, end, block_number, base_url: str | None = None):
-    base_url = base_url or DEFAULT_PROOF_API_URL
-    if not base_url:
-        raise RuntimeError('Please set DEFAULT_PROOF_API_URL or pass base_url.')
-    url = _create_url(
-        base_url,
+    url = _create_proof_url(
         network,
         f'/fast-merkle-proof?start={start}&end={end}&number={block_number}',
     )

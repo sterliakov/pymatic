@@ -215,20 +215,21 @@ class ProofUtil:
         #     )
         # )
         # TODO: is it the same?
-        return b''.join(map(bytes, proof)).hex()
+        print(proof)
+        return b''.join(map(bytes.fromhex, proof)).hex()
 
     @classmethod
     def query_root_hash(cls, client: BaseWeb3Client, start_block: int, end_block: int):
         # FIXME: check impl, clarify exception
-        try:
-            return hex(client.get_root_hash(start_block, end_block))
-        except Exception:
-            return None
+        # try:
+        return client.get_root_hash(start_block, end_block)
+        # except Exception:
+        #     return None
 
     @classmethod
     def recursive_zero_hash(cls, n: int, client: BaseWeb3Client) -> bytes:
         if n == 0:
-            return bytes(64)
+            return bytes(32)
 
         sub_hash = cls.recursive_zero_hash(n - 1, client)
         return keccak256([client.encode_parameters([sub_hash] * 2, ['bytes32'] * 2)])

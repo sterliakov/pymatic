@@ -229,6 +229,8 @@ class ExitUtil:
 
             self._matic_client.logger.debug('block proof from API 1')
             return block_proof
+        except ProofAPINotSetException:
+            raise
         except Exception as e:
             self._matic_client.logger.debug('API error: %r', e)
             return self._get_block_proof(tx_block_number, root_block_info)
@@ -236,7 +238,7 @@ class ExitUtil:
     def build_payload_for_exit(
         self, burn_tx_hash: bytes, index: int, log_event_sig: bytes, is_fast: bool
     ):
-        if is_fast and not services:
+        if is_fast and not services.DEFAULT_PROOF_API_URL:
             raise ProofAPINotSetException
 
         if index < 0:
@@ -291,23 +293,23 @@ class ExitUtil:
                 block.transactions_root[2:],
                 block.receipts_root[2:],
                 ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
-                receipt_proof.parentNodes,
-                receipt_proof.path,
+                receipt_proof['parent_nodes'],
+                receipt_proof['path'],
                 log_indices[index],
             )
         else:
             log_index = self._get_log_index(log_event_sig, receipt)
 
             return self._encode_payload(
-                root_block_info.header_block_number.toNumber(),
+                root_block_info.header_block_number,
                 block_proof,
                 tx_block_number,
                 block.timestamp,
                 block.transactions_root[2:],
                 block.receipts_root[2:],
                 ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
-                receipt_proof.parentNodes,
-                receipt_proof.path,
+                receipt_proof['parent_nodes'],
+                receipt_proof['path'],
                 log_index,
             )
 
