@@ -59,7 +59,7 @@ class EthMethod(BaseContractMethod):
         return Web3.toHex(value) if value is not None else value
 
     def read(self, tx: ITransactionRequestConfig | None = None):
-        self.logger.debug('sending tx with config', tx)
+        self.logger.debug('sending tx with config %s', tx)
         return self.method.call(matic_tx_request_config_to_web3(tx))
 
     def write(self, tx: ITransactionRequestConfig) -> TransactionWriteResult:
@@ -81,8 +81,7 @@ class Web3Contract(BaseContract):
         self.contract = contract
 
     def method(self, method_name: str, *args):
-        self.logger.debug('method_name', method_name, 'args method', args)
-        # print(f'{self.contract!r}, {self.contract.get_function_by_name(method_name)}, {method_name}')
+        self.logger.debug('method_name %s; args method %s', method_name, args)
         return EthMethod(
             self.address,
             self.logger,
@@ -95,6 +94,7 @@ class Web3Client(BaseWeb3Client):
 
     def __init__(self, provider: Any, logger: Logger):
         super().__init__(provider, logger)
+        print(provider)
         self._web3 = Web3(provider)
 
     def read(self, config: ITransactionRequestConfig):

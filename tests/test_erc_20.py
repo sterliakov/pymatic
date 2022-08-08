@@ -44,12 +44,12 @@ def to_private_key(user2):
 
 @pytest.fixture()
 def child_provider(rpc):
-    return Web3.HTTPProvider(rpc.child)
+    return Web3.HTTPProvider(rpc['child'])
 
 
 @pytest.fixture()
 def parent_provider(rpc):
-    return Web3.HTTPProvider(rpc.parent)
+    return Web3.HTTPProvider(rpc['parent'])
 
 
 @pytest.fixture()
@@ -68,7 +68,7 @@ def erc_20(pos):
 
 
 @pytest.fixture()
-def pos_client(user1):
+def pos_client(user1, parent_provider, child_provider):
     from matic.web3_client import setup
 
     setup()
@@ -79,11 +79,11 @@ def pos_client(user1):
             network='testnet',
             version='mumbai',
             parent=NeighbourClientConfig(
-                provider=None,  # Wallet(private_key, parent_provider),
+                provider=parent_provider,
                 default_config=ConfigWithFrom(user1['address']),
             ),
             child=NeighbourClientConfig(
-                provider=None,  # Wallet(private_key, child_provider),
+                provider=child_provider,
                 default_config=ConfigWithFrom(user1['address']),
             ),
         )
@@ -91,7 +91,7 @@ def pos_client(user1):
 
 
 @pytest.fixture()
-def pos_client_for_to(user2):
+def pos_client_for_to(user2, parent_provider, child_provider):
     from matic.web3_client import setup
 
     setup()
@@ -102,11 +102,11 @@ def pos_client_for_to(user2):
             network='testnet',
             version='mumbai',
             parent=NeighbourClientConfig(
-                provider=None,  # Wallet(private_key, parent_provider),
+                provider=parent_provider,
                 default_config=ConfigWithFrom(user2['address']),
             ),
             child=NeighbourClientConfig(
-                provider=None,  # Wallet(private_key, child_provider),
+                provider=child_provider,
                 default_config=ConfigWithFrom(user2['address']),
             ),
         )

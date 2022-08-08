@@ -48,7 +48,6 @@ class Web3SideChainClient:
 
         try:
             self.abi_manager = ABIManager(config.network, config.version)
-            self.logger.info('init called', self.abi_manager)
         except Exception as e:
             raise ValueError(
                 f'network {config.network} - {config.version} is not supported'

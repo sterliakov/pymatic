@@ -7,8 +7,8 @@ from web3 import Web3
 @pytest.fixture()
 def rpc():
     return {
-        'parent': os.getenv('ROOT_RPC', 'https://rpc-mumbai.matic.today'),
-        'child': os.getenv('MATIC_RPC') or 'https://rpc-mumbai.matic.today',
+        'parent': os.getenv('ROOT_RPC', 'https://rpc-mumbai.maticvigil.com'),
+        'child': os.getenv('MATIC_RPC') or 'https://rpc-mumbai.maticvigil.com',
     }
 
 

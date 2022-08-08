@@ -62,6 +62,8 @@ Documentation = "https://github.com/sterliakov/pymatic"  # FIXME: move to RTD
 
 
 [tool.pytest.ini_options]
+log_cli=true
+log_cli_level="DEBUG"
 addopts = """
     --tb=short
     --cov=matic
