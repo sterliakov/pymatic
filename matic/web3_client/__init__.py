@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from logging import Logger
-from typing import Any, Sequence, cast
+from typing import Any, Iterable, Sequence, cast
 
 from eth_abi import decode_abi, encode_abi
 from web3 import Web3
 
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.json_types import (
+    IBlock,
     IBlockWithTransaction,
     IJsonRpcRequestPayload,
     ITransactionReceipt,
@@ -52,7 +53,6 @@ class EthMethod(BaseContractMethod):
         super().__init__(address, logger, method)
         self.method = method
         self.address = address
-        print(self.method, self.method.args)
 
     @staticmethod
     def to_hex(value):
@@ -68,11 +68,11 @@ class EthMethod(BaseContractMethod):
         )
 
     def estimate_gas(self, tx: ITransactionRequestConfig) -> int:
-        print(matic_tx_request_config_to_web3(tx))
         return self.method.estimate_gas(matic_tx_request_config_to_web3(tx))
 
     def encode_ABI(self):
-        return self.method.encode_ABI()
+        abi = [e['type'] for e in self.method.abi['inputs']]
+        return encode_abi(abi, self.method.args)
 
 
 class Web3Contract(BaseContract):
@@ -93,9 +93,11 @@ class Web3Client(BaseWeb3Client):
     _web3: Web3
 
     def __init__(self, provider: Any, logger: Logger):
+        from web3.middleware import geth_poa_middleware
+
         super().__init__(provider, logger)
-        print(provider)
         self._web3 = Web3(provider)
+        self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     def read(self, config: ITransactionRequestConfig):
         return self._web3.eth.call(matic_tx_request_config_to_web3(config))
@@ -141,15 +143,54 @@ class Web3Client(BaseWeb3Client):
         return web3_receipt_to_matic_receipt(data)
 
     def get_block(self, block_hash_or_block_number):
-        return self._web3.eth.get_block(block_hash_or_block_number)
+        data: Any = self._web3.eth.get_block(block_hash_or_block_number)
+        return IBlock(
+            size=data.size,
+            difficulty=data.difficulty,
+            total_difficulty=data.totalDifficulty,
+            uncles=data.uncles,
+            number=data.number,
+            hash=data.hash,
+            parent_hash=data.parentHash,
+            nonce=data.nonce,
+            sha3_uncles=data.sha3Uncles,
+            logs_bloom=data.logsBloom,
+            transactions_root=data.transactionsRoot,
+            state_root=data.stateRoot,
+            receipts_root=data.receiptsRoot,
+            miner=data.miner,
+            extra_data=data.proofOfAuthorityData,
+            gas_limit=data.gasLimit,
+            gas_used=data.gasUsed,
+            timestamp=data.timestamp,
+            # base_fee_per_gas=data.baseFeePerGas,
+            transactions=data.transactions,
+        )
 
     def get_block_with_transaction(self, block_hash_or_block_number):
-        result = self._web3.eth.get_block(block_hash_or_block_number, True)
-        block_data = cast(IBlockWithTransaction, result)
-        block_data.transactions = list(
-            map(web3_tx_to_matic_tx, block_data.transactions)
+        data: Any = self._web3.eth.get_block(block_hash_or_block_number, True)
+        return IBlockWithTransaction(
+            size=data.size,
+            difficulty=data.difficulty,
+            total_difficulty=data.totalDifficulty,
+            uncles=data.uncles,
+            number=data.number,
+            hash=data.hash,
+            parent_hash=data.parentHash,
+            nonce=data.nonce,
+            sha3_uncles=data.sha3Uncles,
+            logs_bloom=data.logsBloom,
+            transactions_root=data.transactionsRoot,
+            state_root=data.stateRoot,
+            receipts_root=data.receiptsRoot,
+            miner=data.miner,
+            extra_data=data.proofOfAuthorityData,
+            gas_limit=data.gasLimit,
+            gas_used=data.gasUsed,
+            timestamp=data.timestamp,
+            # base_fee_per_gas=data.baseFeePerGas,
+            transactions=list(map(web3_tx_to_matic_tx, data.transactions)),
         )
-        return block_data
 
     def send_RPC_request(self, request: IJsonRpcRequestPayload):
         return self._web3.provider.make_request(
@@ -162,14 +203,11 @@ class Web3Client(BaseWeb3Client):
     def decode_parameters(self, binary_data: bytes, types: Sequence[Any]):
         return decode_abi(types, binary_data)
 
-    def etherium_sha3(self, *value):
-        return Web3.solidityKeccak(*value)
+    def etherium_sha3(self, types: Iterable[str], values: Iterable[Any]) -> bytes:
+        return self._web3.solidityKeccak(types, values)
 
 
 def setup():
-    # sys.modules.pop('matic', None)
-    # sys.modules.pop('matic.utils', None)
-
     import matic
     import matic.utils
 

@@ -3,10 +3,13 @@ from __future__ import annotations
 from typing import Iterable
 
 import rlp
+from mpt import MerklePatriciaTrie as BaseTrie
+from mpt.nibble_path import NibblePath
+from mpt.node import Node
 
 from matic.abstracts import BaseWeb3Client
 from matic.json_types import IBlockWithTransaction, ITransactionReceipt
-from matic.utils import keccak256, to_hex
+from matic.utils import keccak256
 from matic.utils.merkle_tree import MerkleTree
 
 # import { BaseWeb3Client } from "../abstracts"
@@ -22,6 +25,93 @@ from matic.utils.merkle_tree import MerkleTree
 # Implementation adapted from Tom French's `matic-proofs` library used under MIT License
 # https://github.com/TomAFrench/matic-proofs
 # FIXME: must be module, not class
+
+
+class Trie(BaseTrie):
+    def find_path(self, encoded_key):
+        path = NibblePath(encoded_key)
+        yield from self._find_path(self._root, path)
+
+    def _find_path(self, node_ref, path):
+        node = self._get_node(node_ref)
+
+        # If path is empty, our travel is over.
+        # Main `get` method will check if this node has a value.
+        if len(path) == 0:
+            yield node
+            return
+
+        if isinstance(node, Node.Leaf):
+            # If we found a leaf, it's either the leaf we're looking for or wrong one.
+            if node.path == path:
+                yield node
+                return
+        elif isinstance(node, Node.Extension):
+            # If we found an extension, we need to go deeper.
+            if path.starts_with(node.path):
+                for _ in range(len(node.path)):
+                    yield node.path[path.at(0)]
+                    path.consume(1)
+                yield from self._find_path(node.next_ref, path)
+                return
+        elif isinstance(node, Node.Branch):
+            # If we found a branch node, go to the appropriate branch.
+            curr = path.at(0)
+            yield node
+            path.consume(1)
+            branch = node.branches[curr]
+            if len(branch) > 0:
+                yield from self._find_path(branch, path)
+                return
+
+        raise KeyError
+
+    # def find_path(key: bytes, throw_if_missing: bool = False):
+    #   const stack: TrieNode[] = []
+    #   const targetKey = bufferToNibbles(key)
+
+    #   const on_found: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
+    #     if (node === null) {
+    #       return reject(new Error('Path not found'))
+    #     }
+    #     const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
+    #     stack.push(node)
+
+    #     if (node instanceof BranchNode) {
+    #       if (keyRemainder.length === 0) {
+    #         # // we exhausted the key without finding a node
+    #         resolve({ node, remaining: [], stack })
+    #       } else {
+    #         const branchIndex = keyRemainder[0]
+    #         const branchNode = node.getBranch(branchIndex)
+    #         if (!branchNode) {
+    #           # // there are no more nodes to find and we didn't find the key
+    #           resolve({ node: null, remaining: keyRemainder, stack })
+    #         } else {
+    #           # // node found, continuing search
+    #           # // this can be optimized as this calls getBranch again.
+    #           walkController.onlyBranchIndex(node, keyProgress, branchIndex)
+    #         }
+    #       }
+    #     } else if (node instanceof LeafNode) {
+    #       if (doKeysMatch(keyRemainder, node.key)) {
+    #         # // keys match, return node with empty key
+    #         resolve({ node, remaining: [], stack })
+    #       } else {
+    #         # // reached leaf but keys dont match
+    #         resolve({ node: null, remaining: keyRemainder, stack })
+    #       }
+    #     } else if (node instanceof ExtensionNode) {
+    #       const matchingLen = matchingNibbleLength(keyRemainder, node.key)
+    #       if (matchingLen !== node.key.length) {
+    #         # // keys don't match, fail
+    #         resolve({ node: null, remaining: keyRemainder, stack })
+    #       } else {
+    #         # // keys match, continue search
+    #         walkController.allChildren(node, keyProgress)
+    #       }
+    #     }
+    #   }
 
 
 class ProofUtil:
@@ -151,9 +241,9 @@ class ProofUtil:
         web3: BaseWeb3Client,
         request_concurrency: int | None = None,
         receipts_val: Iterable[ITransactionReceipt] | None = None,
-    ) -> Something:
+    ):
         state_sync_tx_hash = cls.get_state_sync_tx_hash(block).hex()
-        receipts_trie = TRIE()
+        receipts_trie = Trie({})
 
         receipts = receipts_val or [
             web3.get_transaction_receipt(tx.transaction_hash)
@@ -164,31 +254,27 @@ class ProofUtil:
         for sibling in receipts:
             path = rlp.encode(sibling.transaction_index)
             raw_receipt = cls.get_receipt_bytes(sibling)
-            receipts_trie.put(path, raw_receipt)
+            receipts_trie.update(path, raw_receipt)
 
-        result = receipts_trie.find_path(rlp.encode(receipt.transaction_index), True)
+        stack = list(receipts_trie.find_path(rlp.encode(receipt.transaction_index)))
+        node = stack[-1]
 
-        if result.remaining:
-            raise ValueError('Node does not contain the key')
+        # if result.remaining:
+        #     raise ValueError('Node does not contain the key')
 
         return {
             'block_hash': receipt.block_hash,
-            'parent_nodes': [s.raw() for s in result.stack],
-            'root': cls.get_raw_header(block).receipt_trie,
+            'parent_nodes': [s.data for s in stack],
+            'root': block.receipts_root,
             'path': rlp.encode(receipt.transaction_index),
             'value': (
-                result.node.value
-                if cls.is_typed_receipt(receipt)
-                else rlp.decode(result.node.value)
+                node.data if cls.is_typed_receipt(receipt) else rlp.decode(node.data)
             ),
         }
 
     @classmethod
     def is_typed_receipt(cls, receipt: ITransactionReceipt) -> bool:
-        hex_type = receipt.type.hex()
-        return bool(
-            receipt.status is not None and hex_type != '0x0' and hex_type != '0x'
-        )
+        return bool(receipt.status is not None and receipt.type not in {'0x0', '0x'})
 
     @classmethod
     def get_state_sync_tx_hash(cls, block) -> bytes:
@@ -240,6 +326,7 @@ class ProofUtil:
 
     @classmethod
     def get_raw_header(cls, block):
-        block.difficulty = to_hex(block.difficulty)
-        common = Common(chain=Chain.Mainnet, hardfork=Hardfork.London)
-        return BlockHeader.from_header_data(block, common=common)
+        raise NotImplementedError
+        # block.difficulty = to_hex(block.difficulty)
+        # common = Common(chain=Chain.Mainnet, hardfork=Hardfork.London)
+        # return BlockHeader.from_header_data(block, common=common)

@@ -49,10 +49,12 @@ class RootChain(BaseToken):
                 ans = start
                 break
             mid = (start + end) // 2
-            header_block = self.method('headerBlocks', mid * checkpoint_interval).read()
+            _, header_start, header_end, _, _ = self.method(
+                'headerBlocks', mid * checkpoint_interval
+            ).read()
+            # breakpoint()
 
-            header_start = int(header_block.start)
-            header_end = int(header_block.end)
+            print(header_start, header_end, child_block_number)
 
             if header_start <= child_block_number <= header_end:
                 # If child_block_number is between the upper and lower bounds

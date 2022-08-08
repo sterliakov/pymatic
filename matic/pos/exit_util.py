@@ -11,7 +11,6 @@ from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
 from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
 from matic.pos.root_chain import RootChain
-from matic.utils import to_hex
 from matic.utils.proof_utils import ProofUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
@@ -33,8 +32,7 @@ HASHES_2: Final = {
     LogEventSignature.ERC_1155_TRANSFER,
     LogEventSignature.ERC_1155_BATCH_TRANSFER,
 }
-SIG_3: Final = '0xf871896b17e9cb7a64941c62c188a4f5c621b86800e3d15452ece01ce56073df'
-ZERO_SIG: Final = '0x0000000000000000000000000000000000000000000000000000000000000000'
+ZERO_SIG: Final = bytes(32)
 
 
 @dataclass
@@ -145,7 +143,8 @@ class ExitUtil:
         return log_indices
 
     def get_chain_block_info(self, burn_tx_hash: bytes) -> IChainBlockInfo:
-        tx_block = self._matic_client.get_transaction(burn_tx_hash).block_number
+        tx = self._matic_client.get_transaction(burn_tx_hash)
+        tx_block = tx.block_number
         assert tx_block is not None
 
         return IChainBlockInfo(
@@ -176,15 +175,15 @@ class ExitUtil:
         block_number = self.root_chain.find_root_block_from_child(tx_block_number)
         root_block_number = block_number
 
-        root_block_info = self.root_chain.method(
+        _, start, end, _, _ = self.root_chain.method(
             'headerBlocks',
-            to_hex(block_number),
+            block_number,
         ).read()
 
         return IRootBlockInfo(
             header_block_number=root_block_number,
-            end=root_block_info.end,
-            start=root_block_info.start,
+            start=start,
+            end=end,
         )
 
     def _get_root_block_info_from_api(self, tx_block_number: int):
@@ -205,7 +204,7 @@ class ExitUtil:
                 raise ValueError('Network API Error')
             return header_block
         except Exception as e:
-            self._matic_client.logger.debug('Block info from API error: ', e)
+            self._matic_client.logger.debug('Block info from API error: %r', e)
             return self._get_root_block_info(tx_block_number)
 
     def _get_block_proof(self, tx_block_number: int, root_block_info: Any):
@@ -231,7 +230,7 @@ class ExitUtil:
             self._matic_client.logger.debug('block proof from API 1')
             return block_proof
         except Exception as e:
-            self._matic_client.logger.debug('API error: ', e)
+            self._matic_client.logger.debug('API error: %r', e)
             return self._get_block_proof(tx_block_number, root_block_info)
 
     def build_payload_for_exit(
@@ -424,7 +423,7 @@ class ExitUtil:
                     (byte % 0x10).to_bytes(1, 'big'),
                 )
             )
-            for byte in receipt_proof.path
+            for byte in receipt_proof['path']
         )
 
         if index > 0:
@@ -433,4 +432,8 @@ class ExitUtil:
 
         log_index = self._get_log_index(log_event_sig, receipt)
 
-        return self._matic_client.etherium_sha3(receipt.block_number, nibble, log_index)
+        print(receipt.block_number, nibble, log_index)
+        return self._matic_client.etherium_sha3(
+            ['uint256', 'bytes', 'uint256'],
+            [receipt.block_number, nibble, log_index],
+        )

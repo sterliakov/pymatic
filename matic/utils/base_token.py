@@ -136,6 +136,7 @@ class BaseToken:
         self.client.logger.info('read tx config created')
 
         if option and option.get('return_transaction', False):
+            assert self.contract
             return {**config, 'data': method.encode_ABI(), 'to': self._contract.address}
 
         return method.read(config)
@@ -174,12 +175,10 @@ class BaseToken:
         tx_config = cast(
             ITransactionRequestConfig, default_config_dict | (tx_config or {})
         )
-        print(tx_config)
-        print(default_config)
 
         client = self.client.parent if is_parent else self.client.child
         client.logger.info(
-            'tx_config=%s, is_paernt=%s, is_write=%s', tx_config, is_parent, is_write
+            'tx_config=%s, is_parent=%s, is_write=%s', tx_config, is_parent, is_write
         )
 
         def estimate_gas(config: ITransactionRequestConfig) -> int:

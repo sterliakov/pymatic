@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import datetime
 from logging import Logger
-from typing import Any, Sequence
+from typing import Any, Iterable, Sequence
 
 from matic.json_types import (
     IBlock,
@@ -97,7 +97,7 @@ class BaseWeb3Client(ABC):
         ...
 
     @abstractmethod
-    def etherium_sha3(self, *values: Any) -> bytes:
+    def etherium_sha3(self, types: Iterable[str], values: Iterable[Any]) -> bytes:
         ...
 
 

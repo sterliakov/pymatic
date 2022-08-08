@@ -47,8 +47,10 @@ class ERC20(POSToken):
         return self.process_read(method, option)
 
     def approve(self, amount: int, option: IApproveTransactionOption | None = None):
-        spender_address = option.get('spender_address') if option else None
+        option = option or {}
+        option['value'] = amount
 
+        spender_address = option.get('spender_address')
         if not spender_address and not self.contract_param.is_parent:
             raise NullSpenderAddressException
 

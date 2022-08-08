@@ -37,10 +37,10 @@ class BridgeClient:
         )
 
         receipt = client.parent.get_transaction_receipt(deposit_tx_hash)
-        last_state_id = token.process_read(token.contract.method('last_state_id'))
+        last_state_id = token.process_read(token.contract.method('lastStateId'))
 
-        event_signature = (
-            '0x103fed9db65eac19c4d870f49ab7520fe03b99f1838e5996caf47e9e43308392'
+        event_signature = bytes.fromhex(
+            '103fed9db65eac19c4d870f49ab7520fe03b99f1838e5996caf47e9e43308392'
         )
         try:
             target_log = next(

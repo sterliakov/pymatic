@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+# from enum import Enum
 from typing import Final, final
 
 MAX_AMOUNT: Final = 2**256 - 1
@@ -8,7 +8,7 @@ MAX_AMOUNT: Final = 2**256 - 1
 
 
 @final
-class LogEventSignature(bytes, Enum):
+class LogEventSignature:
     """Signatures of different transfer kinds."""
 
     ERC_20_TRANSFER: Final = bytes.fromhex(

@@ -247,7 +247,7 @@ class ITransactionReceipt:
     gas_used: int
     logs_bloom: bytes
     root: bytes
-    type: bytes
+    type: str
     status: bool | None = None
     logs: Sequence[ILog] = field(default_factory=list)
     events: dict[str, IEventLog] = field(default_factory=dict)

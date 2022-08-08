@@ -211,7 +211,7 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to):
     assert result['max_fee_per_gas'] == 20
     assert result['max_priority_fee_per_gas'] == 20
     assert 'gas_price' not in result
-    assert result['chain_id'] == 5
+    assert result['chain_id'] == 5  # Fails, but should it?
 
 
 def test_is_deposited(pos_client):
@@ -246,7 +246,7 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
 
 def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child):
     with pytest.raises(NullSpenderAddressException):
-        result = erc_20_child.approve(10)
+        erc_20_child.approve(10)
 
 
 def test_deposit_return_tx(abi_manager, erc_20_parent, from_):
@@ -362,5 +362,5 @@ def test_deposit(erc_20_parent, from_):
     tx_hash = result.get_transaction_hash()
     assert isinstance(tx_hash, str)
 
-    tx_receipt = result.get_receipt()
+    result.get_receipt()
     # assert(tx_receipt).to.be.an('object')
