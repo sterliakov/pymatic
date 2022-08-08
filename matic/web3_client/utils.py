@@ -36,7 +36,9 @@ def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = Non
         'type': Web3.toHex(type_) if (type_ := config.get('type')) else None,
         'hardfork': config.get('hardfork'),
     }
-    return {k: v for k, v in prepared.items() if v is not None}
+    ret = {k: v for k, v in prepared.items() if v is not None}
+    print(ret)
+    return ret
 
 
 def web3_receipt_to_matic_receipt(receipt: Any):

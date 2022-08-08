@@ -182,6 +182,7 @@ class BaseToken:
         )
 
         def estimate_gas(config: ITransactionRequestConfig) -> int:
+            # FIXME: this func is responsible for almost all failures.
             return (
                 method.estimate_gas(config) if method else client.estimate_gas(config)
             )
@@ -199,22 +200,17 @@ class BaseToken:
             raise EIP1559NotSupportedException
 
         if not tx_config.get('gas_limit'):
-            if tx_config.get('value') is not None:
-                tx_config['gas_limit'] = estimate_gas(
-                    ITransactionRequestConfig(
-                        {'from': tx_config['from'], 'value': tx_config['value']}
-                    )
+            tx_config['gas_limit'] = estimate_gas(
+                ITransactionRequestConfig(
+                    {'from': tx_config['from'], 'value': tx_config.get('value')}
                 )
-            else:
-                tx_config['gas_limit'] = 10000
+            )
 
         if not tx_config.get('nonce'):
             tx_config['nonce'] = client.get_transaction_count(
                 tx_config['from'], 'pending'
             )
         tx_config.setdefault('chain_id', client.chain_id)
-
-        client.logger.info('options filled')
 
         return tx_config
 

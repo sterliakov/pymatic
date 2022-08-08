@@ -174,16 +174,16 @@ def test_is_withdraw_exited(erc_20_parent):
 
 def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
     amount = 10
-    with pytest.raises(EIP1559NotSupportedException):
-        erc_20_child.transfer(
-            amount,
-            to,
-            {
-                'max_fee_per_gas': 10,
-                'max_priority_fee_per_gas': 10,
-                'return_transaction': True,
-            },
-        )
+    # with pytest.raises(EIP1559NotSupportedException):
+    erc_20_child.transfer(
+        amount,
+        to,
+        {
+            'max_fee_per_gas': 10,
+            'max_priority_fee_per_gas': 10,
+            'return_transaction': True,
+        },
+    )
 
 
 def test_child_transfer_return_transaction(erc_20_child, to):
@@ -290,7 +290,6 @@ def test_call_get_block_included():
     services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
 
     result = services.get_block_included('testnet', 1000)
-    print(result)
     int(result['start'])
     assert result['start']  # may be '0'
     assert int(result['end'])
