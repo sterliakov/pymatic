@@ -14,7 +14,6 @@ readme = "README.md"
 description = "Python port of matic.js - "
 license = { file = "LICENSE" }
 classifiers = [
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -25,8 +24,15 @@ classifiers = [
 ]
 keywords = ["blockchain", "sdk", "ethereum"]
 dependencies = [
+    "eth-utils ~= 1.10.0",
+    "eth-abi ~= 2.1.1",
+    "pysha3 ~= 1.0.2",
+    "requests ~= 2.28",
+    "rlp ~= 2.0.1",
+    "web3 ~= 5.30.0",
+    "ethers ~= 0.1.1"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [tool.setuptools.dynamic]
 version = {attr = "matic.__version__"}
@@ -36,7 +42,6 @@ test = [
     'pytest>=6.4.0',
     "pytest-cov",
     "pytest-mock",
-    "mypy>=0.961",
     "pre-commit",
 ]
 docs = [
@@ -44,6 +49,9 @@ docs = [
     "sphinx>=4.5.0,<5.0.0",
     "sphinx-rtd-theme",
     "autodocsumm>=0.2.8,<0.3.0",
+]
+types = [
+    "types-requests",
 ]
 
 [project.urls]
@@ -55,6 +63,7 @@ Documentation = "https://github.com/sterliakov/pymatic"  # FIXME: move to RTD
 
 [tool.pytest.ini_options]
 addopts = """
+    --tb=short
     --cov=matic
     --no-cov-on-fail
     --cov-report=term-missing
@@ -106,9 +115,9 @@ warn_unreachable = true
 
 # Enforce stricter validation for library code
 [[tool.mypy.overrides]]
-module = "pymatic.*"
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+module = "matic.*"
+# disallow_untyped_defs = true
+# disallow_incomplete_defs = true
 disallow_any_generics = true
 warn_no_return = true
 
@@ -128,13 +137,14 @@ exclude = """
 max_line_length = 88
 extend_ignore = [
     "SIM905",  # Allow statement "hello world".split() instead of list literal
-    "N806",  # Allow non-"lower_underscore" variables (it's too stupid rule)
+    # "N806",  # Allow non-"lower_underscore" variables (it's too stupid rule)
     "PIE798",  # Allow class with only static methods for namespacing
     "D105",  # Magic methods may remain unannotated
     "D401",  # Imperative mood of first docstring line is not always encouraged
     "RST306",  # Plugin can't resolve links defined in other docstrings.
     "RST304",  # No builtin roles, so too much to do manually.
     "E203",  # Invalid. Expressions like `[len(x) :]` conform with PEP8, but raise this.
+    "D",  # FIXME: temporary only
 ]
 # Ignore
 per-file-ignores = [
@@ -143,9 +153,8 @@ per-file-ignores = [
 max-complexity = 10
 
 # Docstring validation
-docstring-convention = "numpy"
+docstring-convention = "google"
 
 
 [tool.isort]
 profile = "black"
-
