@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from logging import Logger
-from typing import Any, Iterable, Sequence, cast
+from typing import Any, Iterable, Sequence
 
 from eth_abi import decode_abi, encode_abi
 from web3 import Web3
@@ -64,7 +64,7 @@ class EthMethod(BaseContractMethod):
 
     def write(self, tx: ITransactionRequestConfig) -> TransactionWriteResult:
         return TransactionWriteResult(
-            self.method.send(matic_tx_request_config_to_web3(tx))
+            self.method.transact(matic_tx_request_config_to_web3(tx))
         )
 
     def estimate_gas(self, tx: ITransactionRequestConfig) -> int:

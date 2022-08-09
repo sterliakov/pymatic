@@ -182,21 +182,24 @@ class BaseToken:
         )
 
         def estimate_gas(config: ITransactionRequestConfig) -> int:
-            # FIXME: this func is responsible for almost all failures.
-            return (
-                method.estimate_gas(config) if method else client.estimate_gas(config)
-            )
+            if method:
+                new_config = dict(config)
+                new_config.pop('value', None)  # already registered on method => ignored
+                # breakpoint()
+                return method.estimate_gas(new_config)
+            else:
+                return client.estimate_gas(config)
 
         # tx_config['chain_id'] = to_hex(tx_config['chain_id']) as any
         if not is_write:
             return tx_config
 
-        is_EIP_1559_supported = self.client.is_EIP_1559_supported(is_parent)
+        is_eip_1559_supported = self.client.is_EIP_1559_supported(is_parent)
         is_max_fee_provided = tx_config.get('max_fee_per_gas') or tx_config.get(
             'max_priority_fee_per_gas'
         )
 
-        if not is_EIP_1559_supported and is_max_fee_provided:
+        if not is_eip_1559_supported and is_max_fee_provided:
             raise EIP1559NotSupportedException
 
         if not tx_config.get('gas_limit'):

@@ -9,20 +9,22 @@ from matic.web3_client import setup
 
 setup()
 
-from matic import services
-from matic.exceptions import (
-    EIP1559NotSupportedException,
+from matic import services  # noqa: E402
+from matic.exceptions import (  # noqa: E402
     NullSpenderAddressException,
     ProofAPINotSetException,
 )
-from matic.json_types import ConfigWithFrom, IPOSClientConfig, NeighbourClientConfig
-from matic.pos import POSClient
-from matic.utils.abi_manager import ABIManager
+from matic.json_types import (  # noqa: E402
+    ConfigWithFrom,
+    IPOSClientConfig,
+    NeighbourClientConfig,
+)
+from matic.pos import POSClient  # noqa: E402
+from matic.utils.abi_manager import ABIManager  # noqa: E402
 
-# from ethers import Wallet
-
-
-# import { ABIManager, setProofApi, service, utils, ITransactionRequestConfig } from '@maticnetwork/maticjs'
+# import {
+#     ABIManager, setProofApi, service, utils, ITransactionRequestConfig
+# } from '@maticnetwork/maticjs'
 
 
 # client.ts
@@ -165,7 +167,9 @@ def test_is_checkpointed(pos_client):
 
 
 def test_is_withdraw_exited(erc_20_parent):
-    # exit_tx_hash = '0x95844235073da694e311dc90476c861e187c36f86a863a950534c9ac2b7c1a48'
+    # exit_tx_hash = (
+    #     '0x95844235073da694e311dc90476c861e187c36f86a863a950534c9ac2b7c1a48'
+    # )
     is_exited = erc_20_parent.is_withdraw_exited(
         '0xd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
     )
@@ -173,7 +177,7 @@ def test_is_withdraw_exited(erc_20_parent):
 
 
 def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
-    amount = 10
+    amount = 100
     # with pytest.raises(EIP1559NotSupportedException):
     erc_20_child.transfer(
         amount,
@@ -187,7 +191,7 @@ def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
 
 
 def test_child_transfer_return_transaction(erc_20_child, to):
-    amount = 10
+    amount = 1
     result = erc_20_child.transfer(amount, to, {'return_transaction': True})
     assert 'max_fee_per_gas' not in result
     assert 'max_priority_fee_per_gas' not in result
@@ -197,7 +201,7 @@ def test_child_transfer_return_transaction(erc_20_child, to):
 
 
 def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to):
-    amount = 10
+    amount = 1
     result = erc_20_parent.transfer(
         amount,
         to,
@@ -237,7 +241,7 @@ def test_approve_parent_return_tx(erc_20, erc_20_parent):
 def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
     spender_address = erc_20_parent.predicate_address
     result = erc_20_parent.approve(
-        10, {'spender_address': spender_address, 'return_transaction': True}
+        1, {'spender_address': spender_address, 'return_transaction': True}
     )
 
     assert result['to'].lower() == erc_20['parent'].lower()
@@ -246,7 +250,7 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
 
 def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child):
     with pytest.raises(NullSpenderAddressException):
-        erc_20_child.approve(10)
+        erc_20_child.approve(1)
 
 
 def test_deposit_return_tx(abi_manager, erc_20_parent, from_):
@@ -278,7 +282,7 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent):
     assert result['to'].lower() == root_chain_manager.lower()
 
 
-def test_withdraw_exit_faster_return_tx_without_set_proof_API(erc_20_parent):
+def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent):
     with pytest.raises(ProofAPINotSetException):
         erc_20_parent.withdraw_exit_faster(
             '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
@@ -317,7 +321,7 @@ def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent):
 
 def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
     old_balance = erc_20_child.get_balance(to)
-    amount = 10000000
+    amount = 1
     result = erc_20_child.transfer(amount, to)
     tx_hash = result.get_transaction_hash()
     assert isinstance(tx_hash, str)
@@ -351,9 +355,6 @@ def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
     tx_receipt = result.get_receipt()
 
 
-# if (process.env.NODE_ENV !== 'test_all') return
-
-
 @pytest.mark.skipif(os.getenv('TEST_ALL', 'False') != 'True', reason='Too hard')
 def test_approve(erc_20_parent):
     result = erc_20_parent.approve(10)
@@ -366,6 +367,7 @@ def test_approve(erc_20_parent):
 
 @pytest.mark.skipif(os.getenv('TEST_ALL', 'False') != 'True', reason='Too hard')
 def test_deposit(erc_20_parent, from_):
+    erc_20_parent.approve(10)
     result = erc_20_parent.deposit(10, from_)
 
     tx_hash = result.get_transaction_hash()
