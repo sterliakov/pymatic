@@ -94,10 +94,6 @@ def pos_client(user1, parent_provider, child_provider):
 
 @pytest.fixture()
 def pos_client_for_to(user2, parent_provider, child_provider):
-    from matic.web3_client import setup
-
-    setup()
-
     return POSClient(
         IPOSClientConfig(
             # log: true,
@@ -254,6 +250,7 @@ def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child):
 
 
 def test_deposit_return_tx(abi_manager, erc_20_parent, from_):
+    erc_20_parent.approve(10)
     result = erc_20_parent.deposit(10, from_, {'return_transaction': True})
 
     root_chain_manager = abi_manager.get_config(
@@ -323,9 +320,12 @@ def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
     old_balance = erc_20_child.get_balance(to)
     amount = 1
     result = erc_20_child.transfer(amount, to)
-    tx_hash = result.get_transaction_hash()
-    assert isinstance(tx_hash, str)
-    tx_receipt = result.get_receipt()
+
+    tx_hash = result.transaction_hash
+    print(tx_hash.hex())
+    assert tx_hash
+
+    tx_receipt = result.receipt
 
     assert tx_receipt.transaction_hash == tx_hash
     # assert(tx_receipt).to.be.an('object')
@@ -351,8 +351,8 @@ def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
     erc_20_child_token = pos_client_for_to.erc_20(erc_20['child'])
 
     result = erc_20_child_token.transfer(amount, to)
-    tx_hash = result.get_transaction_hash()
-    tx_receipt = result.get_receipt()
+    print('Back: ', result.transaction_hash.hex())
+    result.receipt
 
 
 @pytest.mark.skipif(os.getenv('TEST_ALL', 'False') != 'True', reason='Too hard')

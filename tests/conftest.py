@@ -19,9 +19,10 @@ def pos():
             # 'erc_20': Web3.toChecksumAddress(
             #     '0x3f152b63ec5ca5831061b2dccfb29a874c317502'.lower()
             # ),
-            'erc_20': Web3.toChecksumAddress(
-                '0x655f2166b0709cd575202630952d71e2bb0d61af'.lower()
-            ),
+            # 'erc_20': Web3.toChecksumAddress(
+            #     '0x655f2166b0709cd575202630952d71e2bb0d61af'.lower()
+            # ),  # last
+            'erc_20': '0x655F2166b0709cd575202630952D71E2bB0d61Af',
             'erc_721': Web3.toChecksumAddress(
                 '0x16f7ef3774c59264c46e5063b1111bcfd6e7a72f'.lower()
             ),

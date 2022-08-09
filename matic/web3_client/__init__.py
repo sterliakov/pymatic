@@ -49,13 +49,15 @@ from matic.web3_client.utils import (
 
 
 class EthMethod(BaseContractMethod):
-    def __init__(self, address: str, logger: Logger, method: Any) -> None:
+    def __init__(self, address: str, logger: Logger, method: Any, client=None) -> None:
         super().__init__(address, logger, method)
         self.method = method
         self.address = address
+        self.client = client
 
     @staticmethod
     def to_hex(value):
+        # FIXME: not needed
         return Web3.toHex(value) if value is not None else value
 
     def read(self, tx: ITransactionRequestConfig | None = None):
@@ -63,9 +65,60 @@ class EthMethod(BaseContractMethod):
         return self.method.call(matic_tx_request_config_to_web3(tx))
 
     def write(self, tx: ITransactionRequestConfig) -> TransactionWriteResult:
-        return TransactionWriteResult(
-            self.method.transact(matic_tx_request_config_to_web3(tx))
+        tx2 = matic_tx_request_config_to_web3(tx)
+
+        def transact_with_contract_function(
+            address,
+            web3,
+            function_name=None,
+            transaction=None,
+            contract_abi=None,
+            fn_abi=None,
+            *args,
+            **kwargs,
+        ):
+            """
+            Helper function for interacting with a contract function by sending a
+            transaction.
+            """
+            from web3._utils.contracts import prepare_transaction
+
+            tx_prep = prepare_transaction(
+                address,
+                web3,
+                fn_identifier=function_name,
+                contract_abi=contract_abi,
+                transaction=transaction,
+                fn_abi=fn_abi,
+                fn_args=args,
+                fn_kwargs=kwargs,
+            )
+            tx_prep['maxFeePerGas'] = 3000000000
+            tx_prep['maxPriorityFeePerGas'] = 2000000000
+            # breakpoint()
+            tx_signed = web3.eth.account.sign_transaction(
+                tx_prep,
+                '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+            )
+
+            return web3.eth.send_raw_transaction(tx_signed.rawTransaction)
+
+        meth = self.method
+        res = transact_with_contract_function(
+            meth.address,
+            meth.web3,
+            meth.function_identifier,
+            tx2,
+            meth.contract_abi,
+            meth.abi,
+            *meth.args,
+            **meth.kwargs,
         )
+
+        return TransactionWriteResult(res, self.client)
+        # return TransactionWriteResult(
+        #     self.method.transact(matic_tx_request_config_to_web3(tx))
+        # )
 
     def estimate_gas(self, tx: ITransactionRequestConfig) -> int:
         return self.method.estimate_gas(matic_tx_request_config_to_web3(tx))
@@ -76,9 +129,10 @@ class EthMethod(BaseContractMethod):
 
 
 class Web3Contract(BaseContract):
-    def __init__(self, address: str, contract, logger: Logger):
+    def __init__(self, address: str, contract, logger: Logger, client=None):
         super().__init__(address, logger)
         self.contract = contract
+        self.client = client
 
     def method(self, method_name: str, *args):
         self.logger.debug('method_name %s; args method %s', method_name, args)
@@ -86,6 +140,7 @@ class Web3Contract(BaseContract):
             self.address,
             self.logger,
             self.contract.get_function_by_name(method_name)(*args),
+            self.client,
         )
 
 
@@ -104,12 +159,13 @@ class Web3Client(BaseWeb3Client):
 
     def write(self, config: ITransactionRequestConfig):
         return TransactionWriteResult(
-            self._web3.eth.send_transaction(matic_tx_request_config_to_web3(config))
+            self._web3.eth.send_transaction(matic_tx_request_config_to_web3(config)),
+            self,
         )
 
     def get_contract(self, address: str, abi: dict[str, Any]):
         cont = self._web3.eth.contract(abi=abi, address=address)
-        return Web3Contract(address, cont, self.logger)
+        return Web3Contract(address, cont, self.logger, self)
 
     @property
     def gas_price(self) -> int:

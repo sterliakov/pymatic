@@ -21,24 +21,20 @@ def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = Non
     config: dict[str, Any] = dict(data or {})
 
     prepared = {
-        'chain_id': Web3.toHex(chain_id)
-        if (chain_id := config.get('chain_id'))
-        else None,
+        'chainId': config.get('chain_id'),
         'data': config.get('data'),
         'from': config.get('from'),
-        'gas': config.get('gasLimit'),
-        'gas_price': config.get('gasPrice'),
+        'gas': config.get('gas_limit'),
+        'gasPrice': config.get('gas_price'),
         'nonce': config.get('nonce'),
         'to': config.get('to'),
         'value': config.get('value'),
-        'max_fee_per_gas': config.get('maxFeePerGas'),
-        'max_priority_fee_per_gas': config.get('maxPriorityFeePerGas'),
+        'maxFeePerGas': config.get('max_fee_per_gas'),
+        'maxPriorityFeePerGas': config.get('max_priority_fee_per_gas'),
         'type': Web3.toHex(type_) if (type_ := config.get('type')) else None,
         'hardfork': config.get('hardfork'),
     }
-    ret = {k: v for k, v in prepared.items() if v is not None}
-    print(ret)
-    return ret
+    return {k: v for k, v in prepared.items() if v is not None}
 
 
 def web3_receipt_to_matic_receipt(receipt: Any):

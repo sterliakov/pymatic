@@ -81,6 +81,8 @@ class BaseToken:
                 'to': method.address,
             }
 
+        print(config)
+
         return method.write(config)
 
     def send_transaction(
