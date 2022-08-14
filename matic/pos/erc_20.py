@@ -46,9 +46,14 @@ class ERC20(POSToken):
         )
         return self.process_read(method, option)
 
-    def approve(self, amount: int, option: IApproveTransactionOption | None = None):
+    def approve(
+        self,
+        amount: int,
+        private_key: str,
+        option: IApproveTransactionOption | None = None,
+    ):
         option = option or {}
-        option['value'] = amount
+        # option['value'] = amount
 
         spender_address = option.get('spender_address')
         if not spender_address and not self.contract_param.is_parent:
@@ -59,10 +64,12 @@ class ERC20(POSToken):
         )
 
         method = self.contract.method('approve', predicate_address, amount)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
-    def approve_max(self, option: IApproveTransactionOption | None = None):
-        return self.approve(MAX_AMOUNT, option)
+    def approve_max(
+        self, private_key: str, option: IApproveTransactionOption | None = None
+    ):
+        return self.approve(MAX_AMOUNT, private_key, option)
 
     def deposit(
         self, amount: int, user_address: bytes, option: ITransactionOption | None = None
@@ -71,7 +78,7 @@ class ERC20(POSToken):
         self.check_for_root()
 
         option = option or {}
-        option['value'] = amount
+        # option['value'] = amount
 
         amount_in_ABI = self.client.parent.encode_parameters(
             [amount],
@@ -92,7 +99,12 @@ class ERC20(POSToken):
         method = self.root_chain_manager.method('depositEtherFor', user_address)
         return self.process_write(method, option)
 
-    def withdraw_start(self, amount: int, option: ITransactionOption | None = None):
+    def withdraw_start(
+        self,
+        amount: int,
+        private_key: str,
+        option: ITransactionOption | None = None,
+    ):
         """Initiate withdraw by burning provided amount."""
         self.check_for_child()
 
@@ -100,7 +112,7 @@ class ERC20(POSToken):
         option['value'] = amount
 
         method = self.contract.method('withdraw', amount)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def _withdraw_exit(
         self,
@@ -142,7 +154,11 @@ class ERC20(POSToken):
         return self.is_withdrawn(burn_tx_hash, LogEventSignature.ERC_20_TRANSFER)
 
     def transfer(
-        self, amount: int, to: bytes, option: ITransactionOption | None = None
+        self,
+        amount: int,
+        to: bytes,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ):
         """Transfer amount to another user."""
-        return self.transfer_ERC_20(to, amount, option)
+        return self.transfer_ERC_20(to, amount, private_key, option)

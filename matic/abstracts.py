@@ -112,7 +112,9 @@ class BaseContractMethod(ABC):
         ...
 
     @abstractmethod
-    def write(self, tx: ITransactionRequestConfig) -> ITransactionWriteResult:
+    def write(
+        self, tx: ITransactionRequestConfig, private_key: str
+    ) -> ITransactionWriteResult:
         ...
 
     @abstractmethod

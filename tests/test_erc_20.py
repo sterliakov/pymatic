@@ -132,13 +132,13 @@ def abi_manager():
 def test_get_balance_child(erc_20_child, from_):
     balance = erc_20_child.get_balance(from_)
     assert isinstance(balance, int)
-    assert balance >= 0
+    assert balance > 0
 
 
 def test_get_balance_parent(erc_20_parent, from_):
     balance = erc_20_parent.get_balance(from_)
     assert isinstance(balance, int)
-    assert balance >= 0
+    assert balance > 0
 
 
 def test_get_allowance_child(erc_20_child, from_):
@@ -178,6 +178,7 @@ def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
     erc_20_child.transfer(
         amount,
         to,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
         {
             'max_fee_per_gas': 10,
             'max_priority_fee_per_gas': 10,
@@ -188,7 +189,12 @@ def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
 
 def test_child_transfer_return_transaction(erc_20_child, to):
     amount = 1
-    result = erc_20_child.transfer(amount, to, {'return_transaction': True})
+    result = erc_20_child.transfer(
+        amount,
+        to,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        {'return_transaction': True},
+    )
     assert 'max_fee_per_gas' not in result
     assert 'max_priority_fee_per_gas' not in result
     # was commented out
@@ -201,6 +207,7 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to):
     result = erc_20_parent.transfer(
         amount,
         to,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
         {
             'max_fee_per_gas': 20,
             'max_priority_fee_per_gas': 20,
@@ -211,7 +218,7 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to):
     assert result['max_fee_per_gas'] == 20
     assert result['max_priority_fee_per_gas'] == 20
     assert 'gas_price' not in result
-    assert result['chain_id'] == 5  # Fails, but should it?
+    assert result['chain_id'] == 5
 
 
 def test_is_deposited(pos_client):
@@ -221,14 +228,22 @@ def test_is_deposited(pos_client):
 
 
 def test_withdrawstart_return_tx(erc_20, erc_20_child):
-    result = erc_20_child.withdraw_start(10, {'return_transaction': True})
+    result = erc_20_child.withdraw_start(
+        10,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        {'return_transaction': True},
+    )
 
     assert result['to'].lower() == erc_20['child'].lower()
     assert 'data' in result
 
 
 def test_approve_parent_return_tx(erc_20, erc_20_parent):
-    result = erc_20_parent.approve(10, {'return_transaction': True})
+    result = erc_20_parent.approve(
+        10,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        {'return_transaction': True},
+    )
 
     assert result['to'].lower() == erc_20['parent'].lower()
     assert 'data' in result
@@ -237,7 +252,9 @@ def test_approve_parent_return_tx(erc_20, erc_20_parent):
 def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
     spender_address = erc_20_parent.predicate_address
     result = erc_20_parent.approve(
-        1, {'spender_address': spender_address, 'return_transaction': True}
+        1,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        {'spender_address': spender_address, 'return_transaction': True},
     )
 
     assert result['to'].lower() == erc_20['parent'].lower()
@@ -246,11 +263,22 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
 
 def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child):
     with pytest.raises(NullSpenderAddressException):
-        erc_20_child.approve(1)
+        erc_20_child.approve(
+            1, '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36'
+        )
 
 
 def test_deposit_return_tx(abi_manager, erc_20_parent, from_):
-    erc_20_parent.approve(10)
+    # spender_address = erc_20_parent.predicate_address
+    print(erc_20_parent.get_balance(from_))
+    print(erc_20_parent.get_allowance(from_))
+    print(erc_20_parent.get_allowance(erc_20_parent.predicate_address))
+    erc_20_parent.approve(
+        10,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        # {'from': from_},
+    )
+    print(erc_20_parent.get_allowance(erc_20_parent.predicate_address))
     result = erc_20_parent.deposit(10, from_, {'return_transaction': True})
 
     root_chain_manager = abi_manager.get_config(
@@ -316,29 +344,33 @@ def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent):
     assert result['to'].lower() == root_chain_manager.lower()
 
 
+@pytest.mark.skipif(os.getenv('TEST_ALL', 'False') != 'True', reason='Too hard')
 def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
     old_balance = erc_20_child.get_balance(to)
-    amount = 1
-    result = erc_20_child.transfer(amount, to)
+    amount = 10
+    result = erc_20_child.transfer(
+        amount,
+        to,
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+    )
 
     tx_hash = result.transaction_hash
-    print(tx_hash.hex())
+    print('Forward: ', tx_hash.hex())
     assert tx_hash
 
-    tx_receipt = result.receipt
-
+    tx_receipt = result.get_receipt(timeout=20 * 60)
     assert tx_receipt.transaction_hash == tx_hash
     # assert(tx_receipt).to.be.an('object')
     assert tx_receipt.from_.lower() == from_.lower()
     assert tx_receipt.to.lower() == erc_20['child'].lower()
-    assert tx_receipt.type == 2
+    assert tx_receipt.type == '0x2'
     assert tx_receipt.gas_used > 0
     assert tx_receipt.cumulative_gas_used > 0
 
     # was about hasattr, but it is weird for dataclasses
     assert tx_receipt.block_hash
     assert tx_receipt.block_number
-    assert tx_receipt.events
+    # assert tx_receipt.events  # no events in fact
     assert tx_receipt.logs_bloom
     assert tx_receipt.status
     assert tx_receipt.transaction_index
@@ -349,8 +381,11 @@ def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
     assert new_balance == old_balance + amount
     # transfer money back to user
     erc_20_child_token = pos_client_for_to.erc_20(erc_20['child'])
-
-    result = erc_20_child_token.transfer(amount, to)
+    result = erc_20_child_token.transfer(
+        amount,
+        from_,
+        'af024b43bcbe9aaaf44eb82f650896ede843ec014275297712d1653ad4caf57a',
+    )
     print('Back: ', result.transaction_hash.hex())
     result.receipt
 

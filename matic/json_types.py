@@ -199,8 +199,11 @@ class ITransactionWriteResult(ABC):
         ...
 
     @property
-    @abstractmethod
     def receipt(self) -> ITransactionReceipt:
+        return self.get_receipt()
+
+    @abstractmethod
+    def get_receipt(self, timeout: int = ...) -> ITransactionReceipt:
         ...
 
 
@@ -214,6 +217,7 @@ class ILog:
     transaction_index: int
     block_hash: bytes
     block_number: int
+    removed: bool
 
 
 class _RawLogData(TypedDict):

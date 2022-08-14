@@ -63,9 +63,11 @@ class BaseToken:
         return self._contract
 
     def process_write(
-        self, method: BaseContractMethod, option: ITransactionOption | None = None
+        self,
+        method: BaseContractMethod,
+        option: ITransactionOption | None = None,
+        private_key: str | None = None,
     ) -> ITransactionWriteResult | ITransactionRequestConfig:
-        self.client.logger.info('process write')
         config = self.create_transaction_config(
             tx_config=option,
             is_write=True,
@@ -73,7 +75,7 @@ class BaseToken:
             is_parent=self.contract_param.is_parent,
         )
 
-        self.client.logger.info('process write config')
+        self.client.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
             return {
                 **config,
@@ -81,36 +83,32 @@ class BaseToken:
                 'to': method.address,
             }
 
-        print(config)
+        return method.write(config, private_key)
 
-        return method.write(config)
+    # def send_transaction(
+    #     self, option: ITransactionOption | None = None
+    # ) -> ITransactionWriteResult | ITransactionRequestConfig:
+    #     is_parent = self.contract_param.is_parent
+    #     client = self.get_client(is_parent)
 
-    def send_transaction(
-        self, option: ITransactionOption | None = None
-    ) -> ITransactionWriteResult | ITransactionRequestConfig:
-        is_parent = self.contract_param.is_parent
-        client = self.get_client(is_parent)
-        client.logger.info('process write')
+    #     config = self.create_transaction_config(
+    #         tx_config=option,
+    #         is_write=True,
+    #         method=None,
+    #         is_parent=self.contract_param.is_parent,
+    #     )
 
-        config = self.create_transaction_config(
-            tx_config=option,
-            is_write=True,
-            method=None,
-            is_parent=self.contract_param.is_parent,
-        )
+    #     client.logger.info('process write config: %s', config)
+    #     if option and option.get('return_transaction', False):
+    #         return config
 
-        client.logger.info('process write config')
-        if option and option.get('return_transaction', False):
-            return config
-
-        return client.write(config)
+    #     return client.write(config)
 
     def read_transaction(
         self, option: ITransactionOption | None = None
     ) -> ITransactionWriteResult | ITransactionRequestConfig:
         is_parent = self.contract_param.is_parent
         client = self.get_client(is_parent)
-        client.logger.info('process read')
 
         config = self.create_transaction_config(
             tx_config=option,
@@ -119,7 +117,7 @@ class BaseToken:
             is_parent=self.contract_param.is_parent,
         )
 
-        client.logger.info('write tx config created')
+        client.logger.info('process read config: %s', config)
         if option and option.get('return_transaction', False):
             return config
 
@@ -128,14 +126,13 @@ class BaseToken:
     def process_read(
         self, method: BaseContractMethod, option: ITransactionOption | None = None
     ):
-        self.client.logger.info('process read')
         config = self.create_transaction_config(
             tx_config=option,
             is_write=False,
             method=method,
             is_parent=self.contract_param.is_parent,
         )
-        self.client.logger.info('read tx config created')
+        self.client.logger.info('read tx config created: %s', config)
 
         if option and option.get('return_transaction', False):
             assert self.contract
@@ -186,8 +183,9 @@ class BaseToken:
         def estimate_gas(config: ITransactionRequestConfig) -> int:
             if method:
                 new_config = dict(config)
-                new_config.pop('value', None)  # already registered on method => ignored
-                # breakpoint()
+                if new_config.get('value') is None:
+                    # already registered on method => ignored
+                    new_config.pop('value', None)
                 return method.estimate_gas(new_config)
             else:
                 return client.estimate_gas(config)
@@ -220,18 +218,27 @@ class BaseToken:
         return tx_config
 
     def transfer_ERC_20(
-        self, to: bytes, amount: int, option: ITransactionOption | None = None
+        self,
+        to: bytes,
+        amount: int,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ):
         method = self.contract.method('transfer', to, amount)
         option = option or {}
-        option['value'] = amount
-        return self.process_write(method, option)
+        # option['value'] = amount
+        return self.process_write(method, option, private_key)
 
     def transfer_ERC_721(
-        self, from_: bytes, to: bytes, token_id: int, option: ITransactionOption
+        self,
+        from_: bytes,
+        to: bytes,
+        token_id: int,
+        private_key: str,
+        option: ITransactionOption,
     ):
         method = self.contract.method('transferFrom', from_, to, token_id)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def check_for_root(self) -> None:
         if not self.contract_param.is_parent:
@@ -242,7 +249,10 @@ class BaseToken:
             raise AllowedOnChildException
 
     def transfer_ERC_1155(
-        self, param: POSERC1155TransferParam, option: ITransactionOption
+        self,
+        param: POSERC1155TransferParam,
+        private_key: str,
+        option: ITransactionOption,
     ):
         method = self.contract.method(
             'safeTransferFrom',
@@ -252,4 +262,4 @@ class BaseToken:
             param.amount,
             param.data or '0x',
         )
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)

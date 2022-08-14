@@ -10,9 +10,10 @@ def do_nothing(*args, **kwargs):
 
 # FIXME: bad
 class TransactionWriteResult(ITransactionWriteResult):
-    @property
-    def receipt(self):
-        receipt = self.client._web3.eth.wait_for_transaction_receipt(self.tx_hash)
+    def get_receipt(self, timeout: int = 120):
+        receipt = self.client._web3.eth.wait_for_transaction_receipt(
+            self.tx_hash, timeout=timeout
+        )
         return web3_receipt_to_matic_receipt(receipt)
 
     @property

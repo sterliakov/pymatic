@@ -64,7 +64,9 @@ class EthMethod(BaseContractMethod):
         self.logger.debug('sending tx with config %s', tx)
         return self.method.call(matic_tx_request_config_to_web3(tx))
 
-    def write(self, tx: ITransactionRequestConfig) -> TransactionWriteResult:
+    def write(
+        self, tx: ITransactionRequestConfig, private_key: str
+    ) -> TransactionWriteResult:
         tx2 = matic_tx_request_config_to_web3(tx)
 
         def transact_with_contract_function(
@@ -93,14 +95,10 @@ class EthMethod(BaseContractMethod):
                 fn_args=args,
                 fn_kwargs=kwargs,
             )
-            tx_prep['maxFeePerGas'] = 3000000000
-            tx_prep['maxPriorityFeePerGas'] = 2000000000
+            tx_prep.setdefault('maxFeePerGas', 3000000)
+            tx_prep.setdefault('maxPriorityFeePerGas', 2000000)
             # breakpoint()
-            tx_signed = web3.eth.account.sign_transaction(
-                tx_prep,
-                '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
-            )
-
+            tx_signed = web3.eth.account.sign_transaction(tx_prep, private_key)
             return web3.eth.send_raw_transaction(tx_signed.rawTransaction)
 
         meth = self.method
@@ -116,9 +114,6 @@ class EthMethod(BaseContractMethod):
         )
 
         return TransactionWriteResult(res, self.client)
-        # return TransactionWriteResult(
-        #     self.method.transact(matic_tx_request_config_to_web3(tx))
-        # )
 
     def estimate_gas(self, tx: ITransactionRequestConfig) -> int:
         return self.method.estimate_gas(matic_tx_request_config_to_web3(tx))
@@ -193,8 +188,10 @@ class Web3Client(BaseWeb3Client):
         self._ensure_transaction_not_null(data)
         return web3_tx_to_matic_tx(data)
 
-    def get_transaction_receipt(self, transaction_hash: bytes) -> ITransactionReceipt:
-        data = self._web3.eth.get_transaction_receipt(transaction_hash)
+    def get_transaction_receipt(
+        self, transaction_hash: bytes, timeout: int = 120
+    ) -> ITransactionReceipt:
+        data = self._web3.eth.wait_for_transaction_receipt(transaction_hash, timeout)
         self._ensure_transaction_not_null(data)
         return web3_receipt_to_matic_receipt(data)
 
