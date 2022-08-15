@@ -43,14 +43,18 @@ class POSClient(BridgeClient):
         return ERC1155(token_address, is_parent, self.client, self._get_contracts)
 
     def deposit_ether(
-        self, amount: int, user_address: bytes, option: ITransactionOption
+        self,
+        amount: int,
+        user_address: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         return ERC20(
             b'',
             True,
             self.client,
             self._get_contracts,
-        )._deposit_ether(amount, user_address, option)
+        )._deposit_ether(amount, user_address, private_key, option)
 
     def _get_contracts(self) -> IPOSContracts:
         return IPOSContracts(

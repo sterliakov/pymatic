@@ -65,53 +65,21 @@ class EthMethod(BaseContractMethod):
         return self.method.call(matic_tx_request_config_to_web3(tx))
 
     def write(
-        self, tx: ITransactionRequestConfig, private_key: str
+        self,
+        tx: ITransactionRequestConfig,
+        private_key: str | None = None,
     ) -> TransactionWriteResult:
-        tx2 = matic_tx_request_config_to_web3(tx)
+        web3_tx = matic_tx_request_config_to_web3(tx)
 
-        def transact_with_contract_function(
-            address,
-            web3,
-            function_name=None,
-            transaction=None,
-            contract_abi=None,
-            fn_abi=None,
-            *args,
-            **kwargs,
-        ):
-            """
-            Helper function for interacting with a contract function by sending a
-            transaction.
-            """
-            from web3._utils.contracts import prepare_transaction
-
-            tx_prep = prepare_transaction(
-                address,
-                web3,
-                fn_identifier=function_name,
-                contract_abi=contract_abi,
-                transaction=transaction,
-                fn_abi=fn_abi,
-                fn_args=args,
-                fn_kwargs=kwargs,
+        if private_key:
+            tx_prep = self.method.build_transaction(web3_tx)
+            print('Prepared tx: ', tx_prep)
+            tx_signed = self.client._web3.eth.account.sign_transaction(
+                tx_prep, private_key
             )
-            tx_prep.setdefault('maxFeePerGas', 3000000)
-            tx_prep.setdefault('maxPriorityFeePerGas', 2000000)
-            # breakpoint()
-            tx_signed = web3.eth.account.sign_transaction(tx_prep, private_key)
-            return web3.eth.send_raw_transaction(tx_signed.rawTransaction)
-
-        meth = self.method
-        res = transact_with_contract_function(
-            meth.address,
-            meth.web3,
-            meth.function_identifier,
-            tx2,
-            meth.contract_abi,
-            meth.abi,
-            *meth.args,
-            **meth.kwargs,
-        )
+            res = self.client._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
+        else:
+            res = self.client._web3.eth.send_transaction(web3_tx)
 
         return TransactionWriteResult(res, self.client)
 

@@ -29,7 +29,7 @@ from matic.utils.abi_manager import ABIManager  # noqa: E402
 
 # client.ts
 @pytest.fixture()
-def private_key(user1):
+def from_pk(user1):
     return user1['private_key']
 
 
@@ -129,6 +129,11 @@ def abi_manager():
     return ABIManager('testnet', 'mumbai')
 
 
+def test_deposit_ether(pos_client, from_, from_pk):
+    res = pos_client.deposit_ether(10, from_, from_pk, {})
+    res.get_receipt(5 * 60)
+
+
 def test_get_balance_child(erc_20_child, from_):
     balance = erc_20_child.get_balance(from_)
     assert isinstance(balance, int)
@@ -172,13 +177,13 @@ def test_is_withdraw_exited(erc_20_parent):
     assert is_exited is True
 
 
-def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
+def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to, from_pk):
     amount = 100
     # with pytest.raises(EIP1559NotSupportedException):
     erc_20_child.transfer(
         amount,
         to,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {
             'max_fee_per_gas': 10,
             'max_priority_fee_per_gas': 10,
@@ -187,12 +192,12 @@ def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to):
     )
 
 
-def test_child_transfer_return_transaction(erc_20_child, to):
+def test_child_transfer_return_transaction(erc_20_child, to, from_pk):
     amount = 1
     result = erc_20_child.transfer(
         amount,
         to,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {'return_transaction': True},
     )
     assert 'max_fee_per_gas' not in result
@@ -202,12 +207,12 @@ def test_child_transfer_return_transaction(erc_20_child, to):
     assert result['chain_id'] == 80001
 
 
-def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to):
+def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to, from_pk):
     amount = 1
     result = erc_20_parent.transfer(
         amount,
         to,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {
             'max_fee_per_gas': 20,
             'max_priority_fee_per_gas': 20,
@@ -227,10 +232,10 @@ def test_is_deposited(pos_client):
     assert is_deposited is True
 
 
-def test_withdrawstart_return_tx(erc_20, erc_20_child):
+def test_withdrawstart_return_tx(erc_20, erc_20_child, from_pk):
     result = erc_20_child.withdraw_start(
         10,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {'return_transaction': True},
     )
 
@@ -238,10 +243,10 @@ def test_withdrawstart_return_tx(erc_20, erc_20_child):
     assert 'data' in result
 
 
-def test_approve_parent_return_tx(erc_20, erc_20_parent):
+def test_approve_parent_return_tx(erc_20, erc_20_parent, from_pk):
     result = erc_20_parent.approve(
         10,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {'return_transaction': True},
     )
 
@@ -249,11 +254,11 @@ def test_approve_parent_return_tx(erc_20, erc_20_parent):
     assert 'data' in result
 
 
-def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
+def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent, from_pk):
     spender_address = erc_20_parent.predicate_address
     result = erc_20_parent.approve(
         1,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {'spender_address': spender_address, 'return_transaction': True},
     )
 
@@ -261,25 +266,21 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent):
     assert 'data' in result
 
 
-def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child):
+def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child, from_pk):
     with pytest.raises(NullSpenderAddressException):
-        erc_20_child.approve(
-            1, '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36'
-        )
+        erc_20_child.approve(1, from_pk)
 
 
-def test_deposit_return_tx(abi_manager, erc_20_parent, from_):
+def test_deposit_return_tx(abi_manager, erc_20_parent, from_, from_pk):
     # spender_address = erc_20_parent.predicate_address
     print(erc_20_parent.get_balance(from_))
     print(erc_20_parent.get_allowance(from_))
-    print(erc_20_parent.get_allowance(erc_20_parent.predicate_address))
-    erc_20_parent.approve(
+    assert erc_20_parent.approve(
         10,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
-        # {'from': from_},
-    )
-    print(erc_20_parent.get_allowance(erc_20_parent.predicate_address))
-    result = erc_20_parent.deposit(10, from_, {'return_transaction': True})
+        from_pk,
+    ).get_receipt()
+    print(erc_20_parent.get_allowance(from_))
+    result = erc_20_parent.deposit(9, from_, {'return_transaction': True})
 
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
@@ -292,10 +293,10 @@ exit_data = bytes.fromhex(
 )
 
 
-def test_withdraw_exit_return_tx(abi_manager, erc_20_parent):
+def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
     result = erc_20_parent.withdraw_exit(
         '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {'return_transaction': True, 'gas_limit': 200000},
     )
     print(len(exit_data))
@@ -308,11 +309,11 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent):
     assert result['to'].lower() == root_chain_manager.lower()
 
 
-def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent):
+def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, from_pk):
     with pytest.raises(ProofAPINotSetException):
         erc_20_parent.withdraw_exit_faster(
             '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
-            '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+            from_pk,
             {'return_transaction': True},
         )
 
@@ -331,12 +332,12 @@ def test_call_get_block_included():
     assert int(result['createdAt'])
 
 
-def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent):
+def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
     services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1'
 
     result = erc_20_parent.withdraw_exit_faster(
         '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
         {'return_transaction': True, 'gas_limit': 200000},
     )
     assert result['data'] == exit_data
@@ -347,21 +348,22 @@ def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent):
     assert result['to'].lower() == root_chain_manager.lower()
 
 
-@pytest.mark.skipif(os.getenv('TEST_ALL', 'False') != 'True', reason='Too hard')
-def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_):
+# @pytest.mark.skipif(os.getenv('TEST_ALL', 'False') != 'True', reason='Too hard')
+def test_child_transfer(erc_20, erc_20_child, pos_client_for_to, to, from_, from_pk):
     old_balance = erc_20_child.get_balance(to)
     amount = 10
     result = erc_20_child.transfer(
         amount,
         to,
-        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        from_pk,
     )
 
     tx_hash = result.transaction_hash
+    erc_20_child.client.logger.info('Forward: %s', tx_hash.hex())
     print('Forward: ', tx_hash.hex())
     assert tx_hash
 
-    tx_receipt = result.get_receipt(timeout=20 * 60)
+    tx_receipt = result.get_receipt(timeout=5 * 60)
     assert tx_receipt.transaction_hash == tx_hash
     # assert(tx_receipt).to.be.an('object')
     assert tx_receipt.from_.lower() == from_.lower()

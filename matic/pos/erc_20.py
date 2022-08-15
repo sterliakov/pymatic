@@ -89,7 +89,11 @@ class ERC20(POSToken):
         )
 
     def _deposit_ether(
-        self, amount: int, user_address: bytes, option: ITransactionOption | None = None
+        self,
+        amount: int,
+        user_address: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         self.check_for_root()
 
@@ -97,7 +101,7 @@ class ERC20(POSToken):
         option['value'] = amount
 
         method = self.root_chain_manager.method('depositEtherFor', user_address)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def withdraw_start(
         self,
