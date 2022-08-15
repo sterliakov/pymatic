@@ -30,14 +30,15 @@ class RootChainManager(BaseToken):
         user_address: bytes,
         token_address: bytes,
         deposit_data: bytes,
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         method = self.method('depositFor', user_address, token_address, deposit_data)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
-    def exit(self, exit_payload: bytes, option: ITransactionOption):
+    def exit(self, exit_payload: bytes, private_key: str, option: ITransactionOption):
         method = self.method('exit', exit_payload)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def is_exit_processed(self, exit_hash: bytes) -> Any:
         method = self.method('processedExits', exit_hash)

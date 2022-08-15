@@ -295,7 +295,8 @@ exit_data = bytes.fromhex(
 def test_withdraw_exit_return_tx(abi_manager, erc_20_parent):
     result = erc_20_parent.withdraw_exit(
         '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
-        {'return_transaction': True},
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        {'return_transaction': True, 'gas_limit': 200000},
     )
     print(len(exit_data))
     print(len(result['data']))
@@ -311,6 +312,7 @@ def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent):
     with pytest.raises(ProofAPINotSetException):
         erc_20_parent.withdraw_exit_faster(
             '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
+            '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
             {'return_transaction': True},
         )
 
@@ -334,7 +336,8 @@ def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent):
 
     result = erc_20_parent.withdraw_exit_faster(
         '0x1c20c41b9d97d1026aa456a21f13725df63edec1b1f43aacb180ebcc6340a2d3',
-        {'return_transaction': True},
+        '9cbbfc73c2ba01dc8d09deb3fd9c4abe27998ad40483c013f54367ae1f11da36',
+        {'return_transaction': True, 'gas_limit': 200000},
     )
     assert result['data'] == exit_data
 

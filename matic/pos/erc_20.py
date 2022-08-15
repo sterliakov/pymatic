@@ -118,6 +118,7 @@ class ERC20(POSToken):
         self,
         burn_transaction_hash: bytes,
         is_fast: bool,
+        private_key: str,
         option: IExitTransactionOption | None = None,
     ):
         event_signature = (
@@ -129,25 +130,31 @@ class ERC20(POSToken):
         payload = self.exit_util.build_payload_for_exit(
             burn_transaction_hash, 0, event_signature, is_fast
         )
-        return self.root_chain_manager.exit(payload, option or {})
+        return self.root_chain_manager.exit(payload, private_key, option or {})
 
     def withdraw_exit(
-        self, burn_transaction_hash: bytes, option: IExitTransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: IExitTransactionOption | None = None,
     ):
         """
         Complete withdraw process after checkpoint has been submitted for the block containing burn tx.
         """
         self.check_for_root()
-        return self._withdraw_exit(burn_transaction_hash, False, option)
+        return self._withdraw_exit(burn_transaction_hash, False, private_key, option)
 
     def withdraw_exit_faster(
-        self, burn_transaction_hash: bytes, option: IExitTransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: IExitTransactionOption | None = None,
     ):
         """
         Complete withdraw process after checkpoint has been submitted for the block containing burn tx.
         """
         self.check_for_root()
-        return self._withdraw_exit(burn_transaction_hash, True, option)
+        return self._withdraw_exit(burn_transaction_hash, True, private_key, option)
 
     def is_withdraw_exited(self, burn_tx_hash: bytes):
         """Check if exit has been completed for a transaction hash."""

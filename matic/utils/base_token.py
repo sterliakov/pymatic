@@ -183,9 +183,8 @@ class BaseToken:
         def estimate_gas(config: ITransactionRequestConfig) -> int:
             if method:
                 new_config = dict(config)
-                if new_config.get('value') is None:
-                    # already registered on method => ignored
-                    new_config.pop('value', None)
+                # if new_config.get('value') is None:
+                new_config.pop('value', None)  # already registered on method => ignored
                 return method.estimate_gas(new_config)
             else:
                 return client.estimate_gas(config)
