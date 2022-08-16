@@ -77,8 +77,7 @@ class BaseToken:
 
         self.client.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
-            return {
-                **config,
+            return config | {
                 'data': method.encode_ABI(),
                 'to': method.address,
             }
@@ -136,7 +135,7 @@ class BaseToken:
 
         if option and option.get('return_transaction', False):
             assert self.contract
-            return {**config, 'data': method.encode_ABI(), 'to': self._contract.address}
+            return config | {'data': method.encode_ABI(), 'to': self._contract.address}
 
         return method.read(config)
 

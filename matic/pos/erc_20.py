@@ -53,7 +53,6 @@ class ERC20(POSToken):
         option: IApproveTransactionOption | None = None,
     ):
         option = option or {}
-        # option['value'] = amount
 
         spender_address = option.get('spender_address')
         if not spender_address and not self.contract_param.is_parent:
@@ -72,20 +71,24 @@ class ERC20(POSToken):
         return self.approve(MAX_AMOUNT, private_key, option)
 
     def deposit(
-        self, amount: int, user_address: bytes, option: ITransactionOption | None = None
+        self,
+        amount: int,
+        user_address: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Deposit given amount of token for user."""
         self.check_for_root()
 
         option = option or {}
-        # option['value'] = amount
 
-        amount_in_ABI = self.client.parent.encode_parameters(
-            [amount],
-            ['uint256'],
-        )
+        amount_in_ABI = self.client.parent.encode_parameters([amount], ['uint256'])
         return self.root_chain_manager.deposit(
-            user_address, self.contract_param.address, amount_in_ABI, option
+            user_address,
+            self.contract_param.address,
+            amount_in_ABI,
+            private_key,
+            option,
         )
 
     def _deposit_ether(
@@ -98,7 +101,6 @@ class ERC20(POSToken):
         self.check_for_root()
 
         option = option or {}
-        option['value'] = amount
 
         method = self.root_chain_manager.method('depositEtherFor', user_address)
         return self.process_write(method, option, private_key)
@@ -113,7 +115,6 @@ class ERC20(POSToken):
         self.check_for_child()
 
         option = option or {}
-        option['value'] = amount
 
         method = self.contract.method('withdraw', amount)
         return self.process_write(method, option, private_key)
@@ -122,7 +123,6 @@ class ERC20(POSToken):
         self,
         burn_transaction_hash: bytes,
         is_fast: bool,
-        private_key: str,
         option: IExitTransactionOption | None = None,
     ):
         event_signature = (
@@ -134,31 +134,30 @@ class ERC20(POSToken):
         payload = self.exit_util.build_payload_for_exit(
             burn_transaction_hash, 0, event_signature, is_fast
         )
-        return self.root_chain_manager.exit(payload, private_key, option or {})
+        print(payload.hex())
+        return self.root_chain_manager.exit(payload, option or {})
 
     def withdraw_exit(
         self,
         burn_transaction_hash: bytes,
-        private_key: str,
         option: IExitTransactionOption | None = None,
     ):
         """
         Complete withdraw process after checkpoint has been submitted for the block containing burn tx.
         """
         self.check_for_root()
-        return self._withdraw_exit(burn_transaction_hash, False, private_key, option)
+        return self._withdraw_exit(burn_transaction_hash, False, option)
 
     def withdraw_exit_faster(
         self,
         burn_transaction_hash: bytes,
-        private_key: str,
         option: IExitTransactionOption | None = None,
     ):
         """
         Complete withdraw process after checkpoint has been submitted for the block containing burn tx.
         """
         self.check_for_root()
-        return self._withdraw_exit(burn_transaction_hash, True, private_key, option)
+        return self._withdraw_exit(burn_transaction_hash, True, option)
 
     def is_withdraw_exited(self, burn_tx_hash: bytes):
         """Check if exit has been completed for a transaction hash."""

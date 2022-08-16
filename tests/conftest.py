@@ -10,7 +10,8 @@ def rpc():
         'parent': os.getenv(
             'ROOT_RPC', 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
         ),
-        'child': os.getenv('MATIC_RPC') or 'https://rpc-mumbai.maticvigil.com',
+        'child': os.getenv('MATIC_RPC')
+        or 'https://rpc-mumbai.maticvigil.com/v1/2029c255385562b351f79af8f40c51d85b97d757',
     }
 
 
@@ -68,11 +69,11 @@ def pos():
 def user1():
     return {
         'address': os.getenv(
-            'USER1_FROM', '0xcfE1B06bc4c4c71CF802CC7b7F48a396B2f53B17'
+            'USER1_FROM', '0xD73a10cEFa7cF0FA3ae4855b13317Ee77B0Ef9c1'
         ),
         'private_key': os.getenv(
             'USER1_PRIVATE_KEY',
-            'dcb562f61f443dacaf7569e850d3ce48d9b05f478abbf75a0609c7ecb73db9b9',
+            '0x80f6cbad3710a839382acea3168e638f6c1007e1210103c10874e4653420ca79',
         ),
     }
 

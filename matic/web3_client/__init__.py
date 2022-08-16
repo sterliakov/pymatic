@@ -88,7 +88,9 @@ class EthMethod(BaseContractMethod):
 
     def encode_ABI(self):
         abi = [e['type'] for e in self.method.abi['inputs']]
-        return encode_abi(abi, self.method.args)
+        return bytes.fromhex(self.method.selector.removeprefix('0x')) + encode_abi(
+            abi, self.method.args
+        )
 
 
 class Web3Contract(BaseContract):

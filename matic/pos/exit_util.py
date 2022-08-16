@@ -282,36 +282,24 @@ class ExitUtil:
             log_indices = self._get_all_log_indices(log_event_sig, receipt)
             if index >= len(log_indices):
                 raise ValueError(
-                    'Index is grater than the int of tokens in self transaction'
+                    'Index is greater than the number of tokens in this transaction'
                 )
-
-            return self._encode_payload(
-                root_block_info.header_block_number.toNumber(),
-                block_proof,
-                tx_block_number,
-                block.timestamp,
-                block.transactions_root[2:],
-                block.receipts_root[2:],
-                ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
-                receipt_proof['parent_nodes'],
-                receipt_proof['path'],
-                log_indices[index],
-            )
+            log_index = log_indices[index]
         else:
             log_index = self._get_log_index(log_event_sig, receipt)
 
-            return self._encode_payload(
-                root_block_info.header_block_number,
-                block_proof,
-                tx_block_number,
-                block.timestamp,
-                block.transactions_root[2:],
-                block.receipts_root[2:],
-                ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
-                receipt_proof['parent_nodes'],
-                receipt_proof['path'],
-                log_index,
-            )
+        return self._encode_payload(
+            root_block_info.header_block_number,
+            block_proof,
+            tx_block_number,
+            block.timestamp,
+            block.transactions_root,
+            block.receipts_root,
+            ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
+            receipt_proof['parent_nodes'],
+            receipt_proof['path'],
+            log_index,
+        )
 
     def build_multiple_payloads_for_exit(
         self, burn_tx_hash: bytes, log_event_sig: bytes, is_fast: bool
@@ -347,7 +335,6 @@ class ExitUtil:
         else:
             block_proof_result = self._get_block_proof(tx_block_number, root_block_info)
 
-        block_proof = block_proof_result
         # step 5- create receipt proof
         receipt_proof = ProofUtil.get_receipt_proof(
             receipt, block, self._matic_client, self.request_concurrency
@@ -358,14 +345,14 @@ class ExitUtil:
         return [
             self._encode_payload(
                 root_block_info.header_block_number,
-                block_proof,
+                bytes.fromhex(block_proof_result),
                 tx_block_number,
                 block.timestamp,
                 block.transactions_root,
                 block.receipts_root,
                 ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
-                receipt_proof.parentNodes,
-                receipt_proof.path,
+                receipt_proof['parent_nodes'],
+                receipt_proof['path'],
                 log_index,
             )
             for log_index in log_indices
@@ -384,17 +371,33 @@ class ExitUtil:
         path,
         log_index,
     ) -> bytes:
+        print(
+            '=' * 80,
+            header_number,
+            bytes.fromhex(build_block_proof.removeprefix('0x')),
+            block_number,
+            timestamp,
+            transactions_root.hex(),
+            receipts_root.hex(),
+            receipt.hex(),
+            *['    ' + e.hex() for e in receipt_parent_nodes[0]],
+            path.hex(),
+            log_index,
+            '=' * 80,
+            sep='\n',
+        )
+
         return rlp.encode(
             [
                 header_number,
-                build_block_proof,
+                bytes.fromhex(build_block_proof.removeprefix('0x')),
                 block_number,
                 timestamp,
                 transactions_root,
                 receipts_root,
                 receipt,
                 rlp.encode(receipt_parent_nodes),
-                b''.join([bytes(1), path]),  # NOTSURE
+                b'\x00' + path,
                 log_index,
             ]
         )
@@ -434,7 +437,6 @@ class ExitUtil:
 
         log_index = self._get_log_index(log_event_sig, receipt)
 
-        print(receipt.block_number, nibble, log_index)
         return self._matic_client.etherium_sha3(
             ['uint256', 'bytes', 'uint256'],
             [receipt.block_number, nibble, log_index],

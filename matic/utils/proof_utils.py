@@ -215,7 +215,7 @@ class ProofUtil:
         #     )
         # )
         # TODO: is it the same?
-        print(proof)
+        # print(proof)
         return b''.join(map(bytes.fromhex, proof)).hex()
 
     @classmethod
@@ -246,7 +246,7 @@ class ProofUtil:
         state_sync_tx_hash = cls.get_state_sync_tx_hash(block).hex()
         receipts_trie = Trie({})
 
-        receipts = receipts_val or [
+        receipts = receipts_val or [  # TODO: can be done in parallel
             web3.get_transaction_receipt(tx.transaction_hash)
             for tx in block.transactions
             if tx.transaction_hash != state_sync_tx_hash
@@ -260,12 +260,19 @@ class ProofUtil:
         stack = list(receipts_trie.find_path(rlp.encode(receipt.transaction_index)))
         node = stack[-1]
 
-        # if result.remaining:
-        #     raise ValueError('Node does not contain the key')
+        def node_to_raw(node: Node.Leaf | Node.Branch | Node.Extension) -> list[bytes]:
+            if isinstance(node, Node.Leaf):
+                return [node.path.encode(True), node.data]
+            elif isinstance(node, Node.Extension):
+                return [node.path.encode(False), node.data]
+            elif isinstance(node, Node.Branch):
+                return [*node.branches, node.data]
+            else:
+                raise ValueError('Unknown node type.')
 
         return {
             'block_hash': receipt.block_hash,
-            'parent_nodes': [s.data for s in stack],
+            'parent_nodes': list(map(node_to_raw, stack)),
             'root': block.receipts_root,
             'path': rlp.encode(receipt.transaction_index),
             'value': (
@@ -302,26 +309,27 @@ class ProofUtil:
         encoded_data = rlp.encode(
             [
                 (
-                    (b'0x1' if receipt.status else b'0x')
+                    (b'\x01' if receipt.status else b'\x00')
                     if receipt.status is not None
                     else receipt.root
                 ),
-                receipt.cumulative_gas_used.to_bytes(8, 'big'),
+                receipt.cumulative_gas_used,
                 receipt.logs_bloom,
                 # encoded log array
                 [
                     # [address, [topics array], data]
                     [
-                        log.address,
+                        bytes.fromhex(log.address.removeprefix('0x')),
                         log.topics,
-                        log.data,
+                        bytes.fromhex(log.data.removeprefix('0x')),
                     ]
                     for log in receipt.logs
                 ],
             ]
         )
         if cls.is_typed_receipt(receipt):
-            encoded_data = receipt.type + encoded_data
+            encoded_data = receipt.type + encoded_data  # FIXME: convert to bytes
+        # print(encoded_data.hex())
 
         return encoded_data
 
