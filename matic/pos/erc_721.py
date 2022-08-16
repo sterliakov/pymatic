@@ -90,57 +90,70 @@ class ERC721(POSToken):
         self,
         token_id: int,
         user_address: bytes,
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         self.check_for_root()
 
         amount_in_ABI = self.client.parent.encode_parameters(
-            [to_hex(token_id)],
-            ['uint256'],
+            [to_hex(token_id)], ['uint256']
         )
         return self.root_chain_manager.deposit(
-            user_address, self.contract_param.address, amount_in_ABI, option
+            user_address,
+            self.contract_param.address,
+            amount_in_ABI,
+            private_key,
+            option,
         )
 
     def deposit_many(
         self,
         token_ids: Sequence[int],
         user_address: bytes,
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         self.check_for_root()
 
         tokens_in_hex = self._validate_many(token_ids)
         amount_in_ABI = self.client.parent.encode_parameters(
-            [tokens_in_hex],
-            ['uint256[]'],
+            [tokens_in_hex], ['uint256[]']
         )
         return self.root_chain_manager.deposit(
-            user_address, self.contract_param.address, amount_in_ABI, option
+            user_address,
+            self.contract_param.address,
+            amount_in_ABI,
+            private_key,
+            option,
         )
 
-    def withdraw_start(self, token_id: int, option: ITransactionOption | None = None):
+    def withdraw_start(
+        self, token_id: int, private_key: str, option: ITransactionOption | None = None
+    ):
         self.check_for_child()
 
         method = self.contract.method('withdraw', to_hex(token_id))
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def withdraw_start_with_metadata(
-        self, token_id: int, option: ITransactionOption | None = None
+        self, token_id: int, private_key: str, option: ITransactionOption | None = None
     ):
         self.check_for_child()
 
         method = self.contract.method('withdrawWithMetadata', to_hex(token_id))
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def withdraw_start_many(
-        self, token_ids: Sequence[int], option: ITransactionOption | None = None
+        self,
+        token_ids: Sequence[int],
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         self.check_for_child()
 
         tokens_in_hex = self._validate_many(token_ids)
         method = self.contract.method('withdrawBatch', tokens_in_hex)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def withdraw_exit(
         self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
@@ -224,7 +237,8 @@ class ERC721(POSToken):
         token_id: int,
         from_: bytes,
         to: bytes,
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         """Transfer to another user."""
-        return self.transfer_ERC_721(from_, to, token_id, option)
+        return self.transfer_ERC_721(from_, to, token_id, private_key, option)

@@ -18,14 +18,6 @@ from matic.json_types import (
 )
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-# import { Web3SideChainClient } from "./web3_side_chain_client"
-# import { BaseContractMethod, BaseContract, BaseWeb3Client } from "../abstracts"
-# import {  merge } from "../utils"
-# import { promiseResolve } from "./promise_resolve"
-# import { ERROR_TYPE } from "../enums"
-# import { POSERC1155TransferParam, TYPE_AMOUNT } from "../types"
-# import { ErrorHelper } from "./error_helper"
-
 # export interface ITransactionConfigParam {
 #     tx_config: ITransactionRequestConfig
 #     method?: BaseContractMethod
@@ -77,10 +69,7 @@ class BaseToken:
 
         self.client.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
-            return config | {
-                'data': method.encode_ABI(),
-                'to': method.address,
-            }
+            return config | {'data': method.encode_ABI(), 'to': method.address}
 
         return method.write(config, private_key)
 
@@ -233,7 +222,7 @@ class BaseToken:
         to: bytes,
         token_id: int,
         private_key: str,
-        option: ITransactionOption,
+        option: ITransactionOption | None = None,
     ):
         method = self.contract.method('transferFrom', from_, to, token_id)
         return self.process_write(method, option, private_key)
@@ -250,14 +239,14 @@ class BaseToken:
         self,
         param: POSERC1155TransferParam,
         private_key: str,
-        option: ITransactionOption,
+        option: ITransactionOption | None = None,
     ):
         method = self.contract.method(
             'safeTransferFrom',
-            param.from_,
-            param.to,
-            param.token_id,
-            param.amount,
-            param.data or '0x',
+            param['from_'],
+            param['to'],
+            param['token_id'],
+            param['amount'],
+            param.get('data', b''),
         )
         return self.process_write(method, option, private_key)

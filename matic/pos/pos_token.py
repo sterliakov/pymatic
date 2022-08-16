@@ -72,7 +72,7 @@ class POSToken(BaseToken):
         exit_hash = self.exit_util.get_exit_hash(tx_hash, index, event_signature)
         return self.root_chain_manager.is_exit_processed(exit_hash)
 
-    def withdraw_exit_POS(
+    def withdraw_exit_pos(
         self,
         burn_tx_hash: bytes,
         event_signature: bytes,

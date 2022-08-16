@@ -16,7 +16,7 @@ _TDictWithFrom = TypedDict('_TDictWithFrom', {'from': Required[bytes]})
 
 
 class ITransactionRequestConfig(_TDictWithFrom, total=False):
-    to: bytes
+    to: str
     value: int
     gas_limit: int
     gas_price: int
@@ -50,8 +50,8 @@ class ITransactionData:
     block_hash: bytes | None
     block_number: int | None
     transaction_index: int | None
-    from_: bytes
-    to: bytes | None
+    from_: str
+    to: str | None
     value: int
     gas_price: int
     gas: int
@@ -258,26 +258,23 @@ class ITransactionReceipt:
 
 
 # FIXME: goes to pos/...
-@dataclass
-class POSERC1155DepositParam:
+class POSERC1155DepositParam(TypedDict):
     token_id: int
     amount: int
     user_address: bytes
-    data: bytes | None = None
+    data: NotRequired[bytes | None]
 
 
-@dataclass
-class POSERC1155DepositBatchParam:
+class POSERC1155DepositBatchParam(TypedDict):
     token_ids: Sequence[int]
     amounts: Sequence[int]
     user_address: bytes
-    data: bytes | None = None
+    data: NotRequired[bytes | None]
 
 
-@dataclass
-class POSERC1155TransferParam:
+class POSERC1155TransferParam(TypedDict):
     token_id: int
     amount: int
     from_: bytes
     to: bytes
-    data: bytes | None = None
+    data: NotRequired[bytes | None]

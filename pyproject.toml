@@ -63,8 +63,11 @@ Documentation = "https://github.com/sterliakov/pymatic"  # FIXME: move to RTD
 
 
 [tool.pytest.ini_options]
-log_cli=true
-log_cli_level="INFO"
+log_cli = true
+log_cli_level = "INFO"
+markers = [
+    'can_timeout',
+]
 addopts = """
     --tb=short
     --cov=matic

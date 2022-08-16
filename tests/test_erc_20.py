@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import os
-
 import pytest
-from web3 import Web3
 
 from matic.web3_client import setup
 
@@ -14,104 +11,11 @@ from matic.exceptions import (  # noqa: E402
     NullSpenderAddressException,
     ProofAPINotSetException,
 )
-from matic.json_types import (  # noqa: E402
-    ConfigWithFrom,
-    IPOSClientConfig,
-    NeighbourClientConfig,
-)
-from matic.pos import POSClient  # noqa: E402
-from matic.utils.abi_manager import ABIManager  # noqa: E402
-
-# import {
-#     ABIManager, setProofApi, service, utils, ITransactionRequestConfig
-# } from '@maticnetwork/maticjs'
-
-
-# client.ts
-@pytest.fixture()
-def from_pk(user1):
-    return user1['private_key']
-
-
-@pytest.fixture()
-def from_(user1):
-    return user1['address']
-
-
-@pytest.fixture()
-def to(user2):
-    return user2['address']
-
-
-@pytest.fixture()
-def to_private_key(user2):
-    return user2['private_key']
-
-
-@pytest.fixture()
-def child_provider(rpc):
-    return Web3.HTTPProvider(rpc['child'])
-
-
-@pytest.fixture()
-def parent_provider(rpc):
-    return Web3.HTTPProvider(rpc['parent'])
 
 
 @pytest.fixture()
 def erc_20(pos):
     return {'parent': pos['parent']['erc_20'], 'child': pos['child']['erc_20']}
-
-
-# @pytest.fixture()
-# def erc_721(pos):
-#     return {'parent': pos['parent']['erc_721'], 'child': pos['child']['erc_721']}
-
-
-# @pytest.fixture()
-# def erc_1155(pos):
-#     return {'parent': pos['parent']['erc_1155'], 'child': pos['child']['erc_1155']}
-
-
-@pytest.fixture()
-def pos_client(user1, parent_provider, child_provider):
-    return POSClient(
-        IPOSClientConfig(
-            # log: true,
-            network='testnet',
-            version='mumbai',
-            parent=NeighbourClientConfig(
-                provider=parent_provider,
-                default_config=ConfigWithFrom(user1['address']),
-            ),
-            child=NeighbourClientConfig(
-                provider=child_provider,
-                default_config=ConfigWithFrom(user1['address']),
-            ),
-        )
-    )
-
-
-@pytest.fixture()
-def pos_client_for_to(user2, parent_provider, child_provider):
-    return POSClient(
-        IPOSClientConfig(
-            # log: true,
-            network='testnet',
-            version='mumbai',
-            parent=NeighbourClientConfig(
-                provider=parent_provider,
-                default_config=ConfigWithFrom(user2['address']),
-            ),
-            child=NeighbourClientConfig(
-                provider=child_provider,
-                default_config=ConfigWithFrom(user2['address']),
-            ),
-        )
-    )
-
-
-# end of client.ts
 
 
 @pytest.fixture()
@@ -122,11 +26,6 @@ def erc_20_child(pos_client, erc_20):
 @pytest.fixture()
 def erc_20_parent(pos_client, erc_20):
     return pos_client.erc_20(erc_20['parent'], True)
-
-
-@pytest.fixture()
-def abi_manager():
-    return ABIManager('testnet', 'mumbai')
 
 
 def test_deposit_ether(pos_client, from_, from_pk):
@@ -393,6 +292,8 @@ def test_approve_and_deposit(erc_20_parent, from_, from_pk):
     result.receipt
 
 
+@pytest.mark.can_timeout
+@pytest.mark.trylast
 def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
     import time
 
@@ -407,7 +308,7 @@ def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
         if pos_client.is_checkpointed(tx_hash):
             break
         elif time.time() - start_time > timeout:
-            assert False, f'Transaction {tx_hash.hex()} still not checkpointed'
+            pytest.fail(f'Transaction {tx_hash.hex()} still not checkpointed')
         else:
             time.sleep(10)
 

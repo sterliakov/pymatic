@@ -36,7 +36,7 @@ class RootChainManager(BaseToken):
         method = self.method('depositFor', user_address, token_address, deposit_data)
         return self.process_write(method, option, private_key)
 
-    def exit(self, exit_payload: bytes, option: ITransactionOption):
+    def exit(self, exit_payload: bytes, option: ITransactionOption):  # FIXME: pk?
         method = self.method('exit', exit_payload)
         return self.process_write(method, option)
 

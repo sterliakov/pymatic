@@ -328,7 +328,7 @@ class ProofUtil:
             ]
         )
         if cls.is_typed_receipt(receipt):
-            encoded_data = receipt.type + encoded_data  # FIXME: convert to bytes
+            encoded_data = int(receipt.type, 0).to_bytes(1, 'big') + encoded_data
         # print(encoded_data.hex())
 
         return encoded_data

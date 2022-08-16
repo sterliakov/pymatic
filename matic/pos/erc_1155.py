@@ -11,7 +11,6 @@ from matic.json_types import (
     POSERC1155TransferParam,
 )
 from matic.pos.pos_token import POSToken
-from matic.utils import to_hex
 
 # import { IPOSClientConfig, ITransactionOption } from "../interfaces"
 # import { Converter, promiseResolve, Web3SideChainClient } from "../utils"
@@ -42,7 +41,7 @@ class ERC1155(POSToken):
         method = self.contract.method(
             'balanceOf',
             user_address,
-            to_hex(token_id),
+            token_id,
         )
         return self.process_read(method, option)
 
@@ -58,42 +57,51 @@ class ERC1155(POSToken):
         return self.process_read(method, option)
 
     def _approve_all(
-        self, predicate_address: str, option: ITransactionOption | None = None
+        self,
+        predicate_address: str,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         self.check_for_root()
         method = self.contract.method('setApprovalForAll', predicate_address, True)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
-    def approve_all(self, option: ITransactionOption | None = None):
+    def approve_all(self, private_key: str, option: ITransactionOption | None = None):
         """Approve all tokens."""
         self.check_for_root()
+        return self._approve_all(self.predicate_address, private_key, option)
 
-        return self._approve_all(self.predicate_address, option)
-
-    def approve_all_for_mintable(self, option: ITransactionOption | None = None):
+    def approve_all_for_mintable(
+        self, private_key: str, option: ITransactionOption | None = None
+    ):
         """Approve all tokens for mintable token."""
         self.check_for_root()
         address_path = 'Main.POSContracts.MintableERC1155PredicateProxy'
-        return self._approve_all(self._get_address(address_path), option)
+        return self._approve_all(self._get_address(address_path), private_key, option)
 
     def deposit(
-        self, param: POSERC1155DepositParam, option: ITransactionOption | None = None
+        self,
+        param: POSERC1155DepositParam,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Deposit supplied amount of token for a user."""
         self.check_for_root()
         return self.deposit_many(
-            POSERC1155DepositBatchParam(
-                amounts=[param.amount],
-                token_ids=[param.token_id],
-                user_address=param.user_address,
-                data=param.data,
+            dict(
+                amounts=[param['amount']],
+                token_ids=[param['token_id']],
+                user_address=param['user_address'],
+                data=param.get('data', b''),
             ),
+            private_key,
             option,
         )
 
     def deposit_many(
         self,
         param: POSERC1155DepositBatchParam,
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         """Deposit supplied amount of multiple token for user."""
@@ -101,32 +109,39 @@ class ERC1155(POSToken):
 
         amount_in_ABI = self.client.parent.encode_parameters(
             [
-                list(map(to_hex, param.token_ids)),
-                list(map(to_hex, param.amounts)),
-                param.data or b'',
+                param['token_ids'],
+                param['amounts'],
+                param.get('data', b''),
             ],
             ['uint256[]', 'uint256[]', 'bytes'],
         )
 
         return self.root_chain_manager.deposit(
-            param.user_address, self.contract_param.address, amount_in_ABI, option
+            param['user_address'],
+            self.contract_param.address,
+            amount_in_ABI,
+            private_key,
+            option,
         )
 
     def withdraw_start(
-        self, token_id: int, amount: int, option: ITransactionOption | None = None
+        self,
+        token_id: int,
+        amount: int,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Start withdraw process by burning the required amount for a token."""
         self.check_for_child()
 
-        method = self.contract.method(
-            'withdrawSingle', to_hex(token_id), to_hex(amount)
-        )
-        return self.process_write(method, option)
+        method = self.contract.method('withdrawSingle', token_id, amount)
+        return self.process_write(method, option, private_key)
 
     def withdraw_start_many(
         self,
         token_ids: Sequence[int],
         amounts: Sequence[int],
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         """
@@ -134,17 +149,15 @@ class ERC1155(POSToken):
         """
         self.check_for_child()
 
-        method = self.contract.method(
-            'withdrawBatch', list(map(to_hex, token_ids)), list(map(to_hex, amounts))
-        )
-        return self.process_write(method, option)
+        method = self.contract.method('withdrawBatch', token_ids, amounts)
+        return self.process_write(method, option, private_key)
 
     def withdraw_exit(
         self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
     ):
         """Exit the withdraw process and get the burned amount on root chain."""
         self.check_for_root()
-        return self.withdraw_exit_POS(
+        return self.withdraw_exit_pos(
             burn_transaction_hash, LogEventSignature.ERC_1155_TRANSFER, False, option
         )
 
@@ -153,7 +166,7 @@ class ERC1155(POSToken):
     ):
         """Exit the withdraw process and get the burned amount on root chain."""
         self.check_for_root()
-        return self.withdraw_exit_POS(
+        return self.withdraw_exit_pos(
             burn_transaction_hash, LogEventSignature.ERC_1155_TRANSFER, True, option
         )
 
@@ -162,7 +175,7 @@ class ERC1155(POSToken):
     ):
         """Exit the withdraw process for many burned transaction and get the burned amount on root chain."""
         self.check_for_root()
-        return self.withdraw_exit_POS(
+        return self.withdraw_exit_pos(
             burn_transaction_hash,
             LogEventSignature.ERC_1155_BATCH_TRANSFER,
             False,
@@ -174,7 +187,7 @@ class ERC1155(POSToken):
     ):
         """Exit the withdraw process for many burned transaction and get the burned amount on root chain."""
         self.check_for_root()
-        return self.withdraw_exit_POS(
+        return self.withdraw_exit_pos(
             burn_transaction_hash,
             LogEventSignature.ERC_1155_BATCH_TRANSFER,
             True,
@@ -190,7 +203,10 @@ class ERC1155(POSToken):
         return self.is_withdrawn(tx_hash, LogEventSignature.ERC_1155_BATCH_TRANSFER)
 
     def transfer(
-        self, param: POSERC1155TransferParam, option: ITransactionOption | None = None
+        self,
+        param: POSERC1155TransferParam,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Transfer the required amount of a token to another user."""
-        return self.transfer_ERC_1155(param, option)
+        return self.transfer_ERC_1155(param, private_key, option)

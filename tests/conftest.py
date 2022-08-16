@@ -3,6 +3,10 @@ import os
 import pytest
 from web3 import Web3
 
+from matic.json_types import ConfigWithFrom, IPOSClientConfig, NeighbourClientConfig
+from matic.pos import POSClient
+from matic.utils.abi_manager import ABIManager
+
 
 @pytest.fixture()
 def rpc():
@@ -89,3 +93,76 @@ def user2():
             '0xaf024b43bcbe9aaaf44eb82f650896ede843ec014275297712d1653ad4caf57a',
         ),
     }
+
+
+@pytest.fixture()
+def from_pk(user1):
+    return user1['private_key']
+
+
+@pytest.fixture()
+def from_(user1):
+    return user1['address']
+
+
+@pytest.fixture()
+def to(user2):
+    return user2['address']
+
+
+@pytest.fixture()
+def to_private_key(user2):
+    return user2['private_key']
+
+
+@pytest.fixture()
+def child_provider(rpc):
+    return Web3.HTTPProvider(rpc['child'])
+
+
+@pytest.fixture()
+def parent_provider(rpc):
+    return Web3.HTTPProvider(rpc['parent'])
+
+
+@pytest.fixture()
+def pos_client(user1, parent_provider, child_provider):
+    return POSClient(
+        IPOSClientConfig(
+            # log: true,
+            network='testnet',
+            version='mumbai',
+            parent=NeighbourClientConfig(
+                provider=parent_provider,
+                default_config=ConfigWithFrom(user1['address']),
+            ),
+            child=NeighbourClientConfig(
+                provider=child_provider,
+                default_config=ConfigWithFrom(user1['address']),
+            ),
+        )
+    )
+
+
+@pytest.fixture()
+def pos_client_for_to(user2, parent_provider, child_provider):
+    return POSClient(
+        IPOSClientConfig(
+            # log: true,
+            network='testnet',
+            version='mumbai',
+            parent=NeighbourClientConfig(
+                provider=parent_provider,
+                default_config=ConfigWithFrom(user2['address']),
+            ),
+            child=NeighbourClientConfig(
+                provider=child_provider,
+                default_config=ConfigWithFrom(user2['address']),
+            ),
+        )
+    )
+
+
+@pytest.fixture()
+def abi_manager():
+    return ABIManager('testnet', 'mumbai')
