@@ -11,6 +11,7 @@ from matic.abstracts import BaseWeb3Client
 from matic.json_types import IBlockWithTransaction, ITransactionReceipt
 from matic.utils import keccak256
 from matic.utils.merkle_tree import MerkleTree
+from matic.utils.polyfill import removeprefix
 
 # Implementation adapted from Tom French's `matic-proofs` library used under MIT License
 # https://github.com/TomAFrench/matic-proofs
@@ -249,9 +250,9 @@ class ProofUtil:
                 [
                     # [address, [topics array], data]
                     [
-                        bytes.fromhex(log.address.removeprefix('0x')),
+                        bytes.fromhex(removeprefix(log.address, '0x')),
                         log.topics,
-                        bytes.fromhex(log.data.removeprefix('0x')),
+                        bytes.fromhex(removeprefix(log.data, '0x')),
                     ]
                     for log in receipt.logs
                 ],

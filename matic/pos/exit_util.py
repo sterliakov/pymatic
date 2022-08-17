@@ -11,6 +11,7 @@ from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
 from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
 from matic.pos.root_chain import RootChain
+from matic.utils.polyfill import removeprefix
 from matic.utils.proof_utils import ProofUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
@@ -344,7 +345,7 @@ class ExitUtil:
         return rlp.encode(
             [
                 header_number,
-                bytes.fromhex(build_block_proof.removeprefix('0x')),
+                bytes.fromhex(removeprefix(build_block_proof, '0x')),
                 block_number,
                 timestamp,
                 transactions_root,

@@ -16,6 +16,7 @@ from matic.json_types import (
     ITransactionReceipt,
     ITransactionRequestConfig,
 )
+from matic.utils.polyfill import removeprefix
 from matic.web3_client.transaction_write_result import TransactionWriteResult
 from matic.web3_client.utils import (
     matic_tx_request_config_to_web3,
@@ -61,7 +62,7 @@ class EthMethod(BaseContractMethod):
 
     def encode_abi(self):
         abi = [e['type'] for e in self.method.abi['inputs']]
-        return bytes.fromhex(self.method.selector.removeprefix('0x')) + encode_abi(
+        return bytes.fromhex(removeprefix(self.method.selector, '0x')) + encode_abi(
             abi, self.method.args
         )
 
