@@ -66,53 +66,6 @@ class Trie(BaseTrie):
 
         raise KeyError
 
-    # def find_path(key: bytes, throw_if_missing: bool = False):
-    #   const stack: TrieNode[] = []
-    #   const targetKey = bufferToNibbles(key)
-
-    #   const on_found: FoundNodeFunction = async (nodeRef, node, keyProgress, walkController) => {
-    #     if (node === null) {
-    #       return reject(new Error('Path not found'))
-    #     }
-    #     const keyRemainder = targetKey.slice(matchingNibbleLength(keyProgress, targetKey))
-    #     stack.push(node)
-
-    #     if (node instanceof BranchNode) {
-    #       if (keyRemainder.length === 0) {
-    #         # // we exhausted the key without finding a node
-    #         resolve({ node, remaining: [], stack })
-    #       } else {
-    #         const branchIndex = keyRemainder[0]
-    #         const branchNode = node.getBranch(branchIndex)
-    #         if (!branchNode) {
-    #           # // there are no more nodes to find and we didn't find the key
-    #           resolve({ node: null, remaining: keyRemainder, stack })
-    #         } else {
-    #           # // node found, continuing search
-    #           # // this can be optimized as this calls getBranch again.
-    #           walkController.onlyBranchIndex(node, keyProgress, branchIndex)
-    #         }
-    #       }
-    #     } else if (node instanceof LeafNode) {
-    #       if (doKeysMatch(keyRemainder, node.key)) {
-    #         # // keys match, return node with empty key
-    #         resolve({ node, remaining: [], stack })
-    #       } else {
-    #         # // reached leaf but keys dont match
-    #         resolve({ node: null, remaining: keyRemainder, stack })
-    #       }
-    #     } else if (node instanceof ExtensionNode) {
-    #       const matchingLen = matchingNibbleLength(keyRemainder, node.key)
-    #       if (matchingLen !== node.key.length) {
-    #         # // keys don't match, fail
-    #         resolve({ node: null, remaining: keyRemainder, stack })
-    #       } else {
-    #         # // keys match, continue search
-    #         walkController.allChildren(node, keyProgress)
-    #       }
-    #     }
-    #   }
-
 
 class ProofUtil:
     @classmethod
@@ -207,15 +160,6 @@ class ProofUtil:
         proof = cls.get_fast_merkle_proof(
             matic_web3, block_number, start_block, end_block
         )
-        # return bufferToHex(
-        #     Buffer.concat(
-        #         proof.map(p => {
-        #             return toBuffer(p)
-        #         })
-        #     )
-        # )
-        # TODO: is it the same?
-        # print(proof)
         return b''.join(map(bytes.fromhex, proof)).hex()
 
     @classmethod
@@ -309,7 +253,7 @@ class ProofUtil:
         encoded_data = rlp.encode(
             [
                 (
-                    (b'\x01' if receipt.status else b'\x00')
+                    (b'\x01' if receipt.status else b'')
                     if receipt.status is not None
                     else receipt.root
                 ),
@@ -329,7 +273,6 @@ class ProofUtil:
         )
         if cls.is_typed_receipt(receipt):
             encoded_data = int(receipt.type, 0).to_bytes(1, 'big') + encoded_data
-        # print(encoded_data.hex())
 
         return encoded_data
 

@@ -190,9 +190,10 @@ EXITED_TX_HASH = bytes.fromhex(
 )
 
 
-def test_withdraw_exit_return_tx(abi_manager, erc_20_parent):
+def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
     result = erc_20_parent.withdraw_exit(
         EXITED_TX_HASH,
+        from_pk,
         {'return_transaction': True, 'gas_limit': 200000},
     )
     assert result['data'].hex() == exit_data.hex()
@@ -203,9 +204,11 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent):
     assert result['to'].lower() == root_chain_manager.lower()
 
 
-def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent):
+def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, from_pk):
     with pytest.raises(ProofAPINotSetException):
-        erc_20_parent.withdraw_exit_faster(EXITED_TX_HASH, {'return_transaction': True})
+        erc_20_parent.withdraw_exit_faster(
+            EXITED_TX_HASH, from_pk, {'return_transaction': True}
+        )
 
 
 def test_call_get_block_included():
@@ -222,11 +225,11 @@ def test_call_get_block_included():
     assert int(result['createdAt'])
 
 
-def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent):
+def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
     services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1'
 
     result = erc_20_parent.withdraw_exit_faster(
-        EXITED_TX_HASH, {'return_transaction': True, 'gas_limit': 200000}
+        EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200000}
     )
     assert result['data'] == exit_data
 

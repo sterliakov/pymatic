@@ -371,22 +371,6 @@ class ExitUtil:
         path,
         log_index,
     ) -> bytes:
-        print(
-            '=' * 80,
-            header_number,
-            bytes.fromhex(build_block_proof.removeprefix('0x')),
-            block_number,
-            timestamp,
-            transactions_root.hex(),
-            receipts_root.hex(),
-            receipt.hex(),
-            *['    ' + e.hex() for e in receipt_parent_nodes[0]],
-            path.hex(),
-            log_index,
-            '=' * 80,
-            sep='\n',
-        )
-
         return rlp.encode(
             [
                 header_number,
