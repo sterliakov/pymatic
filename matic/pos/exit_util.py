@@ -14,16 +14,6 @@ from matic.pos.root_chain import RootChain
 from matic.utils.proof_utils import ProofUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-# import { RootChain } from "./root_chain"
-# import { Converter, ProofUtil, Web3SideChainClient } from "../utils"
-# import { bufferToHex, rlp } from "ethereumjs-util"
-# import { IBlockWithTransaction, ITransactionReceipt } from "../interfaces"
-# import { service } from "../services"
-# import { BaseBigNumber, BaseWeb3Client } from "../abstracts"
-# import { ErrorHelper } from "../utils/error_helper"
-# import { ERROR_TYPE, IBaseClientConfig, IRootBlockInfo, utils } from ".."
-
-# FIXME: wtf is that?
 HASHES_1: Final = {
     LogEventSignature.ERC_721_TRANSFER,
     LogEventSignature.ERC_721_TRANSFER_WITH_METADATA,
@@ -43,10 +33,7 @@ class IChainBlockInfo:
 
 class ExitUtil:
     _matic_client: BaseWeb3Client
-
     root_chain: RootChain
-
-    request_concurrency: Final = 0  # FIXME: remove
     config: IBaseClientConfig
 
     def __init__(self, client: Web3SideChainClient, root_chain: RootChain):
@@ -153,35 +140,22 @@ class ExitUtil:
         )
 
     def _is_checkpointed(self, data: IChainBlockInfo) -> bool:
-        # lastchild block is greater equal to transacton block int
         return int(data.last_child_block) >= int(data.tx_block_number)
 
     def is_checkpointed(self, burn_tx_hash: bytes) -> bool:
         return self._is_checkpointed(self.get_chain_block_info(burn_tx_hash))
 
     def _get_root_block_info(self, tx_block_number: int) -> IRootBlockInfo:
-        """Returns info about block int existence on parent chain.
-
-        1. root block int,
-        2. start block int,
-        3. end block int
-
-        :param tx_block_number: Transaction block int on child chain
-        :returns IRootBlockInfo:
-        """
+        """Returns info about block int existence on parent chain."""
         # find in which block child was included in parent
-        root_block_number: int
-
         block_number = self.root_chain.find_root_block_from_child(tx_block_number)
-        root_block_number = block_number
-
         _, start, end, _, _ = self.root_chain.method(
             'headerBlocks',
             block_number,
         ).read()
 
         return IRootBlockInfo(
-            header_block_number=root_block_number,
+            header_block_number=block_number,
             start=start,
             end=end,
         )
@@ -273,9 +247,7 @@ class ExitUtil:
 
         block_proof = block_proof_result
         # step 5- create receipt proof
-        receipt_proof = ProofUtil.get_receipt_proof(
-            receipt, block, self._matic_client, self.request_concurrency
-        )
+        receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
 
         # step 6 - encode payload, convert into hex
         if index > 0:
@@ -304,7 +276,7 @@ class ExitUtil:
     def build_multiple_payloads_for_exit(
         self, burn_tx_hash: bytes, log_event_sig: bytes, is_fast: bool
     ):
-        if is_fast and not services.DEFAULT_PROOF_API_URL:  # NOTSURE
+        if is_fast and not services.DEFAULT_PROOF_API_URL:
             raise ProofAPINotSetException
 
         block_info = self.get_chain_block_info(burn_tx_hash)
@@ -336,9 +308,7 @@ class ExitUtil:
             block_proof_result = self._get_block_proof(tx_block_number, root_block_info)
 
         # step 5- create receipt proof
-        receipt_proof = ProofUtil.get_receipt_proof(
-            receipt, block, self._matic_client, self.request_concurrency
-        )
+        receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
         log_indices = self._get_all_log_indices(log_event_sig, receipt)
 
         # step 6 - encode payloads, convert into hex
@@ -400,9 +370,7 @@ class ExitUtil:
         ):
             raise BurnTxNotCheckPointedException()
 
-        receipt_proof = ProofUtil.get_receipt_proof(
-            receipt, block, self._matic_client, self.request_concurrency
-        )
+        receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
 
         log_index = None
         nibble = b''.join(

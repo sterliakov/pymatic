@@ -11,12 +11,6 @@ from matic.json_types import (
     ITransactionRequestConfig,
 )
 
-# import { ITransactionRequestConfig } from "@maticnetwork/maticjs"
-# import Web3 from "web3"
-# import { TransactionConfig } from "web3-core"
-
-# FIXME: use .get
-
 
 def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = None):
     config: dict[str, Any] = dict(data or {})
@@ -73,9 +67,6 @@ def web3_receipt_to_matic_receipt(receipt: Any) -> ITransactionReceipt:
 
 
 def web3_tx_to_matic_tx(tx):
-    # matic_tx = dict(tx)
-    # matic_tx['transaction_hash'] = matic_tx.pop('hash')
-    # matic_tx['block_hash'] = matic_tx.pop('blockHash')
     return ITransactionData(
         transaction_hash=tx.hash,
         nonce=tx.nonce,

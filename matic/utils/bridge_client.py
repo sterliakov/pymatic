@@ -5,13 +5,8 @@ from matic.pos.exit_util import ExitUtil
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-# import { Web3SideChainClient } from "../utils";
-# import { ExitUtil } from "../pos";
-# import { BaseToken, utils } from "..";
-
 
 class BridgeClient:
-    # Options: 'testnet', 'mumbai'
     client: Web3SideChainClient
     exit_util: ExitUtil
 

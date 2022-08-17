@@ -12,16 +12,6 @@ from matic.json_types import IBlockWithTransaction, ITransactionReceipt
 from matic.utils import keccak256
 from matic.utils.merkle_tree import MerkleTree
 
-# import { BaseWeb3Client } from "../abstracts"
-# import { MerkleTree } from "./merkle_tree"
-# import { bufferToHex, keccak256, rlp, setLengthLeft, toBuffer } from "ethereumjs-util"
-# import { ITransactionReceipt, IBlock, IBlockWithTransaction } from "../interfaces"
-# import { mapPromise } from "./map_promise"
-# import { BaseTrie as TRIE } from 'merkle-patricia-tree'
-# import { BlockHeader } from '@ethereumjs/block'
-# import { Converter, promiseResolve, utils } from ".."
-# import Common, { Chain, Hardfork } from '@ethereumjs/common'
-
 # Implementation adapted from Tom French's `matic-proofs` library used under MIT License
 # https://github.com/TomAFrench/matic-proofs
 # FIXME: must be module, not class
@@ -164,11 +154,7 @@ class ProofUtil:
 
     @classmethod
     def query_root_hash(cls, client: BaseWeb3Client, start_block: int, end_block: int):
-        # FIXME: check impl, clarify exception
-        # try:
         return client.get_root_hash(start_block, end_block)
-        # except Exception:
-        #     return None
 
     @classmethod
     def recursive_zero_hash(cls, n: int, client: BaseWeb3Client) -> bytes:
@@ -276,9 +262,6 @@ class ProofUtil:
 
         return encoded_data
 
-    @classmethod
-    def get_raw_header(cls, block):
-        raise NotImplementedError
-        # block.difficulty = to_hex(block.difficulty)
-        # common = Common(chain=Chain.Mainnet, hardfork=Hardfork.London)
-        # return BlockHeader.from_header_data(block, common=common)
+    # @classmethod
+    # def get_raw_header(cls, block):
+    #     raise NotImplementedError

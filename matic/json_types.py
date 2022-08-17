@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from matic.pos.root_chain_manager import RootChainManager
 
 
-_TDictWithFrom = TypedDict('_TDictWithFrom', {'from': Required[bytes]})
+_TDictWithFrom = TypedDict('_TDictWithFrom', {'from': Required[str]})
 
 
 class ITransactionRequestConfig(_TDictWithFrom, total=False):
@@ -209,8 +209,8 @@ class ITransactionWriteResult(ABC):
 
 @dataclass
 class ILog:
-    address: bytes
-    data: bytes
+    address: str
+    data: str
     topics: Sequence[bytes]
     log_index: int
     transaction_hash: bytes

@@ -21,44 +21,15 @@ from matic.web3_client.utils import (
     web3_tx_to_matic_tx,
 )
 
-# import {
-#     BaseContractMethod, Logger, ITransactionRequestConfig
-# } from "@maticnetwork/maticjs"
-# import Web3 from "web3"
-# import { TransactionObject, Tx } from "web3/eth/types"
-# import { doNothing, TransactionWriteResult } from "../helpers"
-# import { matic_tx_request_config_to_web3 } from "../utils"
-
-# import { BaseContract } from "@maticnetwork/maticjs"
-# import Contract from "web3/eth/contract"
-# import { EthMethod } from "./eth_method"
-
-# import { Web3Contract } from "./eth_contract"
-# import Web3 from "web3"
-# import { Transaction } from "web3/eth/types"
-# import { AbstractProvider } from "web3-core"
-# import { doNothing, TransactionWriteResult } from "../helpers"
-# import {
-#     BaseWeb3Client, IBlockWithTransaction, IJsonRpcRequestPayload,
-#     IJsonRpcResponse, ITransactionRequestConfig, ITransactionData,
-#     ITransactionReceipt, Logger, ERROR_TYPE, IError
-# } from "@maticnetwork/maticjs"
-# import {
-#     matic_tx_request_config_to_web3, web3ReceiptToMaticReceipt, web3_tx_to_matic_tx
-# } from "../utils"
-
 
 class EthMethod(BaseContractMethod):
-    def __init__(self, address: str, logger: Logger, method: Any, client=None) -> None:
+    def __init__(
+        self, address: str, logger: Logger, method: Any, client: Web3Client
+    ) -> None:
         super().__init__(address, logger, method)
         self.method = method
         self.address = address
         self.client = client
-
-    @staticmethod
-    def to_hex(value):
-        # FIXME: not needed
-        return Web3.toHex(value) if value is not None else value
 
     def read(self, tx: ITransactionRequestConfig | None = None):
         self.logger.debug('sending tx with config %s', tx)
@@ -99,7 +70,7 @@ class Web3Contract(BaseContract):
         self.contract = contract
         self.client = client
 
-    def method(self, method_name: str, *args):
+    def method(self, method_name: str, *args: Any) -> EthMethod:
         self.logger.debug('method_name %s; args method %s', method_name, args)
         return EthMethod(
             self.address,

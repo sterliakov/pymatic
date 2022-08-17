@@ -113,7 +113,7 @@ class BaseContractMethod(ABC):
 
     @abstractmethod
     def write(
-        self, tx: ITransactionRequestConfig, private_key: str
+        self, tx: ITransactionRequestConfig, private_key: str | None = None
     ) -> ITransactionWriteResult:
         ...
 
@@ -132,5 +132,5 @@ class BaseContract(ABC):
         self.logger = logger
 
     @abstractmethod
-    def method(self, method_name: str, *args) -> BaseContractMethod:
+    def method(self, method_name: str, *args: Any) -> BaseContractMethod:
         ...

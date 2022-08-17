@@ -8,23 +8,13 @@ from matic.abstracts import BaseWeb3Client
 from matic.json_types import IBaseClientConfig
 from matic.utils.abi_manager import ABIManager
 
-# _T_conf = TypeVar('_T_conf')
-
-# import { IBaseClientConfig } from "../interfaces"
-# import { BaseWeb3Client } from "../abstracts"
-
 
 class Web3SideChainClient:
     parent: BaseWeb3Client
     child: BaseWeb3Client
-
-    # config: _T_conf
-
     abi_manager: ABIManager
 
     logger: Final = getLogger(__package__)
-
-    # resolution: {}
 
     def __init__(self, config: IBaseClientConfig):
         # config.parent.default_config = config.parent.default_config or {}
@@ -43,8 +33,6 @@ class Web3SideChainClient:
         self.child = web3_client_cls(
             getattr(config.child, 'provider', None), self.logger
         )
-
-        # self.logger.enableLog(config.log)
 
         try:
             self.abi_manager = ABIManager(config.network, config.version)

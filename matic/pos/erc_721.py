@@ -6,47 +6,36 @@ from matic.constants import LogEventSignature
 from matic.json_types import ITransactionOption
 from matic.pos.pos_token import POSToken
 
-# from matic.utils import to_hex
-
-# import { IPOSClientConfig, IPOSContracts, ITransactionOption } from "../interfaces"
-# import { RootChainManager } from "./root_chain_manager"
-# import { Converter, Web3SideChainClient } from "../utils"
-# import { POSToken } from "./pos_token"
-# import { int } from "../types"
-# import { ExitUtil } from "./exit_util"
-# import { LogEventSignature } from "../enums"
-
 
 class ERC721(POSToken):
     CONTRACT_NAME: str = 'ChildERC721'
 
-    def _validate_many(self, token_ids: Sequence[int]) -> list[int]:
-        """Convert to hex.
-
-        FIXME: Why like this, very odd
-        """
+    @staticmethod
+    def _validate_many(token_ids: Sequence[int]) -> list[int]:
+        """Assert sequence length is less than 20."""
         if len(token_ids) > 20:
-            # FIXME: wtf?
             raise ValueError('can not process more than 20 tokens')
 
         return list(token_ids)
 
     def get_tokens_count(
         self, user_address: bytes, options: ITransactionOption | None = None
-    ):
+    ) -> int:
         """Get tokens count for the user."""
         method = self.contract.method('balanceOf', user_address)
         return int(self.process_read(method, options))
 
     def get_token_id_at_index_for_user(
         self, index: int, user_address: bytes, options: ITransactionOption | None = None
-    ):
+    ) -> int:
         """Get token id on supplied index for user."""
         method = self.contract.method('tokenOfOwnerByIndex', user_address, index)
 
         return int(self.process_read(method, options))
 
-    def get_all_tokens(self, user_address: bytes, limit: int | None = None):
+    def get_all_tokens(
+        self, user_address: bytes, limit: int | None = None
+    ) -> list[int]:
         """Get all tokens for user."""
         count = self.get_tokens_count(user_address)
         if limit is not None and count > limit:
@@ -57,7 +46,10 @@ class ERC721(POSToken):
             self.get_token_id_at_index_for_user(i, user_address) for i in range(count)
         ]
 
-    def is_approved(self, token_id: int, option: ITransactionOption | None = None):
+    def is_approved(
+        self, token_id: int, option: ITransactionOption | None = None
+    ) -> bool:
+        """Check if given token is approved for contract."""
         self.check_for_root()
 
         method = self.contract.method('getApproved', token_id)
@@ -65,7 +57,8 @@ class ERC721(POSToken):
 
     def is_approved_all(
         self, user_address: bytes, option: ITransactionOption | None = None
-    ):
+    ) -> bool:
+        """Check if all tokens owned by user are approved for contract."""
         self.check_for_root()
 
         method = self.contract.method(
@@ -114,10 +107,8 @@ class ERC721(POSToken):
     ):
         self.check_for_root()
 
-        tokens_in_hex = self._validate_many(token_ids)
-        amount_in_ABI = self.client.parent.encode_parameters(
-            [tokens_in_hex], ['uint256[]']
-        )
+        self._validate_many(token_ids)
+        amount_in_ABI = self.client.parent.encode_parameters([token_ids], ['uint256[]'])
         return self.root_chain_manager.deposit(
             user_address,
             self.contract_param.address,
@@ -150,24 +141,28 @@ class ERC721(POSToken):
     ):
         self.check_for_child()
 
-        tokens_in_hex = self._validate_many(token_ids)
-        method = self.contract.method('withdrawBatch', tokens_in_hex)
+        self._validate_many(token_ids)
+        method = self.contract.method('withdrawBatch', token_ids)
         return self.process_write(method, option, private_key)
 
     def withdraw_exit(
-        self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         self.check_for_root()
 
         payload = self.exit_util.build_payload_for_exit(
             burn_transaction_hash, 0, LogEventSignature.ERC_721_TRANSFER, False
         )
-        return self.root_chain_manager.exit(payload, option)
+        return self.root_chain_manager.exit(payload, private_key, option)
 
     def withdraw_exit_on_index(
         self,
         burn_transaction_hash: bytes,
         index: int,
+        private_key: str,
         option: ITransactionOption | None = None,
     ):
         self.check_for_root()
@@ -175,7 +170,7 @@ class ERC721(POSToken):
         payload = self.exit_util.build_payload_for_exit(
             burn_transaction_hash, index, LogEventSignature.ERC_721_TRANSFER, False
         )
-        return self.root_chain_manager.exit(payload, option)
+        return self.root_chain_manager.exit(payload, private_key, option)
 
     # // async withdrawExitMany(burn_transaction_hash: bytes, option: ITransactionOption | None = None) {
     # //     self.check_for_root()
@@ -197,18 +192,20 @@ class ERC721(POSToken):
     # // }
 
     def withdraw_exit_faster(
-        self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         self.check_for_root()
 
         payload = self.exit_util.build_payload_for_exit(
             burn_transaction_hash, 0, LogEventSignature.ERC_721_TRANSFER, True
         )
-        return self.root_chain_manager.exit(payload, option)
+        return self.root_chain_manager.exit(payload, private_key, option)
 
     # // withdrawExitFasterMany(burn_transaction_hash: bytes, option: ITransactionOption | None = None) {
     # //     self.check_for_root()
-
     # //     return self.exit_util.build_payload_for_exit(
     # //         burn_transaction_hash,
     # //         LogEventSignature.ERC_721_BATCH_TRANSFER,

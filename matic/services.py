@@ -44,13 +44,6 @@ def get_block_included(network: str, block_number: int, base_url: str | None = N
     return requests.get(url).json()
     # FIXME: need to cast?
 
-    # header_block_number = result['headerBlockNumber']
-    # decimalHeaderBlockNumber = headerBlockNumber.slice(0, 2) === '0x' ? parseInt(
-    #     header_block_number, 16
-    # ) : header_block_number
-    # result.header_block_number = new BN(decimalHeaderBlockNumber)
-    # return result
-
 
 def get_proof(network: str, start, end, block_number, base_url: str | None = None):
     url = _create_proof_url(

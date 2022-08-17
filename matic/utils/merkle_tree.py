@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from math import ceil, log2
-from typing import Any, Iterable, Sequence
+from typing import Iterable, Sequence
 
 from matic.utils import keccak256
 
 
 class MerkleTree:
-    leaves: Any
-    layers: Any
+    leaves: list[bytes]
+    layers: list[list[bytes]]
 
     def __init__(self, leaves: Sequence[bytes] | None = None):
         if not leaves:
@@ -16,7 +16,6 @@ class MerkleTree:
 
         depth = self.estimate_depth(len(leaves))
         if depth > 20:
-            # FIXME: wtf?
             raise ValueError('Depth must be 20 or less')
 
         self.leaves = [
@@ -55,18 +54,16 @@ class MerkleTree:
         return self.layers[-1][0]
 
     def get_proof(self, leaf: bytes) -> list[bytes]:
-        index = -1
-        for i, item in enumerate(self.leaves):
-            if item == leaf:
-                index = i
+        index = next(i for i, item in enumerate(self.leaves) if item == leaf)
+
+        if index is None:
+            return []
 
         proof = []
-        if index <= len(self.leaves):
-            # FIXME: wtf? This always holds true
-            for item in self.layers[:-1]:
-                sibling_index = (index - 1) if index % 2 else (index + 1)
-                index = index // 2
-                proof.append(item[sibling_index])
+        for layer in self.layers[:-1]:
+            sibling_index = index + (-1 if index % 2 else 1)
+            index //= 2
+            proof.append(layer[sibling_index])
 
         return proof
 

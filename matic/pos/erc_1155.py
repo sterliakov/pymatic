@@ -12,16 +12,9 @@ from matic.json_types import (
 )
 from matic.pos.pos_token import POSToken
 
-# import { IPOSClientConfig, ITransactionOption } from "../interfaces"
-# import { Converter, promiseResolve, Web3SideChainClient } from "../utils"
-# import { POSToken } from "./pos_token"
-# import { LogEventSignature } from "../enums"
-# import { IPOSContracts, IPOSERC1155Address } from "../interfaces"
-# import { POSERC1155DepositBatchParam, POSERC1155DepositParam, POSERC1155TransferParam, TYPE_AMOUNT } from ".."
-
 
 class ERC1155(POSToken):
-    mintable_predicate_address: str
+    mintable_predicate_address: str  # TODO: unused?
     CONTRACT_NAME: str = 'ChildERC1155'
 
     @property
@@ -153,43 +146,65 @@ class ERC1155(POSToken):
         return self.process_write(method, option, private_key)
 
     def withdraw_exit(
-        self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Exit the withdraw process and get the burned amount on root chain."""
         self.check_for_root()
         return self.withdraw_exit_pos(
-            burn_transaction_hash, LogEventSignature.ERC_1155_TRANSFER, False, option
+            burn_transaction_hash,
+            LogEventSignature.ERC_1155_TRANSFER,
+            private_key,
+            False,
+            option,
         )
 
     def withdraw_exit_faster(
-        self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Exit the withdraw process and get the burned amount on root chain."""
         self.check_for_root()
         return self.withdraw_exit_pos(
-            burn_transaction_hash, LogEventSignature.ERC_1155_TRANSFER, True, option
+            burn_transaction_hash,
+            LogEventSignature.ERC_1155_TRANSFER,
+            private_key,
+            True,
+            option,
         )
 
     def withdraw_exit_many(
-        self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Exit the withdraw process for many burned transaction and get the burned amount on root chain."""
         self.check_for_root()
         return self.withdraw_exit_pos(
             burn_transaction_hash,
             LogEventSignature.ERC_1155_BATCH_TRANSFER,
+            private_key,
             False,
             option,
         )
 
     def withdraw_exit_faster_many(
-        self, burn_transaction_hash: bytes, option: ITransactionOption | None = None
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: ITransactionOption | None = None,
     ):
         """Exit the withdraw process for many burned transaction and get the burned amount on root chain."""
         self.check_for_root()
         return self.withdraw_exit_pos(
             burn_transaction_hash,
             LogEventSignature.ERC_1155_BATCH_TRANSFER,
+            private_key,
             True,
             option,
         )

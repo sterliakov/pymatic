@@ -40,7 +40,6 @@ class RootChain(BaseToken):
         current_header_block = method.read()
         end = int(current_header_block) // checkpoint_interval
 
-        # FIXME: use bisect
         # Binary search on all the checkpoints to find the checkpoint
         # that contains the child_block_number
         ans = None

@@ -8,10 +8,6 @@ from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-# import { BaseToken, Web3SideChainClient, promiseResolve } from "../utils"
-# import { IContractInitParam, IPOSClientConfig, ITransactionOption } from "../interfaces"
-# import { IPOSContracts } from "../interfaces"
-
 
 class POSToken(BaseToken):
     _predicate_address: str | None = None
@@ -25,7 +21,7 @@ class POSToken(BaseToken):
         get_POS_contracts: Callable[[], IPOSContracts],
     ):
         super().__init__(
-            IContractInitParam(
+            IContractInitParam(  # FIXME: never, please
                 is_parent=is_parent,
                 address=token_address,
                 name=self.CONTRACT_NAME,
@@ -76,10 +72,11 @@ class POSToken(BaseToken):
         self,
         burn_tx_hash: bytes,
         event_signature: bytes,
-        is_fast: bool,
-        option: ITransactionOption,
+        private_key: str,
+        is_fast: bool = True,
+        option: ITransactionOption | None = None,
     ) -> None:
         payload = self.exit_util.build_payload_for_exit(
             burn_tx_hash, 0, event_signature, is_fast
         )
-        return self.root_chain_manager.exit(payload, option)
+        return self.root_chain_manager.exit(payload, private_key, option)

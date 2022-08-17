@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# from enum import Enum
 from typing import Final, final
 
 MAX_AMOUNT: Final = 2**256 - 1

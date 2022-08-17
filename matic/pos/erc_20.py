@@ -10,13 +10,6 @@ from matic.json_types import (
 )
 from matic.pos.pos_token import POSToken
 
-# import { ITransactionOption } from "../interfaces"
-# import { Converter, Web3SideChainClient } from "../utils"
-# import { POSToken } from "./pos_token"
-# import { ERROR_TYPE, Log_Event_Signature } from "../enums"
-# import { MAX_AMOUNT, promiseResolve } from ".."
-# import { IAllowanceTransactionOption, IApproveTransactionOption, IExitTransactionOption, IPOSClientConfig, IPOSContracts } from "../interfaces"
-
 
 class ERC20(POSToken):
     CONTRACT_NAME: str = 'ChildERC20'
@@ -52,9 +45,8 @@ class ERC20(POSToken):
         private_key: str,
         option: IApproveTransactionOption | None = None,
     ):
-        option = option or {}
-
-        spender_address = option.get('spender_address')
+        """Approve specified amount to contract."""
+        spender_address = option.get('spender_address') if option else None
         if not spender_address and not self.contract_param.is_parent:
             raise NullSpenderAddressException
 
@@ -68,6 +60,7 @@ class ERC20(POSToken):
     def approve_max(
         self, private_key: str, option: IApproveTransactionOption | None = None
     ):
+        """Approve max possible amount of token to contract."""
         return self.approve(MAX_AMOUNT, private_key, option)
 
     def deposit(
@@ -79,8 +72,6 @@ class ERC20(POSToken):
     ):
         """Deposit given amount of token for user."""
         self.check_for_root()
-
-        option = option or {}
 
         amount_in_ABI = self.client.parent.encode_parameters([amount], ['uint256'])
         return self.root_chain_manager.deposit(
@@ -100,8 +91,6 @@ class ERC20(POSToken):
     ):
         self.check_for_root()
 
-        option = option or {}
-
         method = self.root_chain_manager.method('depositEtherFor', user_address)
         return self.process_write(method, option, private_key)
 
@@ -113,8 +102,6 @@ class ERC20(POSToken):
     ):
         """Initiate withdraw by burning provided amount."""
         self.check_for_child()
-
-        option = option or {}
 
         method = self.contract.method('withdraw', amount)
         return self.process_write(method, option, private_key)
@@ -135,7 +122,7 @@ class ERC20(POSToken):
         payload = self.exit_util.build_payload_for_exit(
             burn_transaction_hash, 0, event_signature, is_fast
         )
-        return self.root_chain_manager.exit(payload, private_key, option or {})
+        return self.root_chain_manager.exit(payload, private_key, option)
 
     def withdraw_exit(
         self,
@@ -143,8 +130,12 @@ class ERC20(POSToken):
         private_key: str,
         option: IExitTransactionOption | None = None,
     ):
-        """
-        Complete withdraw process after checkpoint has been submitted for the block containing burn tx.
+        """Complete withdraw process.
+
+        This function should be called after checkpoint has been submitted
+        for the block containing burn tx.
+
+        This function fetches required blocks and builds proof using them.
         """
         self.check_for_root()
         return self._withdraw_exit(burn_transaction_hash, False, private_key, option)
@@ -155,8 +146,12 @@ class ERC20(POSToken):
         private_key: str,
         option: IExitTransactionOption | None = None,
     ):
-        """
-        Complete withdraw process after checkpoint has been submitted for the block containing burn tx.
+        """Complete withdraw process.
+
+        This function should be called after checkpoint has been submitted
+        for the block containing burn tx.
+
+        This function uses API to fetch proof data.
         """
         self.check_for_root()
         return self._withdraw_exit(burn_transaction_hash, True, private_key, option)
@@ -172,5 +167,5 @@ class ERC20(POSToken):
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
-        """Transfer amount to another user."""
+        """Transfer specified amount to another user."""
         return self.transfer_ERC_20(to, amount, private_key, option)

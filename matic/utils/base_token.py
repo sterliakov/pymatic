@@ -69,7 +69,9 @@ class BaseToken:
 
         self.client.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
-            return config | {'data': method.encode_ABI(), 'to': method.address}
+            config['data'] = method.encode_ABI()
+            config['to'] = method.address
+            return config
 
         return method.write(config, private_key)
 
@@ -124,7 +126,7 @@ class BaseToken:
 
         if option and option.get('return_transaction', False):
             assert self.contract
-            return config | {'data': method.encode_ABI(), 'to': self._contract.address}
+            return config | {'data': method.encode_ABI(), 'to': self.contract.address}
 
         return method.read(config)
 
@@ -170,14 +172,11 @@ class BaseToken:
 
         def estimate_gas(config: ITransactionRequestConfig) -> int:
             if method:
-                new_config = dict(config)
-                # if new_config.get('value') is None:
-                new_config.pop('value', None)  # already registered on method => ignored
-                return method.estimate_gas(new_config)
+                config.pop('value', None)  # already registered on method => ignored
+                return method.estimate_gas(config)
             else:
                 return client.estimate_gas(config)
 
-        # tx_config['chain_id'] = to_hex(tx_config['chain_id']) as any
         if not is_write:
             return tx_config
 
@@ -191,9 +190,10 @@ class BaseToken:
 
         if not tx_config.get('gas_limit'):
             tx_config['gas_limit'] = estimate_gas(
-                ITransactionRequestConfig(
-                    {'from': tx_config['from'], 'value': tx_config.get('value')}
-                )
+                tx_config
+                # ITransactionRequestConfig(
+                #     {'from': tx_config['from'], 'value': tx_config.get('value')}
+                # )
             )
 
         if not tx_config.get('nonce'):
@@ -212,8 +212,6 @@ class BaseToken:
         option: ITransactionOption | None = None,
     ):
         method = self.contract.method('transfer', to, amount)
-        option = option or {}
-        # option['value'] = amount
         return self.process_write(method, option, private_key)
 
     def transfer_ERC_721(
