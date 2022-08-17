@@ -188,7 +188,7 @@ class ITransactionResult(ABC):
         ...
 
     @abstractmethod
-    def encode_ABI(self) -> bytes:
+    def encode_abi(self) -> bytes:
         ...
 
 

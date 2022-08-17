@@ -29,7 +29,6 @@ def test_get_balance_parent(erc_1155_parent, from_):
 
 
 def test_is_withdraw_exited(erc_1155_parent):
-    # exitHash = '0xa3ed203336807249dea53dc99434e2d06b71c85f55c89ee49ca10244ab3dbcf5'
     is_exited = erc_1155_parent.is_withdraw_exited(
         '0xbc48c0ccd9821141779a200586ef52033a3487c4e1419625fe7a0ea984521052'
     )
@@ -67,7 +66,6 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
     )
-    # console.log('tx', tx['to'], 'root', root_chain_manager)
     assert tx['to'].lower() == root_chain_manager.lower()
 
 
@@ -75,7 +73,9 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
 #     tx = erc_1155_parent.deposit_many(all_tokens, from_, {
 #         'return_transaction': True
 #     })
-#     root_chain_manager = abi_manager.get_config("Main.POSContracts.RootChainManagerProxy")
+#     root_chain_manager = abi_manager.get_config(
+#         "Main.POSContracts.RootChainManagerProxy"
+#     )
 #     assert tx['to'].lower() == root_chain_manager.lower()
 
 
@@ -98,9 +98,7 @@ def test_transfer_write(
 ):
     target_token = 123
     all_tokens_from = erc_1155_child.get_balance(from_, target_token)
-    # console.log('all_tokens_from', all_tokens_from)
     all_tokens_to = erc_1155_child.get_balance(to, target_token)
-    # console.log('all_tokens_to', all_tokens_to)
     amount_to_transfer = 1
     result = erc_1155_child.transfer(
         {
@@ -114,13 +112,9 @@ def test_transfer_write(
 
     tx_hash = result.transaction_hash
     assert tx_hash
-    # expect(tx_hash).to.be.an('string')
-    # console.log('tx_hash', tx_hash)
     tx_receipt = result.receipt
-    # console.log("tx_receipt", tx_receipt)
 
     assert tx_receipt.transaction_hash == tx_hash
-    # assert tx_receipt).to.be.an('object')
     assert tx_receipt.from_ == from_
     assert tx_receipt.to.lower() == erc_1155['child'].lower()
     assert tx_receipt.type == '0x2'
@@ -128,15 +122,13 @@ def test_transfer_write(
     assert tx_receipt.cumulative_gas_used > 0
 
     new_all_tokens_from = erc_1155_child.get_balance(from_, target_token)
-    # console.log('new_all_tokens_from', new_all_tokens_from)
     assert new_all_tokens_from == all_tokens_from - 1
     new_all_tokens_to = erc_1155_child.get_balance(to, target_token)
-    # console.log('new_all_tokens_to', new_all_tokens_to)
     assert new_all_tokens_to == all_tokens_to + 1
 
     erc_1155_child_token = pos_client_for_to.erc_1155(erc_1155['child'])
 
-    # // transfer token back to sender
+    # transfer token back to sender
     result = erc_1155_child_token.transfer(
         {
             'token_id': target_token,

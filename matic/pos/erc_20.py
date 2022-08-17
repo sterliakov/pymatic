@@ -73,11 +73,11 @@ class ERC20(POSToken):
         """Deposit given amount of token for user."""
         self.check_for_root()
 
-        amount_in_ABI = self.client.parent.encode_parameters([amount], ['uint256'])
+        amount_in_abi = self.client.parent.encode_parameters([amount], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
             self.contract_param.address,
-            amount_in_ABI,
+            amount_in_abi,
             private_key,
             option,
         )
@@ -168,4 +168,4 @@ class ERC20(POSToken):
         option: ITransactionOption | None = None,
     ):
         """Transfer specified amount to another user."""
-        return self.transfer_ERC_20(to, amount, private_key, option)
+        return self.transfer_erc_20(to, amount, private_key, option)

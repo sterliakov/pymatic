@@ -14,8 +14,7 @@ def rpc():
         'parent': os.getenv(
             'ROOT_RPC', 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
         ),
-        'child': os.getenv('MATIC_RPC')
-        or 'https://rpc-mumbai.maticvigil.com/v1/2029c255385562b351f79af8f40c51d85b97d757',
+        'child': os.getenv('MATIC_RPC', 'https://rpc-mumbai.maticvigil.com'),
     }
 
 

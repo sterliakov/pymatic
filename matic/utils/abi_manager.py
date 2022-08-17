@@ -4,22 +4,8 @@ from typing import Any, Final
 
 from typing_extensions import TypedDict
 
-from matic.services import get_ABI, get_address
+from matic.services import get_abi, get_address
 from matic.utils import resolve
-
-# import { service } from "../services";
-# import { resolve, promiseResolve } from ".";
-
-# type T_ABI_CACHE = {
-#     [network_name: str, version: str]: {
-#         address: any,
-#         abi: {
-#             [bridge_type: str]: {
-#                 [contract_name: str]: any
-#             }
-#         }
-#     }
-# }
 
 
 class _CacheItem(TypedDict):
@@ -47,7 +33,7 @@ class ABIManager:
             path,
         )
 
-    def get_ABI(
+    def get_abi(
         self, contract_name: str, bridge_type: str | None = None
     ) -> dict[str, Any]:
         bridge_type = bridge_type or DEFAULT_BRIDGE_TYPE
@@ -59,11 +45,11 @@ class ABIManager:
         if abi is not None:
             return abi
 
-        abi = get_ABI(self.network_name, self.version, bridge_type, contract_name)
-        self.set_ABI(contract_name, bridge_type, abi)
+        abi = get_abi(self.network_name, self.version, bridge_type, contract_name)
+        self.set_abi(contract_name, bridge_type, abi)
         return abi
 
-    def set_ABI(
+    def set_abi(
         self, contract_name: str, bridge_type: str, abi: dict[str, Any]
     ) -> None:
         abi_store = CACHE[(self.network_name, self.version)]['abi']

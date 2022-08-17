@@ -18,7 +18,7 @@ class POSToken(BaseToken):
         token_address: bytes,
         is_parent: bool,
         client: Web3SideChainClient,
-        get_POS_contracts: Callable[[], IPOSContracts],
+        get_pos_contracts: Callable[[], IPOSContracts],
     ):
         super().__init__(
             IContractInitParam(  # FIXME: never, please
@@ -29,15 +29,15 @@ class POSToken(BaseToken):
             ),
             client=client,
         )
-        self.get_POS_contracts = get_POS_contracts
+        self.get_pos_contracts = get_pos_contracts
 
     @property
     def root_chain_manager(self) -> RootChainManager:
-        return self.get_POS_contracts().root_chain_manager
+        return self.get_pos_contracts().root_chain_manager
 
     @property
     def exit_util(self) -> ExitUtil:
-        return self.get_POS_contracts().exit_util
+        return self.get_pos_contracts().exit_util
 
     @property
     def predicate_address(self) -> str:

@@ -177,7 +177,7 @@ class ExitUtil:
             ):
                 raise ValueError('Network API Error')
             return header_block
-        except Exception as e:
+        except Exception as e:  # noqa
             self._matic_client.logger.debug('Block info from API error: %r', e)
             return self._get_root_block_info(tx_block_number)
 
@@ -205,7 +205,7 @@ class ExitUtil:
             return block_proof
         except ProofAPINotSetException:
             raise
-        except Exception as e:
+        except Exception as e:  # noqa
             self._matic_client.logger.debug('API error: %r', e)
             return self._get_block_proof(tx_block_number, root_block_info)
 

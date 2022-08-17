@@ -155,6 +155,7 @@ extend_ignore = [
 # Ignore
 per-file-ignores = [
     "tests/*:D,RST",  # We don't care about docstrings in tests.
+    "matic/json_types.py:A003",
 ]
 max-complexity = 10
 

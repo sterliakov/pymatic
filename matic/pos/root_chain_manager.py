@@ -36,7 +36,7 @@ class RootChainManager(BaseToken):
         method = self.method('depositFor', user_address, token_address, deposit_data)
         return self.process_write(method, option, private_key)
 
-    def exit(
+    def exit(  # noqa: A003
         self,
         exit_payload: bytes,
         private_key: str,

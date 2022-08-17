@@ -57,7 +57,7 @@ class EthMethod(BaseContractMethod):
     def estimate_gas(self, tx: ITransactionRequestConfig) -> int:
         return self.method.estimate_gas(matic_tx_request_config_to_web3(tx))
 
-    def encode_ABI(self):
+    def encode_abi(self):
         abi = [e['type'] for e in self.method.abi['inputs']]
         return bytes.fromhex(self.method.selector.removeprefix('0x')) + encode_abi(
             abi, self.method.args
@@ -186,7 +186,7 @@ class Web3Client(BaseWeb3Client):
             transactions=list(map(web3_tx_to_matic_tx, data.transactions)),
         )
 
-    def send_RPC_request(self, request: IJsonRpcRequestPayload):
+    def send_rpc_request(self, request: IJsonRpcRequestPayload):
         return self._web3.provider.make_request(request['method'], request['params'])
 
     def encode_parameters(self, params: Sequence[Any], types: Sequence[Any]):

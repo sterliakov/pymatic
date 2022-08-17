@@ -100,7 +100,7 @@ class ERC1155(POSToken):
         """Deposit supplied amount of multiple token for user."""
         self.check_for_root()
 
-        amount_in_ABI = self.client.parent.encode_parameters(
+        amount_in_abi = self.client.parent.encode_parameters(
             [
                 param['token_ids'],
                 param['amounts'],
@@ -112,7 +112,7 @@ class ERC1155(POSToken):
         return self.root_chain_manager.deposit(
             param['user_address'],
             self.contract_param.address,
-            amount_in_ABI,
+            amount_in_abi,
             private_key,
             option,
         )
@@ -137,9 +137,7 @@ class ERC1155(POSToken):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
-        """
-        Start the withdraw process by burning the supplied amount of multiple token at a time.
-        """
+        """Start the withdraw process by burning multiple tokens at a time."""
         self.check_for_child()
 
         method = self.contract.method('withdrawBatch', token_ids, amounts)
@@ -183,7 +181,13 @@ class ERC1155(POSToken):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
-        """Exit the withdraw process for many burned transaction and get the burned amount on root chain."""
+        """Exit the multiple withdraw process.
+
+        Exit the withdraw process for many burned transaction and get the
+        burned amount on root chain.
+
+        This function fetches blocks and builds a proof manually.
+        """
         self.check_for_root()
         return self.withdraw_exit_pos(
             burn_transaction_hash,
@@ -199,7 +203,13 @@ class ERC1155(POSToken):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
-        """Exit the withdraw process for many burned transaction and get the burned amount on root chain."""
+        """Exit the multiple withdraw process.
+
+        Exit the withdraw process for many burned transaction and get the
+        burned amount on root chain.
+
+        This function uses API to get proof faster.
+        """
         self.check_for_root()
         return self.withdraw_exit_pos(
             burn_transaction_hash,
@@ -224,4 +234,4 @@ class ERC1155(POSToken):
         option: ITransactionOption | None = None,
     ):
         """Transfer the required amount of a token to another user."""
-        return self.transfer_ERC_1155(param, private_key, option)
+        return self.transfer_erc_1155(param, private_key, option)

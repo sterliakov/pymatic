@@ -16,9 +16,9 @@ class POSClient(BridgeClient):
 
     def __init__(self, config: IPOSClientConfig):
         super().__init__(config)
-        main_POS_contracts = self.client.main_POS_contracts
+        main_pos_contracts = self.client.main_pos_contracts
         config.root_chain_manager = (
-            config.root_chain_manager or main_POS_contracts['RootChainManagerProxy']
+            config.root_chain_manager or main_pos_contracts['RootChainManagerProxy']
         )
         config.root_chain = (
             config.root_chain or self.client.main_plasma_contracts['RootChainProxy']

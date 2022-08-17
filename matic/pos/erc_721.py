@@ -89,11 +89,11 @@ class ERC721(POSToken):
     ):
         self.check_for_root()
 
-        amount_in_ABI = self.client.parent.encode_parameters([token_id], ['uint256'])
+        amount_in_abi = self.client.parent.encode_parameters([token_id], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
             self.contract_param.address,
-            amount_in_ABI,
+            amount_in_abi,
             private_key,
             option,
         )
@@ -108,11 +108,11 @@ class ERC721(POSToken):
         self.check_for_root()
 
         self._validate_many(token_ids)
-        amount_in_ABI = self.client.parent.encode_parameters([token_ids], ['uint256[]'])
+        amount_in_abi = self.client.parent.encode_parameters([token_ids], ['uint256[]'])
         return self.root_chain_manager.deposit(
             user_address,
             self.contract_param.address,
-            amount_in_ABI,
+            amount_in_abi,
             private_key,
             option,
         )
@@ -172,24 +172,25 @@ class ERC721(POSToken):
         )
         return self.root_chain_manager.exit(payload, private_key, option)
 
-    # // async withdrawExitMany(burn_transaction_hash: bytes, option: ITransactionOption | None = None) {
-    # //     self.check_for_root()
-
-    # //     return self.exit_util.buildMultiplePayloadsForExit(
-    # //         burn_transaction_hash,
-    # //         LogEventSignature.ERC_721_BATCH_TRANSFER,
-    # //         False
-    # //     ).then(async payloads => {
-    # //         const exitTxs = []
-    # //         if()
-    # //         for(const i in payloads) {
-    # //           exitTxs.push(self.root_chain_manager.exit(
-    # //             payloads[i], option
-    # //         ))
-    # //         }
-    # //         return Promise.all(exitTxs)
-    # //         })
-    # // }
+    # async withdrawExitMany(
+    #     burn_transaction_hash: bytes, option: ITransactionOption | None = None
+    # ) {
+    #     self.check_for_root()
+    #     return self.exit_util.buildMultiplePayloadsForExit(
+    #         burn_transaction_hash,
+    #         LogEventSignature.ERC_721_BATCH_TRANSFER,
+    #         False
+    #     ).then(async payloads => {
+    #         const exitTxs = []
+    #         if()
+    #         for(const i in payloads) {
+    #           exitTxs.push(self.root_chain_manager.exit(
+    #             payloads[i], option
+    #         ))
+    #         }
+    #         return Promise.all(exitTxs)
+    #         })
+    # }
 
     def withdraw_exit_faster(
         self,
@@ -204,18 +205,20 @@ class ERC721(POSToken):
         )
         return self.root_chain_manager.exit(payload, private_key, option)
 
-    # // withdrawExitFasterMany(burn_transaction_hash: bytes, option: ITransactionOption | None = None) {
-    # //     self.check_for_root()
-    # //     return self.exit_util.build_payload_for_exit(
-    # //         burn_transaction_hash,
-    # //         LogEventSignature.ERC_721_BATCH_TRANSFER,
-    # //         True
-    # //     ).then(payload => {
-    # //         return self.root_chain_manager.exit(
-    # //             payload, option
-    # //         )
-    # //     })
-    # // }
+    # withdrawExitFasterMany(
+    #     burn_transaction_hash: bytes, option: ITransactionOption | None = None
+    # ) {
+    #     self.check_for_root()
+    #     return self.exit_util.build_payload_for_exit(
+    #         burn_transaction_hash,
+    #         LogEventSignature.ERC_721_BATCH_TRANSFER,
+    #         True
+    #     ).then(payload => {
+    #         return self.root_chain_manager.exit(
+    #             payload, option
+    #         )
+    #     })
+    # }
 
     def is_withdraw_exited(self, tx_hash: bytes) -> bool:
         return self.is_withdrawn(tx_hash, LogEventSignature.ERC_721_TRANSFER)
@@ -237,4 +240,4 @@ class ERC721(POSToken):
         option: ITransactionOption | None = None,
     ):
         """Transfer to another user."""
-        return self.transfer_ERC_721(from_, to, token_id, private_key, option)
+        return self.transfer_erc_721(from_, to, token_id, private_key, option)

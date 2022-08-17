@@ -75,7 +75,7 @@ class BaseWeb3Client(ABC):
 
     def get_root_hash(self, start_block: int, end_block: int):
         return str(
-            self.send_RPC_request(
+            self.send_rpc_request(
                 {
                     'method': 'eth_getRootHash',
                     'params': [int(start_block), int(end_block)],
@@ -85,7 +85,7 @@ class BaseWeb3Client(ABC):
         )
 
     @abstractmethod
-    def send_RPC_request(self, request: IJsonRpcRequestPayload) -> IJsonRpcResponse:
+    def send_rpc_request(self, request: IJsonRpcRequestPayload) -> IJsonRpcResponse:
         ...
 
     @abstractmethod
@@ -122,7 +122,7 @@ class BaseContractMethod(ABC):
         ...
 
     @abstractmethod
-    def encode_ABI(self) -> Any:
+    def encode_abi(self) -> Any:
         ...
 
 

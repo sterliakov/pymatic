@@ -11,7 +11,7 @@ DEFAULT_PROOF_API_URL: str = ''
 """Default url of ABI store. Can be altered if needed."""
 
 
-def get_ABI(
+def get_abi(
     network: str,
     version: str,
     bridge_type: str,

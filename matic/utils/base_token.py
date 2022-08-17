@@ -42,7 +42,7 @@ class BaseToken:
         if self._contract:
             return self._contract
 
-        abi = self.client.get_ABI(
+        abi = self.client.get_abi(
             self.contract_param.name,
             self.contract_param.bridge_type,
         )
@@ -69,7 +69,7 @@ class BaseToken:
 
         self.client.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
-            config['data'] = method.encode_ABI()
+            config['data'] = method.encode_abi()
             config['to'] = method.address
             return config
 
@@ -126,7 +126,7 @@ class BaseToken:
 
         if option and option.get('return_transaction', False):
             assert self.contract
-            return config | {'data': method.encode_ABI(), 'to': self.contract.address}
+            return config | {'data': method.encode_abi(), 'to': self.contract.address}
 
         return method.read(config)
 
@@ -180,7 +180,7 @@ class BaseToken:
         if not is_write:
             return tx_config
 
-        is_eip_1559_supported = self.client.is_EIP_1559_supported(is_parent)
+        is_eip_1559_supported = self.client.is_eip_1559_supported(is_parent)
         is_max_fee_provided = tx_config.get('max_fee_per_gas') or tx_config.get(
             'max_priority_fee_per_gas'
         )
@@ -204,7 +204,7 @@ class BaseToken:
 
         return tx_config
 
-    def transfer_ERC_20(
+    def transfer_erc_20(
         self,
         to: bytes,
         amount: int,
@@ -214,7 +214,7 @@ class BaseToken:
         method = self.contract.method('transfer', to, amount)
         return self.process_write(method, option, private_key)
 
-    def transfer_ERC_721(
+    def transfer_erc_721(
         self,
         from_: bytes,
         to: bytes,
@@ -233,7 +233,7 @@ class BaseToken:
         if self.contract_param.is_parent:
             raise AllowedOnChildException
 
-    def transfer_ERC_1155(
+    def transfer_erc_1155(
         self,
         param: POSERC1155TransferParam,
         private_key: str,
