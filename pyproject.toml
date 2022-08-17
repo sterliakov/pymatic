@@ -64,7 +64,10 @@ Documentation = "https://github.com/sterliakov/pymatic"  # FIXME: move to RTD
 log_cli = true
 log_cli_level = "INFO"
 markers = [
-    'can_timeout',
+    'can_timeout',  # takes forever to finish
+    'online',  # write + return_transaction
+    'offline',  # write (interacts with the chain)
+    'read',  # read only (query)
 ]
 addopts = """
     --tb=short

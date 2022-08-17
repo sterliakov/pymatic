@@ -2,10 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-# import { erc721, from_, pos_client, pos_client_for_to, to, } from "./client"
-# import { expect } from 'chai'
-# import { ABIManager, setProofApi } from '@maticnetwork/maticjs'
-
 
 @pytest.fixture()
 def erc_721(pos):
@@ -22,29 +18,34 @@ def erc_721_parent(pos_client, erc_721):
     return pos_client.erc_721(erc_721['parent'], True)
 
 
+@pytest.mark.read()
 def test_get_tokens_counts_child(erc_721_child, from_):
     tokens_count = erc_721_child.get_tokens_count(from_)
-    assert tokens_count >= 0
+    assert tokens_count > 0
 
 
+@pytest.mark.read()
 def test_get_tokens_count_parent(erc_721_parent, from_):
     tokens_count = erc_721_parent.get_tokens_count(from_)
     # console.log('tokens_count', tokens_count)
-    assert tokens_count >= 0
+    assert tokens_count > 0
 
 
+@pytest.mark.read()
 def test_get_all_tokens_child(erc_721_child, from_):
     tokens_count = erc_721_child.get_tokens_count(from_)
     all_tokens = erc_721_child.get_all_tokens(from_)
     assert len(all_tokens) == tokens_count
 
 
+@pytest.mark.read()
 def test_get_all_tokens_parent(erc_721_parent, from_):
     tokens_count = erc_721_parent.get_tokens_count(from_)
     all_tokens = erc_721_parent.get_all_tokens(from_)
     assert len(all_tokens) == tokens_count
 
 
+@pytest.mark.read()
 def test_is_withdraw_exited(erc_721_parent):
     # exit_hash = '0xa3ed203336807249dea53dc99434e2d06b71c85f55c89ee49ca10244ab3dbcf5'
     is_exited = erc_721_parent.is_withdraw_exited(
@@ -53,6 +54,7 @@ def test_is_withdraw_exited(erc_721_parent):
     assert is_exited is True
 
 
+@pytest.mark.read()
 def test_is_deposited_for_deposit_many(pos_client):
     deposit_txhash = (
         '0x2ae0f5073e0c0f96f622268ef8bc61ecec7349ffc97c61412e4f5cc157cb418e'
@@ -61,6 +63,7 @@ def test_is_deposited_for_deposit_many(pos_client):
     assert is_exited is True
 
 
+@pytest.mark.offline()
 def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
     all_tokens_from = erc_721_child.get_all_tokens(from_)
     target_token = all_tokens_from[0]
@@ -72,6 +75,7 @@ def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
     assert result['to'].lower() == erc_721['child'].lower()
 
 
+@pytest.mark.offline()
 def test_approve_return_tx(erc_721_parent, from_, erc_721, from_pk):
     all_tokens = erc_721_parent.get_all_tokens(from_)
     result = erc_721_parent.approve(
@@ -80,11 +84,13 @@ def test_approve_return_tx(erc_721_parent, from_, erc_721, from_pk):
     assert result['to'].lower() == erc_721['parent'].lower()
 
 
+@pytest.mark.offline()
 def test_approve_all_return_tx(erc_721_parent, erc_721, from_pk):
     result = erc_721_parent.approve_all(from_pk, {'return_transaction': True})
     assert result['to'].lower() == erc_721['parent'].lower()
 
 
+@pytest.mark.offline()
 def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
     all_tokens = erc_721_parent.get_all_tokens(from_)
     tx = erc_721_parent.deposit(
@@ -99,6 +105,7 @@ def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
     assert tx['to'].lower() == root_chain_manager.lower()
 
 
+@pytest.mark.offline()
 def test_deposit_many_return_tx(erc_721_parent, from_, from_pk, abi_manager):
     all_tokens = erc_721_parent.get_all_tokens(from_)
     tx = erc_721_parent.deposit_many(
@@ -110,6 +117,7 @@ def test_deposit_many_return_tx(erc_721_parent, from_, from_pk, abi_manager):
     assert tx['to'].lower() == root_chain_manager.lower()
 
 
+@pytest.mark.offline()
 def test_withdraw_start_return_tx(erc_721_child, erc_721, from_, from_pk):
     all_tokens = erc_721_child.get_all_tokens(from_)
     result = erc_721_child.withdraw_start(
@@ -118,6 +126,7 @@ def test_withdraw_start_return_tx(erc_721_child, erc_721, from_, from_pk):
     assert result['to'].lower() == erc_721['child'].lower()
 
 
+@pytest.mark.offline()
 def test_withdraw_start_with_meta_data_return_tx(
     erc_721_child, erc_721, from_, from_pk
 ):
@@ -128,6 +137,18 @@ def test_withdraw_start_with_meta_data_return_tx(
     assert result['to'].lower() == erc_721['child'].lower()
 
 
+@pytest.mark.online()
+def test_approve_and_deposit(erc_721_parent, from_, from_pk):
+    token = erc_721_parent.get_all_tokens(from_, 1)[0]
+
+    approve_tx = erc_721_parent.approve(token, from_pk)
+    assert approve_tx.receipt
+
+    deposit_tx = erc_721_parent.deposit(token, from_, from_pk)
+    assert deposit_tx.receipt
+
+
+@pytest.mark.online()
 def test_transfer_write(
     erc_721_child, from_, to, erc_721, pos_client_for_to, from_pk, to_private_key
 ):
@@ -174,12 +195,29 @@ def test_transfer_write(
         assert new_to_count == len(all_tokens_to)
 
 
-# if (process.env.NODE_ENV !== 'test_all') return
+@pytest.mark.can_timeout()
+@pytest.mark.online()
+@pytest.mark.trylast()
+def test_withdraw_full_cycle(pos_client, erc_721_child, erc_721_parent, from_pk, from_):
+    import time
 
+    token = erc_721_parent.get_all_tokens(from_, 1)[0]
+    start = erc_721_child.withdraw_start(token, from_pk)
+    tx_hash = start.transaction_hash
+    erc_721_child.client.logger.info('Start hash: %s', tx_hash.hex())
+    assert start.receipt
 
-def test_approve(erc_721, erc_721_parent, from_, from_pk):
-    all_tokens = erc_721_parent.get_all_tokens(from_)
-    result = erc_721_parent.approve(
-        all_tokens[0], from_pk, {'return_transaction': True}
-    )
-    assert result['to'].lower() == erc_721['parent'].lower()
+    start_time = time.time()
+    timeout = 3 * 60 * 60
+    while True:
+        if pos_client.is_checkpointed(tx_hash):
+            break
+        elif time.time() - start_time > timeout:
+            pytest.fail(f'Transaction {tx_hash.hex()} still not checkpointed')
+        else:
+            time.sleep(10)
+
+    end = erc_721_parent.withdraw_exit(tx_hash, from_pk)
+    erc_721_child.client.logger.info('End hash: %s', end.transaction_hash.hex())
+    assert end.transaction_hash
+    assert end.receipt

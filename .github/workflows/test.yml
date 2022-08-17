@@ -34,7 +34,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1  # Actions use the same credentials, so race sometimes
       matrix:
         python-version: ['3.8', '3.9', '3.10']
       fail-fast: false
@@ -51,11 +50,12 @@ jobs:
           pip install .[test]
       - name: Run regular tests
         run: |
-          pytest -k 'not can_timeout' -vv
+          pytest -m 'not online' -vv
 
   test_long:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1  # Actions use the same credentials, so race sometimes
       matrix:
         python-version: ['3.8', '3.9', '3.10']
       fail-fast: false
@@ -72,7 +72,7 @@ jobs:
           pip install .[test]
       - name: Run loong tests
         run: |
-          pytest -k 'can_timeout' -vv
+          pytest -m 'online' -vv
 
   # docs:
   #   runs-on: ubuntu-latest

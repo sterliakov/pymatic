@@ -30,14 +30,14 @@ class ERC1155(POSToken):
 
     def is_approved_all(
         self, user_address: str, option: ITransactionOption | None = None
-    ):
+    ) -> bool:
         """Check if a user is approved for all tokens."""
         self.check_for_root()
 
         method = self.contract.method(
             'isApprovedForAll', user_address, self.predicate_address
         )
-        return self.process_read(method, option)
+        return bool(self.process_read(method, option))
 
     def _approve_all(
         self,
