@@ -54,7 +54,10 @@ class MerkleTree:
         return self.layers[-1][0]
 
     def get_proof(self, leaf: bytes) -> list[bytes]:
-        index = next(i for i, item in enumerate(self.leaves) if item == leaf)
+        index = next(
+            (i for i, item in enumerate(self.leaves) if item == leaf),
+            None,
+        )
 
         if index is None:
             return []

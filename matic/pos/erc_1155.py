@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Sequence, cast
 
 from matic.constants import LogEventSignature
 from matic.json_types import (
@@ -19,7 +19,9 @@ class ERC1155(POSToken):
 
     @property
     def address_config(self) -> IPOSERC1155Address:
-        return getattr(self.client.config, 'erc_1155', {}) or {}
+        return cast(
+            IPOSERC1155Address, getattr(self.client.config, 'erc_1155', {}) or {}
+        )
 
     def _get_address(self, value: str):
         addr = self.address_config.get(value)
@@ -31,11 +33,7 @@ class ERC1155(POSToken):
         self, user_address: str, token_id: int, option: ITransactionOption | None = None
     ) -> int:
         """Get balance of a user for supplied token."""
-        method = self.contract.method(
-            'balanceOf',
-            user_address,
-            token_id,
-        )
+        method = self.contract.method('balanceOf', user_address, token_id)
         return self.process_read(method, option)
 
     def is_approved_all(

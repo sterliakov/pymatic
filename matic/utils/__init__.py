@@ -5,6 +5,7 @@ from typing import Any, Iterable
 import sha3  # pysha3
 
 from matic.abstracts import BaseWeb3Client
+from matic.web3_client import Web3Client as Web3ClientClass
 
 __all__ = ['keccak256', 'resolve']
 
@@ -43,4 +44,4 @@ def resolve(obj: dict[str, Any], path: str | Iterable[str]):
 
 UnstoppableDomains: dict[str, str] = {}
 
-Web3Client: type[BaseWeb3Client] = None
+Web3Client: type[BaseWeb3Client] = Web3ClientClass

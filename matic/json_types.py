@@ -170,7 +170,7 @@ class IRootBlockInfo:
 
 
 class IJsonRpcRequestPayload(TypedDict):
-    method: RPCEndpoint
+    method: RPCEndpoint | str
     params: list[Any]
     id: NotRequired[str | int]
 

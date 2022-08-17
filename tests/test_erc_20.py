@@ -2,15 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from matic.web3_client import setup
-
-setup()
-
-from matic import services  # noqa: E402
-from matic.exceptions import (  # noqa: E402
-    NullSpenderAddressException,
-    ProofAPINotSetException,
-)
+from matic import services
+from matic.exceptions import NullSpenderAddressException, ProofAPINotSetException
 
 
 @pytest.fixture()

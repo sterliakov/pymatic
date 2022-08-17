@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from logging import Logger
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Sequence, cast
 
 from eth_abi import decode_abi, encode_abi
+from hexbytes.main import HexBytes
 from web3 import Web3
+from web3.types import RPCEndpoint
 
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.json_types import (
@@ -100,7 +102,7 @@ class Web3Client(BaseWeb3Client):
         )
 
     def get_contract(self, address: str, abi: dict[str, Any]):
-        cont = self._web3.eth.contract(abi=abi, address=address)
+        cont = self._web3.eth.contract(abi=abi, address=cast(Any, address))
         return Web3Contract(address, cont, self.logger, self)
 
     @property
@@ -125,14 +127,16 @@ class Web3Client(BaseWeb3Client):
             )
 
     def get_transaction(self, transaction_hash: bytes):
-        data = self._web3.eth.get_transaction(transaction_hash)
+        data = self._web3.eth.get_transaction(HexBytes(transaction_hash))
         self._ensure_transaction_not_null(data)
         return web3_tx_to_matic_tx(data)
 
     def get_transaction_receipt(
         self, transaction_hash: bytes, timeout: int = 120
     ) -> ITransactionReceipt:
-        data = self._web3.eth.wait_for_transaction_receipt(transaction_hash, timeout)
+        data = self._web3.eth.wait_for_transaction_receipt(
+            HexBytes(transaction_hash), timeout
+        )
         self._ensure_transaction_not_null(data)
         return web3_receipt_to_matic_receipt(data)
 
@@ -187,7 +191,9 @@ class Web3Client(BaseWeb3Client):
         )
 
     def send_rpc_request(self, request: IJsonRpcRequestPayload):
-        return self._web3.provider.make_request(request['method'], request['params'])
+        return self._web3.provider.make_request(
+            cast(RPCEndpoint, request['method']), request['params']
+        )
 
     def encode_parameters(self, params: Sequence[Any], types: Sequence[Any]):
         return encode_abi(types, params)
@@ -197,10 +203,3 @@ class Web3Client(BaseWeb3Client):
 
     def etherium_sha3(self, types: Iterable[str], values: Iterable[Any]) -> bytes:
         return self._web3.solidityKeccak(types, values)
-
-
-def setup():
-    import matic
-    import matic.utils
-
-    matic.utils.Web3Client = Web3Client
