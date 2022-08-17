@@ -33,7 +33,8 @@ def pos():
             #     '0x16f7ef3774c59264c46e5063b1111bcfd6e7a72f'.lower()
             # ),
             'erc_721': Web3.toChecksumAddress(
-                '0x084297B12F204Adb74c689be08302FA3f12dB8A7'.lower()
+                # '0x084297B12F204Adb74c689be08302FA3f12dB8A7'.lower()
+                '0x02C869F27B0D09004107818B1150e354d38Cb189'.lower()
             ),
             'erc_1155': Web3.toChecksumAddress(
                 '0x2e3Ef7931F2d0e4a7da3dea950FF3F19269d9063'.lower()
@@ -54,7 +55,9 @@ def pos():
             #     '0xbD88C3A7c0e242156a46Fbdf87141Aa6D0c0c649'.lower()
             # ),
             'erc_721': Web3.toChecksumAddress(
-                '0x757b1BD7C12B81b52650463e7753d7f5D0565C0e'.lower()
+                # '0x5cea406197e297c2bdffa25bd11d6087135ca064',
+                # '0x757b1BD7C12B81b52650463e7753d7f5D0565C0e'.lower()
+                '0xD6A8e816D2314E5635aB71991552A435c00B2952'.lower()
             ),
             'erc_1155': Web3.toChecksumAddress(
                 '0xA07e45A987F19E25176c877d98388878622623FA'.lower()

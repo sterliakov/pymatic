@@ -61,32 +61,37 @@ def test_is_deposited_for_deposit_many(pos_client):
     assert is_exited is True
 
 
-def test_transfer_return_tx(erc_721_child, from_, to, erc_721):
+def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
     all_tokens_from = erc_721_child.get_all_tokens(from_)
     target_token = all_tokens_from[0]
 
     result = erc_721_child.transfer(
-        target_token, from_, to, {'return_transaction': True}
+        target_token, from_, to, from_pk, {'return_transaction': True}
     )
     # console.log(result)
     assert result['to'].lower() == erc_721['child'].lower()
 
 
-def test_approve_return_tx(erc_721_parent, from_, erc_721):
+def test_approve_return_tx(erc_721_parent, from_, erc_721, from_pk):
     all_tokens = erc_721_parent.get_all_tokens(from_)
-    result = erc_721_parent.approve(all_tokens[0], {'return_transaction': True})
+    result = erc_721_parent.approve(
+        all_tokens[0], from_pk, {'return_transaction': True}
+    )
     assert result['to'].lower() == erc_721['parent'].lower()
 
 
-def test_approve_all_return_tx(erc_721_parent, erc_721):
-    result = erc_721_parent.approve_all({'return_transaction': True})
+def test_approve_all_return_tx(erc_721_parent, erc_721, from_pk):
+    result = erc_721_parent.approve_all(from_pk, {'return_transaction': True})
     assert result['to'].lower() == erc_721['parent'].lower()
 
 
 def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
     all_tokens = erc_721_parent.get_all_tokens(from_)
     tx = erc_721_parent.deposit(
-        all_tokens[0], from_, from_pk, {'return_transaction': True}
+        all_tokens[0],
+        from_,
+        from_pk,
+        {'return_transaction': True, 'gas_limit': 300_000},
     )
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
@@ -96,7 +101,9 @@ def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
 
 def test_deposit_many_return_tx(erc_721_parent, from_, from_pk, abi_manager):
     all_tokens = erc_721_parent.get_all_tokens(from_)
-    tx = erc_721_parent.deposit_many(all_tokens, from_, from_pk, {'return_transaction': True})
+    tx = erc_721_parent.deposit_many(
+        all_tokens, from_, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
+    )
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
     )
@@ -130,42 +137,41 @@ def test_transfer_write(
     # // console.log('all_tokens_to', all_tokens_to)
 
     target_token = all_tokens_from[0]
-    result = erc_721_child.transfer(target_token, from_, to, from_pk)
+    result = erc_721_child.transfer(
+        target_token, from_, to, from_pk, {'gas_limit': 300_000}
+    )
 
     tx_hash = result.transaction_hash
-    assert isinstance(tx_hash, str)
-    # expect(tx_hash).to.be.an('string')
-    # // console.log('tx_hash', tx_hash)
-    tx_receipt = result.get_receipt()
-    # // console.log("tx_receipt", tx_receipt)
-
-    assert tx_receipt.transaction_hash == tx_hash
-    # assert tx_receipt).to.be.an('object')
-    assert tx_receipt.from_ == from_
-    assert tx_receipt.lower() == erc_721['child'].lower()
-    assert tx_receipt == '0x2'
-    assert tx_receipt.gas_used > 0
-    assert tx_receipt.cumulative_gas_used > 0
-
-    new_all_tokens_from = erc_721_child.get_all_tokens(from_)
-    # // console.log('new_all_tokens_from', new_all_tokens_from)
-    assert len(new_all_tokens_from) == len(all_tokens_from) - 1
-
-    new_all_tokens_to = erc_721_child.get_all_tokens(to)
-    # // console.log('new_all_tokens_to', new_all_tokens_to)
-    assert len(new_all_tokens_to) == len(all_tokens_to) + 1
-    erc721_child_token = pos_client_for_to.erc_721(erc_721['child'])
-
-    # // transfer token back to sender
-    result = erc721_child_token.transfer(target_token, to, from_, to_private_key)
-    tx_hash = result.get_transaction_hash()
     tx_receipt = result.get_receipt()
 
-    new_from_count = erc_721_child.get_tokens_count(from_)
-    new_to_count = erc_721_child.get_tokens_count(to)
+    try:
+        assert tx_receipt.transaction_hash == tx_hash
+        # assert tx_receipt).to.be.an('object')
+        assert tx_receipt.from_ == from_
+        assert tx_receipt.to.lower() == erc_721['child'].lower()
+        assert tx_receipt.type == '0x2'
+        assert tx_receipt.gas_used > 0
+        assert tx_receipt.cumulative_gas_used > 0
 
-    assert new_from_count == len(all_tokens_from)
-    assert new_to_count == len(all_tokens_to)
+        new_all_tokens_from = erc_721_child.get_all_tokens(from_)
+        assert len(new_all_tokens_from) == len(all_tokens_from) - 1
+
+        new_all_tokens_to = erc_721_child.get_all_tokens(to)
+        assert len(new_all_tokens_to) == len(all_tokens_to) + 1
+    finally:
+        # transfer token back to sender
+        erc721_child_token = pos_client_for_to.erc_721(erc_721['child'])
+        result = erc721_child_token.transfer(
+            target_token, to, from_, to_private_key, {'gas_limit': 300_000}
+        )
+        tx_hash = result.transaction_hash
+        tx_receipt = result.receipt
+
+        new_from_count = erc_721_child.get_tokens_count(from_)
+        new_to_count = erc_721_child.get_tokens_count(to)
+
+        assert new_from_count == len(all_tokens_from)
+        assert new_to_count == len(all_tokens_to)
 
 
 # if (process.env.NODE_ENV !== 'test_all') return

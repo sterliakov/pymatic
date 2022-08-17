@@ -5,7 +5,8 @@ from typing import Sequence
 from matic.constants import LogEventSignature
 from matic.json_types import ITransactionOption
 from matic.pos.pos_token import POSToken
-from matic.utils import to_hex
+
+# from matic.utils import to_hex
 
 # import { IPOSClientConfig, IPOSContracts, ITransactionOption } from "../interfaces"
 # import { RootChainManager } from "./root_chain_manager"
@@ -19,7 +20,7 @@ from matic.utils import to_hex
 class ERC721(POSToken):
     CONTRACT_NAME: str = 'ChildERC721'
 
-    def _validate_many(self, token_ids: Sequence[int]) -> list[str]:
+    def _validate_many(self, token_ids: Sequence[int]) -> list[int]:
         """Convert to hex.
 
         FIXME: Why like this, very odd
@@ -28,7 +29,7 @@ class ERC721(POSToken):
             # FIXME: wtf?
             raise ValueError('can not process more than 20 tokens')
 
-        return list(map(to_hex, token_ids))
+        return list(token_ids)
 
     def get_tokens_count(
         self, user_address: bytes, options: ITransactionOption | None = None
@@ -43,7 +44,7 @@ class ERC721(POSToken):
         """Get token id on supplied index for user."""
         method = self.contract.method('tokenOfOwnerByIndex', user_address, index)
 
-        return self.process_read(method, options)
+        return int(self.process_read(method, options))
 
     def get_all_tokens(self, user_address: bytes, limit: int | None = None):
         """Get all tokens for user."""
@@ -72,19 +73,19 @@ class ERC721(POSToken):
         )
         return bool(self.process_read(method, option))
 
-    def approve(self, token_id: int, option: ITransactionOption | None = None):
+    def approve(
+        self, token_id: int, private_key: str, option: ITransactionOption | None = None
+    ):
         self.check_for_root()
 
-        method = self.contract.method(
-            'approve', self.predicate_address, to_hex(token_id)
-        )
-        return self.process_write(method, option)
+        method = self.contract.method('approve', self.predicate_address, token_id)
+        return self.process_write(method, option, private_key)
 
-    def approve_all(self, option: ITransactionOption | None = None):
+    def approve_all(self, private_key: str, option: ITransactionOption | None = None):
         self.check_for_root()
 
         method = self.contract.method('setApprovalForAll', self.predicate_address, True)
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
 
     def deposit(
         self,
@@ -95,9 +96,7 @@ class ERC721(POSToken):
     ):
         self.check_for_root()
 
-        amount_in_ABI = self.client.parent.encode_parameters(
-            [to_hex(token_id)], ['uint256']
-        )
+        amount_in_ABI = self.client.parent.encode_parameters([token_id], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
             self.contract_param.address,
@@ -132,7 +131,7 @@ class ERC721(POSToken):
     ):
         self.check_for_child()
 
-        method = self.contract.method('withdraw', to_hex(token_id))
+        method = self.contract.method('withdraw', token_id)
         return self.process_write(method, option, private_key)
 
     def withdraw_start_with_metadata(
@@ -140,7 +139,7 @@ class ERC721(POSToken):
     ):
         self.check_for_child()
 
-        method = self.contract.method('withdrawWithMetadata', to_hex(token_id))
+        method = self.contract.method('withdrawWithMetadata', token_id)
         return self.process_write(method, option, private_key)
 
     def withdraw_start_many(

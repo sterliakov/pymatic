@@ -80,7 +80,9 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
 
 
 def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
-    result = erc_1155_child.withdraw_start(123, 10, from_pk, {'return_transaction': True, 'gas_limit': 200000})
+    result = erc_1155_child.withdraw_start(
+        123, 10, from_pk, {'return_transaction': True, 'gas_limit': 200000}
+    )
     assert result['to'].lower() == erc_1155['child'].lower()
 
 

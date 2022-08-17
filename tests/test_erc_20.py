@@ -241,7 +241,7 @@ def test_child_transfer(
 ):
     old_balance = erc_20_child.get_balance(to)
     amount = 10
-    result = erc_20_child.transfer(amount, to, from_pk)
+    result = erc_20_child.transfer(amount, to, from_pk, {'gas_limit': 300000})
 
     tx_hash = result.transaction_hash
     erc_20_child.client.logger.info('Forward: %s', tx_hash.hex())
@@ -271,7 +271,9 @@ def test_child_transfer(
     assert new_balance == old_balance + amount
     # transfer money back to user
     erc_20_child_token = pos_client_for_to.erc_20(erc_20['child'])
-    result = erc_20_child_token.transfer(amount, from_, to_private_key)
+    result = erc_20_child_token.transfer(
+        amount, from_, to_private_key, {'gas_limit': 300000}
+    )
     print('Back: ', result.transaction_hash.hex())
     result.receipt
 
@@ -292,18 +294,18 @@ def test_approve_and_deposit(erc_20_parent, from_, from_pk):
     result.receipt
 
 
-@pytest.mark.can_timeout
-@pytest.mark.trylast
+@pytest.mark.can_timeout()
+@pytest.mark.trylast()
 def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
     import time
 
     start = erc_20_child.withdraw_start(10, from_pk)
     tx_hash = start.transaction_hash
-    print(tx_hash.hex())
+    erc_20_child.client.logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
 
     start_time = time.time()
-    timeout = 20 * 60
+    timeout = 3 * 60 * 60
     while True:
         if pos_client.is_checkpointed(tx_hash):
             break
@@ -313,6 +315,6 @@ def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
             time.sleep(10)
 
     end = erc_20_parent.withdraw_exit(tx_hash)
-    print(end.transaction_hash.hex())
+    erc_20_child.client.logger.info('End hash: %s', end.transaction_hash.hex())
     assert end.transaction_hash
     assert end.receipt
