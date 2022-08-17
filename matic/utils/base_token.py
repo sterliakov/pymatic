@@ -126,7 +126,8 @@ class BaseToken:
 
         if option and option.get('return_transaction', False):
             assert self.contract
-            return config | {'data': method.encode_abi(), 'to': self.contract.address}
+            config.update({'data': method.encode_abi(), 'to': self.contract.address})
+            return config
 
         return method.read(config)
 
@@ -162,9 +163,10 @@ class BaseToken:
         if from_:
             default_config_dict['from'] = from_
 
-        tx_config = cast(
-            ITransactionRequestConfig, default_config_dict | (tx_config or {})
-        )
+        merged_config = dict(default_config_dict)
+        merged_config.update(tx_config or {})
+
+        tx_config = cast(ITransactionRequestConfig, merged_config)
 
         client = self.client.parent if is_parent else self.client.child
         client.logger.info(
