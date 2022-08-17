@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing import Sequence, cast
+from typing import Sequence
 
 from matic.constants import LogEventSignature
 from matic.json_types import (
-    IPOSERC1155Address,
     ITransactionOption,
     POSERC1155DepositBatchParam,
     POSERC1155DepositParam,
@@ -14,20 +13,13 @@ from matic.pos.pos_token import POSToken
 
 
 class ERC1155(POSToken):
-    mintable_predicate_address: str  # TODO: unused?
     CONTRACT_NAME: str = 'ChildERC1155'
 
     @property
-    def address_config(self) -> IPOSERC1155Address:
-        return cast(
-            IPOSERC1155Address, getattr(self.client.config, 'erc_1155', {}) or {}
-        )
-
-    def _get_address(self, value: str):
-        addr = self.address_config.get(value)
-        if addr is not None:
-            return addr
-        return self.client.get_config(value)
+    def mintable_predicate_address(self) -> str | None:
+        return getattr(
+            self.client.config, 'erc_1155_mintable_predicate', ''
+        ) or self.client.get_config('Main.POSContracts.MintableERC1155PredicateProxy')
 
     def get_balance(
         self, user_address: str, token_id: int, option: ITransactionOption | None = None
@@ -67,8 +59,8 @@ class ERC1155(POSToken):
     ):
         """Approve all tokens for mintable token."""
         self.check_for_root()
-        address_path = 'Main.POSContracts.MintableERC1155PredicateProxy'
-        return self._approve_all(self._get_address(address_path), private_key, option)
+        assert (address := self.mintable_predicate_address)
+        return self._approve_all(address, private_key, option)
 
     def deposit(
         self,

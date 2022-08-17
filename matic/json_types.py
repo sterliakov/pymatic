@@ -142,15 +142,11 @@ class IMethod(TypedDict, total=False):
     handle_revert: bool
 
 
-class IPOSERC1155Address(TypedDict):
-    mintable_predicate: NotRequired[str]
-
-
 @dataclass
 class IPOSClientConfig(IBaseClientConfig):
     root_chain_manager: bytes | None = None
     root_chain: bytes | None = None
-    erc_1155: IPOSERC1155Address | None = None
+    erc_1155_mintable_predicate: str | None = None
 
 
 @dataclass
