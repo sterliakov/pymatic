@@ -14,7 +14,7 @@ from matic.json_types import (
 
 def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = None):
     config: dict[str, Any] = dict(data or {})
-
+    type_ = config.get('type')
     prepared = {
         'chainId': config.get('chain_id'),
         'data': config.get('data'),
@@ -26,7 +26,7 @@ def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = Non
         'value': config.get('value'),
         'maxFeePerGas': config.get('max_fee_per_gas'),
         'maxPriorityFeePerGas': config.get('max_priority_fee_per_gas'),
-        'type': Web3.toHex(type_) if (type_ := config.get('type')) else None,
+        'type': Web3.toHex(type_) if type_ else None,
         'hardfork': config.get('hardfork'),
     }
     return {k: v for k, v in prepared.items() if v is not None}

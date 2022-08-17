@@ -59,7 +59,8 @@ class ERC1155(POSToken):
     ):
         """Approve all tokens for mintable token."""
         self.check_for_root()
-        assert (address := self.mintable_predicate_address)
+        address = self.mintable_predicate_address
+        assert address
         return self._approve_all(address, private_key, option)
 
     def deposit(

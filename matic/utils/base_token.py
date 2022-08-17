@@ -158,7 +158,8 @@ class BaseToken:
             self.parent_default_config if is_parent else self.child_default_config
         )
         default_config_dict = asdict(default_config) if default_config else {}
-        if from_ := default_config_dict.pop('from_', None):
+        from_ = default_config_dict.pop('from_', None)
+        if from_:
             default_config_dict['from'] = from_
 
         tx_config = cast(
