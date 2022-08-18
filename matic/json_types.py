@@ -138,7 +138,7 @@ class IBlockWithTransaction(IBaseBlock):
 
 @dataclass
 class IPOSContracts:
-    """FIXME: to be removed."""
+    """Return type of ``get_pos_contracts`` parameter of :class:`matic.pos.POSToken`."""
 
     root_chain_manager: RootChainManager
     exit_util: ExitUtil
@@ -247,14 +247,6 @@ class ITransactionReceipt:
     status: bool | None = None
     logs: Sequence[ILog] = field(default_factory=list)
     events: dict[str, IEventLog] = field(default_factory=dict)
-
-
-@dataclass
-class IChainBlockInfo:
-    """WTF?"""
-
-    last_child_block: int
-    tx_block_number: int
 
 
 @dataclass

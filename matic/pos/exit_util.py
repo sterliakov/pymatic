@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Final
 
 import rlp
@@ -8,12 +9,7 @@ from matic import services
 from matic.abstracts import BaseWeb3Client
 from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
-from matic.json_types import (
-    IBaseClientConfig,
-    IChainBlockInfo,
-    IRootBlockInfo,
-    ITransactionReceipt,
-)
+from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
 from matic.pos.root_chain import RootChain
 from matic.utils.proof_utils import ProofUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
@@ -27,6 +23,14 @@ HASHES_2: Final = {
     LogEventSignature.ERC_1155_BATCH_TRANSFER,
 }
 ZERO_SIG: Final = bytes(32)
+
+
+@dataclass
+class _IChainBlockInfo:
+    """Internal dataclass."""
+
+    last_child_block: int
+    tx_block_number: int
 
 
 class ExitUtil:
@@ -129,18 +133,18 @@ class ExitUtil:
 
         return log_indices
 
-    def get_chain_block_info(self, burn_tx_hash: bytes) -> IChainBlockInfo:
+    def get_chain_block_info(self, burn_tx_hash: bytes) -> _IChainBlockInfo:
         """Obtain information about block that includes given transaction."""
         tx = self._matic_client.get_transaction(burn_tx_hash)
         tx_block = tx.block_number
         assert tx_block is not None
 
-        return IChainBlockInfo(
+        return _IChainBlockInfo(
             last_child_block=self.root_chain.last_child_block,
             tx_block_number=tx_block,
         )
 
-    def _is_checkpointed(self, data: IChainBlockInfo) -> bool:
+    def _is_checkpointed(self, data: _IChainBlockInfo) -> bool:
         return int(data.last_child_block) >= int(data.tx_block_number)
 
     def is_checkpointed(self, burn_tx_hash: bytes) -> bool:
@@ -382,7 +386,7 @@ class ExitUtil:
         )
         block = block_result
         if not self._is_checkpointed(
-            IChainBlockInfo(
+            _IChainBlockInfo(
                 last_child_block=last_child_block, tx_block_number=receipt.block_number
             )
         ):
