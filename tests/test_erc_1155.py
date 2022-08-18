@@ -53,9 +53,12 @@ def test_is_deposited(pos_client):
 @pytest.mark.offline()
 def test_transfer_return_tx(erc_1155_child, from_, to, from_pk, erc_1155):
     result = erc_1155_child.transfer(
-        {'amount': 1, 'from_': from_, 'to': to, 'token_id': TOKEN_ID},
-        from_pk,
-        {'return_transaction': True, 'gas_limit': 200_000},
+        amount=1,
+        from_=from_,
+        to=to,
+        token_id=TOKEN_ID,
+        private_key=from_pk,
+        option={'return_transaction': True, 'gas_limit': 200_000},
     )
     assert result['to'].lower() == erc_1155['child'].lower()
 
@@ -69,9 +72,11 @@ def test_approve_all_return_tx(erc_1155_parent, from_pk, erc_1155):
 @pytest.mark.offline()
 def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
     tx = erc_1155_parent.deposit(
-        {'amount': 1, 'token_id': TOKEN_ID, 'user_address': from_},
-        from_pk,
-        {'return_transaction': True, 'gas_limit': 200_000},
+        amount=1,
+        token_id=TOKEN_ID,
+        user_address=from_,
+        private_key=from_pk,
+        option={'return_transaction': True, 'gas_limit': 200_000},
     )
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
@@ -113,13 +118,11 @@ def test_transfer_write(
     all_tokens_to = erc_1155_child.get_balance(to, TOKEN_ID)
     amount_to_transfer = 1
     result = erc_1155_child.transfer(
-        {
-            'token_id': TOKEN_ID,
-            'from_': from_,
-            'to': to,
-            'amount': amount_to_transfer,
-        },
-        from_pk,
+        token_id=TOKEN_ID,
+        to=from_,
+        from_=to,
+        amount=amount_to_transfer,
+        private_key=from_pk,
     )
 
     tx_hash = result.transaction_hash
@@ -142,13 +145,11 @@ def test_transfer_write(
 
     # transfer token back to sender
     result = erc_1155_child_token.transfer(
-        {
-            'token_id': TOKEN_ID,
-            'to': from_,
-            'from_': to,
-            'amount': amount_to_transfer,
-        },
-        to_private_key,
+        token_id=TOKEN_ID,
+        to=from_,
+        from_=to,
+        amount=amount_to_transfer,
+        private_key=to_private_key,
     )
     tx_hash = result.transaction_hash
     tx_receipt = result.receipt
@@ -166,12 +167,10 @@ def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
     assert approve_tx.receipt
 
     deposit_tx = erc_1155_parent.deposit(
-        {
-            'amount': 1,
-            'token_id': TOKEN_ID,
-            'user_address': from_,
-        },
-        from_pk,
+        amount=1,
+        token_id=TOKEN_ID,
+        user_address=from_,
+        private_key=from_pk,
     )
     assert deposit_tx.receipt
 

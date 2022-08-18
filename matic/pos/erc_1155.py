@@ -1,15 +1,9 @@
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Iterable, Sequence
 
 from matic.constants import LogEventSignature
-from matic.json_types import (
-    IExitTransactionOption,
-    ITransactionOption,
-    POSERC1155DepositBatchParam,
-    POSERC1155DepositParam,
-    POSERC1155TransferParam,
-)
+from matic.json_types import IExitTransactionOption, ITransactionOption
 from matic.pos.pos_token import POSToken
 
 
@@ -67,27 +61,31 @@ class ERC1155(POSToken):
 
     def deposit(
         self,
-        param: POSERC1155DepositParam,
-        private_key: str,
+        amount: int,
+        token_id: int,
+        user_address: str,
+        data: bytes | None = None,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit supplied amount of token for a user."""
         self.check_for_root()
         return self.deposit_many(
-            dict(
-                amounts=[param['amount']],
-                token_ids=[param['token_id']],
-                user_address=param['user_address'],
-                data=param.get('data', b''),
-            ),
-            private_key,
-            option,
+            amounts=[amount],
+            token_ids=[token_id],
+            user_address=user_address,
+            data=data or b'',
+            private_key=private_key,
+            option=option,
         )
 
     def deposit_many(
         self,
-        param: POSERC1155DepositBatchParam,
-        private_key: str,
+        amounts: Iterable[int],
+        token_ids: Iterable[int],
+        user_address: str,
+        data: bytes | None = None,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit supplied amount of multiple token for user."""
@@ -95,15 +93,15 @@ class ERC1155(POSToken):
 
         amount_in_abi = self.client.parent.encode_parameters(
             [
-                param['token_ids'],
-                param['amounts'],
-                param.get('data', b''),
+                token_ids,
+                amounts,
+                data or b'',
             ],
             ['uint256[]', 'uint256[]', 'bytes'],
         )
 
         return self.root_chain_manager.deposit(
-            param['user_address'],
+            user_address,
             self.contract_param.address,
             amount_in_abi,
             private_key,
@@ -188,9 +186,15 @@ class ERC1155(POSToken):
 
     def transfer(
         self,
-        param: POSERC1155TransferParam,
-        private_key: str,
+        from_: str,
+        to: str,
+        amount: int,
+        token_id: int,
+        data: bytes | None = b'',
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Transfer the required amount of a token to another user."""
-        return self.transfer_erc_1155(param, private_key, option)
+        return self.transfer_erc_1155(
+            from_, to, amount, token_id, data, private_key, option
+        )

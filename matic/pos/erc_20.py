@@ -66,7 +66,7 @@ class ERC20(POSToken):
     def deposit(
         self,
         amount: int,
-        user_address: bytes,
+        user_address: str,
         private_key: str,
         option: ITransactionOption | None = None,
     ):
@@ -85,7 +85,7 @@ class ERC20(POSToken):
     def _deposit_ether(
         self,
         amount: int,
-        user_address: bytes,
+        user_address: str,
         private_key: str,
         option: ITransactionOption | None = None,
     ):
@@ -113,7 +113,7 @@ class ERC20(POSToken):
     def transfer(
         self,
         amount: int,
-        to: bytes,
+        to: str,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):

@@ -27,10 +27,10 @@ class RootChainManager(BaseToken):
 
     def deposit(
         self,
-        user_address: bytes,
+        user_address: str,
         token_address: bytes,
         deposit_data: bytes,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         method = self.method('depositFor', user_address, token_address, deposit_data)

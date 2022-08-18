@@ -45,7 +45,7 @@ class POSClient(BridgeClient):
     def deposit_ether(
         self,
         amount: int,
-        user_address: bytes,
+        user_address: str,
         private_key: str,
         option: ITransactionOption | None = None,
     ):

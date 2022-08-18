@@ -14,7 +14,6 @@ from matic.json_types import (
     ITransactionOption,
     ITransactionRequestConfig,
     ITransactionWriteResult,
-    POSERC1155TransferParam,
 )
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
@@ -209,7 +208,7 @@ class BaseToken:
 
     def transfer_erc_20(
         self,
-        to: bytes,
+        to: str,
         amount: int,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
@@ -219,8 +218,8 @@ class BaseToken:
 
     def transfer_erc_721(
         self,
-        from_: bytes,
-        to: bytes,
+        from_: str,
+        to: str,
         token_id: int,
         private_key: str,
         option: ITransactionOption | None = None,
@@ -238,16 +237,20 @@ class BaseToken:
 
     def transfer_erc_1155(
         self,
-        param: POSERC1155TransferParam,
-        private_key: str,
+        from_: str,
+        to: str,
+        amount: int,
+        token_id: int,
+        data: bytes | None = b'',
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         method = self.contract.method(
             'safeTransferFrom',
-            param['from_'],
-            param['to'],
-            param['token_id'],
-            param['amount'],
-            param.get('data', b''),
+            from_,
+            to,
+            token_id,
+            amount,
+            data or b'',
         )
         return self.process_write(method, option, private_key)

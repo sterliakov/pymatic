@@ -20,23 +20,21 @@ class ERC721(POSToken):
         return list(token_ids)
 
     def get_tokens_count(
-        self, user_address: bytes, options: ITransactionOption | None = None
+        self, user_address: str, options: ITransactionOption | None = None
     ) -> int:
         """Get tokens count for the user."""
         method = self.contract.method('balanceOf', user_address)
         return int(self.process_read(method, options))
 
     def get_token_id_at_index_for_user(
-        self, index: int, user_address: bytes, options: ITransactionOption | None = None
+        self, index: int, user_address: str, options: ITransactionOption | None = None
     ) -> int:
         """Get token id on supplied index for user."""
         method = self.contract.method('tokenOfOwnerByIndex', user_address, index)
 
         return int(self.process_read(method, options))
 
-    def get_all_tokens(
-        self, user_address: bytes, limit: int | None = None
-    ) -> list[int]:
+    def get_all_tokens(self, user_address: str, limit: int | None = None) -> list[int]:
         """Get all tokens for user."""
         count = self.get_tokens_count(user_address)
         if limit is not None and count > limit:
@@ -57,7 +55,7 @@ class ERC721(POSToken):
         return self.predicate_address == self.process_read(method, option)
 
     def is_approved_all(
-        self, user_address: bytes, option: ITransactionOption | None = None
+        self, user_address: str, option: ITransactionOption | None = None
     ) -> bool:
         """Check if all tokens owned by user are approved for contract."""
         self.check_for_root()
@@ -84,7 +82,7 @@ class ERC721(POSToken):
     def deposit(
         self,
         token_id: int,
-        user_address: bytes,
+        user_address: str,
         private_key: str,
         option: ITransactionOption | None = None,
     ):
@@ -102,7 +100,7 @@ class ERC721(POSToken):
     def deposit_many(
         self,
         token_ids: Sequence[int],
-        user_address: bytes,
+        user_address: str,
         private_key: str,
         option: ITransactionOption | None = None,
     ):
@@ -183,8 +181,8 @@ class ERC721(POSToken):
     def transfer(
         self,
         token_id: int,
-        from_: bytes,
-        to: bytes,
+        from_: str,
+        to: str,
         private_key: str,
         option: ITransactionOption | None = None,
     ):

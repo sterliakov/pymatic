@@ -251,26 +251,3 @@ class ITransactionReceipt:
     status: bool | None = None
     logs: Sequence[ILog] = field(default_factory=list)
     events: dict[str, IEventLog] = field(default_factory=dict)
-
-
-# FIXME: goes to pos/...
-class POSERC1155DepositParam(TypedDict):
-    token_id: int
-    amount: int
-    user_address: bytes
-    data: NotRequired[bytes | None]
-
-
-class POSERC1155DepositBatchParam(TypedDict):
-    token_ids: Sequence[int]
-    amounts: Sequence[int]
-    user_address: bytes
-    data: NotRequired[bytes | None]
-
-
-class POSERC1155TransferParam(TypedDict):
-    token_id: int
-    amount: int
-    from_: bytes
-    to: bytes
-    data: NotRequired[bytes | None]
