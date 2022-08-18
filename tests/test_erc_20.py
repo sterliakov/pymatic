@@ -299,7 +299,8 @@ def test_child_transfer(
 def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
     result = erc_20_parent.approve(10, from_pk)
     assert result.transaction_hash
-    print(result.transaction_hash)
+    print(result.transaction_hash.hex())
+    print(erc_20_parent.get_allowance(from_))
 
     tx_receipt = result.receipt
     assert tx_receipt.type == '0x2'
@@ -308,7 +309,7 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
 
     tx_hash = result.transaction_hash
     assert tx_hash
-    print(tx_hash)
+    print(tx_hash.hex())
     result.receipt
 
     start_time = time.time()
