@@ -11,7 +11,7 @@ from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
 from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
 from matic.pos.root_chain import RootChain
-from matic.utils.proof_utils import ProofUtil
+from matic.utils import proof_utils
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 HASHES_1: Final = {
@@ -187,7 +187,7 @@ class ExitUtil:
     def _get_block_proof(
         self, tx_block_number: int, root_block_info: IRootBlockInfo
     ) -> bytes:
-        return ProofUtil.build_block_proof(
+        return proof_utils.build_block_proof(
             self._matic_client,
             int(root_block_info.start),
             int(root_block_info.end),
@@ -252,7 +252,9 @@ class ExitUtil:
             block_proof = self._get_block_proof(tx_block_number, root_block_info)
 
         # step 5- create receipt proof
-        receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
+        receipt_proof = proof_utils.get_receipt_proof(
+            receipt, block, self._matic_client
+        )
 
         # step 6 - encode payload, convert into hex
         if index > 0:
@@ -272,7 +274,7 @@ class ExitUtil:
             block.timestamp,
             block.transactions_root,
             block.receipts_root,
-            ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
+            proof_utils.get_receipt_bytes(receipt),  # rlp encoded
             receipt_proof['parent_nodes'],
             receipt_proof['path'],
             log_index,
@@ -313,7 +315,9 @@ class ExitUtil:
             block_proof_result = self._get_block_proof(tx_block_number, root_block_info)
 
         # step 5- create receipt proof
-        receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
+        receipt_proof = proof_utils.get_receipt_proof(
+            receipt, block, self._matic_client
+        )
         log_indices = self._get_all_log_indices(log_event_sig, receipt)
 
         # step 6 - encode payloads, convert into hex
@@ -325,7 +329,7 @@ class ExitUtil:
                 block.timestamp,
                 block.transactions_root,
                 block.receipts_root,
-                ProofUtil.get_receipt_bytes(receipt),  # rlp encoded
+                proof_utils.get_receipt_bytes(receipt),  # rlp encoded
                 receipt_proof['parent_nodes'],
                 receipt_proof['path'],
                 log_index,
@@ -392,7 +396,9 @@ class ExitUtil:
         ):
             raise BurnTxNotCheckPointedException()
 
-        receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
+        receipt_proof = proof_utils.get_receipt_proof(
+            receipt, block, self._matic_client
+        )
 
         log_index = None
         nibble = b''.join(
