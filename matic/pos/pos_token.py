@@ -49,6 +49,7 @@ class POSToken(BaseToken):
 
     @property
     def predicate_address(self) -> str:
+        """Memoise and get predicate address from root chain manager."""
         if self._predicate_address:
             return self._predicate_address
 
@@ -67,12 +68,14 @@ class POSToken(BaseToken):
         return predicate_address
 
     def is_withdrawn(self, tx_hash: bytes, event_signature: bytes) -> bool:
+        """Check if transaction withdrawal was completed."""
         exit_hash = self.exit_util.get_exit_hash(tx_hash, 0, event_signature)
         return self.root_chain_manager.is_exit_processed(exit_hash)
 
     def is_withdrawn_on_index(
         self, tx_hash: bytes, index: int, event_signature: bytes
     ) -> bool:
+        """Check if transaction withdrawal was completed on index."""
         exit_hash = self.exit_util.get_exit_hash(tx_hash, index, event_signature)
         return self.root_chain_manager.is_exit_processed(exit_hash)
 
@@ -145,7 +148,7 @@ class POSToken(BaseToken):
 
 
 class TokenWithApproveAll(POSToken):
-    """This is a general token with common methods for ERC721 and ERC1155"""
+    """This is a general token with common methods for ERC721 and ERC1155."""
 
     def is_approved_all(
         self, user_address: str, option: ITransactionOption | None = None

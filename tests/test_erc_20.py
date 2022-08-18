@@ -81,13 +81,13 @@ def test_is_withdraw_exited(erc_20_parent):
 @pytest.mark.read()
 def test_call_get_block_included():
     result = services.get_block_included('testnet', 1000)
-    # assert result.start  # may be '0'
-    assert result.end
-    assert result.header_block_number.startswith('0x')
+    assert isinstance(result.start, int)
+    assert isinstance(result.end, int)
+    assert isinstance(result.header_block_number, int)
     assert result.proposer.startswith('0x')
     assert result.root.startswith('0x')
     assert result.block_number == 1000
-    assert result.created_at
+    assert isinstance(result.created_at, int)
 
 
 @pytest.mark.read()
@@ -242,7 +242,7 @@ def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
     result = erc_20_parent.withdraw_exit_faster(
         EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     )
-    assert result['data'] == exit_data
+    assert result['data'].hex() == exit_data.hex()
 
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'

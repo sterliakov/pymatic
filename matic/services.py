@@ -51,7 +51,7 @@ def get_block_included(
     url = _create_proof_url(network, f'/block-included/{block_number}')
     data = requests.get(url).json()
     return CheckpointedBlock(
-        header_block_number=data['headerBlockNumber'],
+        header_block_number=int(data['headerBlockNumber'], 16),
         block_number=int(data['blockNumber']),
         start=int(data['start']),
         end=int(data['end']),

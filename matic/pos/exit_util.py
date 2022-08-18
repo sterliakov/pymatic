@@ -208,7 +208,7 @@ class ExitUtil:
         except ProofAPINotSetException:
             raise
         except Exception as e:  # noqa
-            self._matic_client.logger.debug('API error: %r', e)
+            self._matic_client.logger.error('API error: %r', e)
             return self._get_block_proof(tx_block_number, root_block_info)
 
     def build_payload_for_exit(

@@ -261,7 +261,7 @@ class IChainBlockInfo:
 
 @dataclass
 class CheckpointedBlock(IRootBlockInfo):
-    header_block_number: str  # type: ignore[assignment] # hex string, with "0x"
+    header_block_number: int
     block_number: int
     start: int
     end: int
