@@ -325,3 +325,28 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
 def test_deposit_ether(pos_client, from_, from_pk):
     res = pos_client.deposit_ether(1, from_, from_pk, {})
     assert res.receipt.status
+
+
+@pytest.mark.can_timeout()
+@pytest.mark.online()
+@pytest.mark.trylast()
+def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
+    start = erc_20_child.withdraw_start(10, from_pk)
+    tx_hash = start.transaction_hash
+    erc_20_child.client.logger.info('Start hash: %s', tx_hash.hex())
+    assert start.receipt
+
+    start_time = time.time()
+    timeout = 3 * 60 * 60
+    while True:
+        if pos_client.is_checkpointed(tx_hash):
+            break
+        elif time.time() - start_time > timeout:
+            pytest.fail(f'Transaction {tx_hash.hex()} still not checkpointed')
+        else:
+            time.sleep(10)
+
+    end = erc_20_parent.withdraw_exit(tx_hash, from_pk)
+    erc_20_child.client.logger.info('End hash: %s', end.transaction_hash.hex())
+    assert end.transaction_hash
+    assert end.receipt
