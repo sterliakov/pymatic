@@ -18,6 +18,8 @@ DEFAULT_BRIDGE_TYPE: Final = 'plasma'
 
 
 class ABIManager:
+    """Caching manager for fetched contract ABI dicts."""
+
     def __init__(self, network_name: str, version: str) -> None:
         self.network_name, self.version = network_name, version
 
@@ -28,6 +30,7 @@ class ABIManager:
         }
 
     def get_config(self, path: str) -> Any:
+        """Get option from cache item by dotted path."""
         return resolve(
             CACHE[(self.network_name, self.version)]['address'],
             path,
@@ -36,6 +39,7 @@ class ABIManager:
     def get_abi(
         self, contract_name: str, bridge_type: str | None = None
     ) -> dict[str, Any]:
+        """Get ABI dict for contract and memoise it."""
         bridge_type = bridge_type or DEFAULT_BRIDGE_TYPE
         abi = (
             CACHE[(self.network_name, self.version)]['abi']
@@ -52,5 +56,6 @@ class ABIManager:
     def set_abi(
         self, contract_name: str, bridge_type: str, abi: dict[str, Any]
     ) -> None:
+        """Store ABI dict in cache."""
         abi_store = CACHE[(self.network_name, self.version)]['abi']
         abi_store.setdefault(bridge_type, {})[contract_name] = abi

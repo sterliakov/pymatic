@@ -15,6 +15,8 @@ from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 
 class POSToken(BaseToken):
+    """Base class for all tokens based on POS bridge protocol."""
+
     _predicate_address: str | None = None
     CONTRACT_NAME: str  # TODO: should be abstract
     BURN_EVENT_SIGNATURE: bytes  # TODO: should be abstract
@@ -89,6 +91,7 @@ class POSToken(BaseToken):
         *,
         option: IExitTransactionOption | None = None,
     ) -> None:
+        """Base POS exit method, called by more specific implementations."""
         self.check_for_root()
 
         event_signature = (

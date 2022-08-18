@@ -8,11 +8,14 @@ from matic.pos.pos_token import TokenWithApproveAll
 
 
 class ERC1155(TokenWithApproveAll):
+    """Arbitrary ERC-1155-compliant token."""
+
     CONTRACT_NAME: str = 'ChildERC1155'
     BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_1155_TRANSFER
 
     @property
     def mintable_predicate_address(self) -> str | None:
+        """Address of mintable predicte for this token."""
         return getattr(
             self.client.config, 'erc_1155_mintable_predicate', ''
         ) or self.client.get_config('Main.POSContracts.MintableERC1155PredicateProxy')
