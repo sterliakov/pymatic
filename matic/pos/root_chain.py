@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from matic.json_types import IContractInitParam
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
@@ -14,11 +13,9 @@ class RootChain(BaseToken):
 
     def __init__(self, client: Web3SideChainClient, address: str):
         super().__init__(
-            IContractInitParam(
-                address=address,
-                name='RootChain',
-                is_parent=True,
-            ),
+            address=address,
+            name='RootChain',
+            is_parent=True,
             client=client,
         )
 

@@ -24,10 +24,18 @@ class BaseToken:
 
     def __init__(
         self,
-        contract_param: IContractInitParam,
+        address: str,
+        is_parent: bool,
+        name: str,
         client: Web3SideChainClient,
+        bridge_type: str | None = None,
     ):
-        self.contract_param = contract_param
+        self.contract_param = IContractInitParam(
+            address=address,
+            is_parent=is_parent,
+            name=name,
+            bridge_type=bridge_type,
+        )
         self.client = client
 
     @property

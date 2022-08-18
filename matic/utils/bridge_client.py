@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from matic.constants import LogEventSignature
-from matic.json_types import IBaseClientConfig, IContractInitParam
+from matic.json_types import IBaseClientConfig
 from matic.pos.exit_util import ExitUtil
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
@@ -25,14 +25,12 @@ class BridgeClient:
         client = self.client
 
         token = BaseToken(
-            IContractInitParam(
-                address=client.abi_manager.get_config(
-                    'Matic.GenesisContracts.StateReceiver'
-                ),
-                is_parent=False,
-                name='StateReceiver',
-                bridge_type='genesis',
+            address=client.abi_manager.get_config(
+                'Matic.GenesisContracts.StateReceiver'
             ),
+            is_parent=False,
+            name='StateReceiver',
+            bridge_type='genesis',
             client=client,
         )
 

@@ -2,12 +2,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from matic.json_types import (
-    IContractInitParam,
-    IExitTransactionOption,
-    IPOSContracts,
-    ITransactionOption,
-)
+from matic.json_types import IExitTransactionOption, IPOSContracts, ITransactionOption
 from matic.pos.exit_util import ExitUtil
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.base_token import BaseToken
@@ -29,12 +24,10 @@ class POSToken(BaseToken):
         get_pos_contracts: Callable[[], IPOSContracts],
     ) -> None:
         super().__init__(
-            IContractInitParam(  # FIXME: never, please
-                is_parent=is_parent,
-                address=token_address,
-                name=self.CONTRACT_NAME,
-                bridge_type='pos',
-            ),
+            is_parent=is_parent,
+            address=token_address,
+            name=self.CONTRACT_NAME,
+            bridge_type='pos',
             client=client,
         )
         self.get_pos_contracts = get_pos_contracts
