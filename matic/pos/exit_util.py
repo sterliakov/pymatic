@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Final
+from typing import Callable, Final
 
 import rlp
 
@@ -14,11 +14,11 @@ from matic.pos.root_chain import RootChain
 from matic.utils import proof_utils
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-HASHES_1: Final = {
+ERC_721_HASHES: Final = {
     LogEventSignature.ERC_721_TRANSFER,
     LogEventSignature.ERC_721_TRANSFER_WITH_METADATA,
 }
-HASHES_2: Final = {
+ERC_1155_HASHES: Final = {
     LogEventSignature.ERC_1155_TRANSFER,
     LogEventSignature.ERC_1155_BATCH_TRANSFER,
 }
@@ -48,7 +48,7 @@ class ExitUtil:
     def _get_log_index(self, log_event_sig: bytes, receipt: ITransactionReceipt) -> int:
         log_index = None
 
-        if log_event_sig in HASHES_1:
+        if log_event_sig in ERC_721_HASHES:
             log_index = next(
                 (
                     i
@@ -61,7 +61,7 @@ class ExitUtil:
                 ),
                 None,
             )
-        elif log_event_sig in HASHES_2:
+        elif log_event_sig in ERC_1155_HASHES:
             log_index = next(
                 (
                     i
@@ -91,7 +91,7 @@ class ExitUtil:
     def _get_all_log_indices(
         self, log_event_sig: bytes, receipt: ITransactionReceipt
     ) -> list[int]:
-        if log_event_sig in HASHES_1:
+        if log_event_sig in ERC_721_HASHES:
             log_indices = [
                 i
                 for i, log in enumerate(receipt.logs)
@@ -101,7 +101,7 @@ class ExitUtil:
                     and log.topics[2].lower() == ZERO_SIG
                 )
             ]
-        elif log_event_sig in HASHES_2:
+        elif log_event_sig in ERC_1155_HASHES:
             log_indices = [
                 i
                 for i, log in enumerate(receipt.logs)
@@ -217,13 +217,45 @@ class ExitUtil:
 
     def build_payload_for_exit(
         self, burn_tx_hash: bytes, index: int, log_event_sig: bytes, is_fast: bool
-    ):
+    ) -> bytes:
         """Build exit payload for transaction hash."""
-        if is_fast and not services.DEFAULT_PROOF_API_URL:
-            raise ProofAPINotSetException
-
         if index < 0:
             raise ValueError('Index must not be a negative integer')
+
+        def get_indices(
+            log_event_sig: bytes, receipt: ITransactionReceipt
+        ) -> list[int]:
+            if index > 0:
+                log_indices = self._get_all_log_indices(log_event_sig, receipt)
+                if index >= len(log_indices):
+                    raise ValueError(
+                        'Index is greater than the number of tokens in this transaction'
+                    )
+                return [log_indices[index]]
+            else:
+                return [self._get_log_index(log_event_sig, receipt)]
+
+        return self._build_multiple_payloads_for_exit(
+            burn_tx_hash, log_event_sig, is_fast, get_indices
+        )[0]
+
+    def build_multiple_payloads_for_exit(
+        self, burn_tx_hash: bytes, log_event_sig: bytes, is_fast: bool
+    ) -> list[bytes]:
+        """Build exit payload for multiple indices."""
+        return self._build_multiple_payloads_for_exit(
+            burn_tx_hash, log_event_sig, is_fast, self._get_all_log_indices
+        )
+
+    def _build_multiple_payloads_for_exit(
+        self,
+        burn_tx_hash: bytes,
+        log_event_sig: bytes,
+        is_fast: bool,
+        get_indices: Callable[[bytes, ITransactionReceipt], list[int]],
+    ) -> list[bytes]:
+        if is_fast and not services.DEFAULT_PROOF_API_URL:
+            raise ProofAPINotSetException
 
         block_info = self.get_chain_block_info(burn_tx_hash)
 
@@ -232,6 +264,7 @@ class ExitUtil:
 
         # step 1 - Get Block int from transaction hash
         tx_block_number = block_info.tx_block_number
+
         # step 2-  get transaction receipt from txhash and
         # block information from block int
         receipt = self._matic_client.get_transaction_receipt(burn_tx_hash)
@@ -255,76 +288,13 @@ class ExitUtil:
         receipt_proof = proof_utils.get_receipt_proof(
             receipt, block, self._matic_client
         )
-
-        # step 6 - encode payload, convert into hex
-        if index > 0:
-            log_indices = self._get_all_log_indices(log_event_sig, receipt)
-            if index >= len(log_indices):
-                raise ValueError(
-                    'Index is greater than the number of tokens in this transaction'
-                )
-            log_index = log_indices[index]
-        else:
-            log_index = self._get_log_index(log_event_sig, receipt)
-
-        return self._encode_payload(
-            root_block_info.header_block_number,
-            block_proof,
-            tx_block_number,
-            block.timestamp,
-            block.transactions_root,
-            block.receipts_root,
-            proof_utils.get_receipt_bytes(receipt),  # rlp encoded
-            receipt_proof['parent_nodes'],
-            receipt_proof['path'],
-            log_index,
-        )
-
-    def build_multiple_payloads_for_exit(
-        self, burn_tx_hash: bytes, log_event_sig: bytes, is_fast: bool
-    ):
-        """Build exit payload for multiple indices."""
-        if is_fast and not services.DEFAULT_PROOF_API_URL:
-            raise ProofAPINotSetException
-
-        block_info = self.get_chain_block_info(burn_tx_hash)
-
-        if not self._is_checkpointed(block_info):
-            raise ValueError('Burn transaction has not been checkpointed as yet')
-
-        # step 1 - Get Block int from transaction hash
-        tx_block_number = block_info.tx_block_number
-
-        # step 2-  get transaction receipt from txhash and
-        # block information from block int
-        receipt = self._matic_client.get_transaction_receipt(burn_tx_hash)
-        block = self._matic_client.get_block_with_transaction(tx_block_number)
-
-        # step  3 - get information about block saved in parent chain
-        if is_fast:
-            root_block_info = self._get_root_block_info_from_api(tx_block_number)
-        else:
-            root_block_info = self._get_root_block_info(tx_block_number)
-
-        # step 4 - build block proof
-        if is_fast:
-            block_proof_result = self._get_block_proof_from_api(
-                tx_block_number, root_block_info
-            )
-        else:
-            block_proof_result = self._get_block_proof(tx_block_number, root_block_info)
-
-        # step 5- create receipt proof
-        receipt_proof = proof_utils.get_receipt_proof(
-            receipt, block, self._matic_client
-        )
-        log_indices = self._get_all_log_indices(log_event_sig, receipt)
+        log_indices = get_indices(log_event_sig, receipt)
 
         # step 6 - encode payloads, convert into hex
         return [
             self._encode_payload(
                 root_block_info.header_block_number,
-                block_proof_result,
+                block_proof,
                 tx_block_number,
                 block.timestamp,
                 block.transactions_root,
@@ -350,20 +320,6 @@ class ExitUtil:
         path,
         log_index,
     ) -> bytes:
-        print(
-            [
-                header_number,
-                block_proof,
-                block_number,
-                timestamp,
-                transactions_root,
-                receipts_root,
-                receipt,
-                rlp.encode(receipt_parent_nodes),
-                b'\x00' + path,
-                log_index,
-            ]
-        )
         return rlp.encode(
             [
                 header_number,
