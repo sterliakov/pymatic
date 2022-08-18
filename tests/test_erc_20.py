@@ -99,15 +99,15 @@ def test_is_deposited(pos_client):
 
 @pytest.mark.offline()
 def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to, from_pk):
-    amount = 100
+    amount = 1
     # with pytest.raises(EIP1559NotSupportedException):
     erc_20_child.transfer(
         amount,
         to,
         from_pk,
         {
-            'max_fee_per_gas': 10,
-            'max_priority_fee_per_gas': 10,
+            'max_fee_per_gas': 30,
+            'max_priority_fee_per_gas': 30,
             'return_transaction': True,
         },
     )
@@ -137,14 +137,14 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to, fro
         to,
         from_pk,
         {
-            'max_fee_per_gas': 20,
-            'max_priority_fee_per_gas': 20,
+            'max_fee_per_gas': 30,
+            'max_priority_fee_per_gas': 30,
             'return_transaction': True,
         },
     )
 
-    assert result['max_fee_per_gas'] == 20
-    assert result['max_priority_fee_per_gas'] == 20
+    assert result['max_fee_per_gas'] == 30
+    assert result['max_priority_fee_per_gas'] == 30
     assert 'gas_price' not in result
     assert result['chain_id'] == 5
 
