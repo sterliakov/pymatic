@@ -5,6 +5,8 @@ import pytest
 from matic import services
 from matic.exceptions import NullSpenderAddressException, ProofAPINotSetException
 
+services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+
 
 @pytest.fixture()
 def erc_20(pos):
@@ -76,8 +78,6 @@ def test_is_withdraw_exited(erc_20_parent):
 
 @pytest.mark.read()
 def test_call_get_block_included():
-    services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
-
     result = services.get_block_included('testnet', 1000)
     int(result['start'])
     assert result['start']  # may be '0'
@@ -183,8 +183,12 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent, fr
 
 @pytest.mark.offline()
 def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child, from_pk):
-    with pytest.raises(NullSpenderAddressException):
-        erc_20_child.approve(1, from_pk)
+    services.DEFAULT_PROOF_API_URL = ''  # Without initialization it's empty string
+    try:
+        with pytest.raises(NullSpenderAddressException):
+            erc_20_child.approve(1, from_pk)
+    finally:
+        services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
 
 
 @pytest.mark.offline()

@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import pytest
 
+from matic import services
+
+services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+
 
 @pytest.fixture()
 def erc_1155(pos):
