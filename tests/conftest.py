@@ -1,11 +1,14 @@
 import os
 
 import pytest
+from dotenv import load_dotenv
 from web3 import Web3
 
 from matic.json_types import IPOSClientConfig, NeighbourClientConfig
 from matic.pos import POSClient
 from matic.utils.abi_manager import ABIManager
+
+load_dotenv()
 
 
 @pytest.fixture()
@@ -22,33 +25,16 @@ def rpc():
 def pos():
     return {
         'parent': {
-            'erc_20': Web3.toChecksumAddress(
-                '0x655f2166b0709cd575202630952d71e2bb0d61af'.lower()
-            ),
-            'erc_721': Web3.toChecksumAddress(
-                '0x02C869F27B0D09004107818B1150e354d38Cb189'.lower()
-            ),
-            'erc_1155': Web3.toChecksumAddress(
-                '0x2e3Ef7931F2d0e4a7da3dea950FF3F19269d9063'.lower()
-            ),
-            # Address of RootChainManager proxy for POS Portal
-            'chain_manager_address': Web3.toChecksumAddress(
-                '0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74'.lower()
-            ),
+            'erc_20': '0x655F2166b0709cd575202630952D71E2bB0d61Af',
+            'erc_721': '0x02C869F27B0D09004107818B1150e354d38Cb189',
+            'erc_1155': '0x2e3Ef7931F2d0e4a7da3dea950FF3F19269d9063',
+            'chain_manager_address': '0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74',
         },
         'child': {
-            'erc_20': Web3.toChecksumAddress(
-                '0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1'.lower()
-            ),
-            'erc_721': Web3.toChecksumAddress(
-                '0xD6A8e816D2314E5635aB71991552A435c00B2952'.lower()
-            ),
-            'erc_1155': Web3.toChecksumAddress(
-                '0xA07e45A987F19E25176c877d98388878622623FA'.lower()
-            ),
-            'weth': Web3.toChecksumAddress(
-                '0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa'.lower()
-            ),
+            'erc_20': '0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1',
+            'erc_721': '0xD6A8e816D2314E5635aB71991552A435c00B2952',
+            'erc_1155': '0xA07e45A987F19E25176c877d98388878622623FA',
+            'weth': '0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa',
         },
     }
 
@@ -56,26 +42,16 @@ def pos():
 @pytest.fixture()
 def user1():
     return {
-        'address': os.getenv(
-            'USER1_FROM', '0xD73a10cEFa7cF0FA3ae4855b13317Ee77B0Ef9c1'
-        ),
-        'private_key': os.getenv(
-            'USER1_PRIVATE_KEY',
-            '0x80f6cbad3710a839382acea3168e638f6c1007e1210103c10874e4653420ca79',
-        ),
+        'address': os.getenv('USER1_FROM'),
+        'private_key': os.getenv('USER1_PRIVATE_KEY'),
     }
 
 
 @pytest.fixture()
 def user2():
     return {
-        'address': os.getenv(
-            'USER2_FROM', '0xa315B75bf9ED0F2b82d5193c83aEcda10d81fE7d'
-        ),  # Your address
-        'private_key': os.getenv(
-            'USER2_PRIVATE_KEY',
-            '0xaf024b43bcbe9aaaf44eb82f650896ede843ec014275297712d1653ad4caf57a',
-        ),
+        'address': os.getenv('USER2_FROM'),
+        'private_key': os.getenv('USER2_PRIVATE_KEY'),
     }
 
 

@@ -9,6 +9,16 @@ on:
       main
   workflow_dispatch:
 
+env:
+  USER1_FROM: ${{ secrets.USER1_FROM }}
+  USER1_PRIVATE_KEY: ${{ secrets.USER1_PRIVATE_KEY }}
+  USER2_FROM: ${{ secrets.USER2_FROM }}
+  USER2_PRIVATE_KEY: ${{ secrets.USER2_PRIVATE_KEY }}
+  ROOT_RPC: https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161
+  MATIC_RPC: https://rpc-mumbai.maticvigil.com
+  PROOF_API: https://apis.matic.network/api/v1/
+
+
 jobs:
   lint:
     runs-on: ubuntu-latest

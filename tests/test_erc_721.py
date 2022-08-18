@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from matic import services
 
-services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
+services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 
 
 @pytest.fixture()
@@ -67,7 +70,7 @@ def test_is_deposited_for_deposit_many(pos_client):
 
 @pytest.mark.offline()
 def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
-    all_tokens_from = erc_721_child.get_all_tokens(from_)
+    all_tokens_from = erc_721_child.get_all_tokens(from_, 1)
     target_token = all_tokens_from[0]
 
     result = erc_721_child.transfer(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 
 import pytest
@@ -7,7 +8,8 @@ import pytest
 from matic import services
 from matic.exceptions import NullSpenderAddressException, ProofAPINotSetException
 
-services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
+services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 
 
 @pytest.fixture()
@@ -234,7 +236,7 @@ def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, fro
                 {'return_transaction': True, 'gas_limit': 200_000},
             )
     finally:
-        services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+        services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 
 
 @pytest.mark.offline()
