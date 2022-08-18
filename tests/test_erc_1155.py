@@ -123,6 +123,7 @@ def test_transfer_write(
         from_=from_,
         amount=amount_to_transfer,
         private_key=from_pk,
+        option={'gas_limit': 200_000},
     )
 
     tx_hash = result.transaction_hash
@@ -150,6 +151,7 @@ def test_transfer_write(
         from_=to,
         amount=amount_to_transfer,
         private_key=to_private_key,
+        option={'gas_limit': 200_000},
     )
     tx_hash = result.transaction_hash
     tx_receipt = result.receipt
@@ -171,6 +173,7 @@ def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
         token_id=TOKEN_ID,
         user_address=from_,
         private_key=from_pk,
+        option={'gas_limit': 200_000},
     )
     assert deposit_tx.receipt
 
@@ -181,7 +184,9 @@ def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
 def test_withdraw_full_cycle(pos_client, erc_1155_child, erc_1155_parent, from_pk):
     import time
 
-    start = erc_1155_child.withdraw_start(TOKEN_ID, 1, from_pk)
+    start = erc_1155_child.withdraw_start(
+        TOKEN_ID, 1, from_pk, option={'gas_limit': 200_000}
+    )
     tx_hash = start.transaction_hash
     erc_1155_child.client.logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
