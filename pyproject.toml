@@ -80,7 +80,7 @@ addopts = """
     --doctest-continue-on-failure
     --ignore=docs
     --color=yes
-    -n auto
+    -n 3
     --dist loadgroup
 """
 
