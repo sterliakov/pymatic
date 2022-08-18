@@ -22,17 +22,10 @@ def rpc():
 def pos():
     return {
         'parent': {
-            # 'erc_20': Web3.toChecksumAddress(
-            #     '0x3f152b63ec5ca5831061b2dccfb29a874c317502'.lower()
-            # ),
             'erc_20': Web3.toChecksumAddress(
                 '0x655f2166b0709cd575202630952d71e2bb0d61af'.lower()
             ),
-            # 'erc_721': Web3.toChecksumAddress(
-            #     '0x16f7ef3774c59264c46e5063b1111bcfd6e7a72f'.lower()
-            # ),
             'erc_721': Web3.toChecksumAddress(
-                # '0x084297B12F204Adb74c689be08302FA3f12dB8A7'.lower()
                 '0x02C869F27B0D09004107818B1150e354d38Cb189'.lower()
             ),
             'erc_1155': Web3.toChecksumAddress(
@@ -44,26 +37,15 @@ def pos():
             ),
         },
         'child': {
-            # 'erc_20': Web3.toChecksumAddress(
-            #     '0xA0D9f8282cD48d22Fd875E43Be32793124f8eD47'.lower()
-            # ),
             'erc_20': Web3.toChecksumAddress(
                 '0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1'.lower()
             ),
-            # 'erc_721': Web3.toChecksumAddress(
-            #     '0xbD88C3A7c0e242156a46Fbdf87141Aa6D0c0c649'.lower()
-            # ),
             'erc_721': Web3.toChecksumAddress(
-                # '0x5cea406197e297c2bdffa25bd11d6087135ca064',
-                # '0x757b1BD7C12B81b52650463e7753d7f5D0565C0e'.lower()
                 '0xD6A8e816D2314E5635aB71991552A435c00B2952'.lower()
             ),
             'erc_1155': Web3.toChecksumAddress(
                 '0xA07e45A987F19E25176c877d98388878622623FA'.lower()
             ),
-            # 'weth': Web3.toChecksumAddress(
-            #     '0x714550C2C1Ea08688607D86ed8EeF4f5E4F22323'.lower()
-            # ),
             'weth': Web3.toChecksumAddress(
                 '0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa'.lower()
             ),

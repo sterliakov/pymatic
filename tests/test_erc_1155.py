@@ -7,8 +7,6 @@ from matic import services
 services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
 TOKEN_ID = 123
 
-pytestmark = pytest.mark.xdist_group('ERC_1155')
-
 
 @pytest.fixture()
 def erc_1155(pos):

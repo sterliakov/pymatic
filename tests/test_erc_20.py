@@ -9,8 +9,6 @@ from matic.exceptions import NullSpenderAddressException, ProofAPINotSetExceptio
 
 services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
 
-pytestmark = pytest.mark.xdist_group('ERC_20')
-
 
 @pytest.fixture()
 def erc_20(pos):

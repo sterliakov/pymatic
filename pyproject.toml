@@ -43,7 +43,6 @@ version = {attr = "matic.__version__"}
 test = [
     'pytest>=6.4.0',
     "pytest-cov",
-    "pytest-xdist",
     "pytest-mock",
     "pre-commit",
 ]
@@ -80,8 +79,6 @@ addopts = """
     --doctest-continue-on-failure
     --ignore=docs
     --color=yes
-    -n 3
-    --dist loadgroup
 """
 
 

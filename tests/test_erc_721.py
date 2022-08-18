@@ -6,8 +6,6 @@ from matic import services
 
 services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
 
-pytestmark = pytest.mark.xdist_group('ERC_721')
-
 
 @pytest.fixture()
 def erc_721(pos):
@@ -33,7 +31,6 @@ def test_get_tokens_counts_child(erc_721_child, from_):
 @pytest.mark.read()
 def test_get_tokens_count_parent(erc_721_parent, from_):
     tokens_count = erc_721_parent.get_tokens_count(from_)
-    # console.log('tokens_count', tokens_count)
     assert tokens_count > 0
 
 
@@ -53,7 +50,6 @@ def test_get_all_tokens_parent(erc_721_parent, from_):
 
 @pytest.mark.read()
 def test_is_withdraw_exited(erc_721_parent):
-    # exit_hash = '0xa3ed203336807249dea53dc99434e2d06b71c85f55c89ee49ca10244ab3dbcf5'
     is_exited = erc_721_parent.is_withdraw_exited(
         '0x2697a930ae883dd28c40a263a6a3b4d41a027cab56836de987ed2c2896abcdeb'
     )
@@ -77,7 +73,6 @@ def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
     result = erc_721_child.transfer(
         target_token, from_, to, from_pk, {'return_transaction': True}
     )
-    # console.log(result)
     assert result['to'].lower() == erc_721['child'].lower()
 
 
@@ -159,9 +154,7 @@ def test_transfer_write(
     erc_721_child, from_, to, erc_721, pos_client_for_to, from_pk, to_private_key
 ):
     all_tokens_from = erc_721_child.get_all_tokens(from_)
-    # // console.log('all_tokens_from', all_tokens_from)
     all_tokens_to = erc_721_child.get_all_tokens(to)
-    # // console.log('all_tokens_to', all_tokens_to)
 
     target_token = all_tokens_from[0]
     result = erc_721_child.transfer(
@@ -173,7 +166,6 @@ def test_transfer_write(
 
     try:
         assert tx_receipt.transaction_hash == tx_hash
-        # assert tx_receipt).to.be.an('object')
         assert tx_receipt.from_ == from_
         assert tx_receipt.to.lower() == erc_721['child'].lower()
         assert tx_receipt.type == '0x2'

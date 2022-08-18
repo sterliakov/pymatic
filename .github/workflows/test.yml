@@ -69,9 +69,12 @@ jobs:
         run: |
           pip install -U pip setuptools wheel
           pip install .[test]
+      - name: Run real-chain tests
+        run: |
+          pytest -m 'online and not can_timeout' -vv
       - name: Run loong tests
         run: |
-          pytest -m 'online' -vv
+          pytest -m 'online and can_timeout' -vv
 
   # docs:
   #   runs-on: ubuntu-latest
