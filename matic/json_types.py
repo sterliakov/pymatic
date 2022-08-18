@@ -74,7 +74,6 @@ class IBaseClientConfig:
     parent: NeighbourClientConfig | None = None
     child: NeighbourClientConfig | None = None
     log: bool = True
-    # request_concurrency: NotRequired[int]
 
 
 @dataclass

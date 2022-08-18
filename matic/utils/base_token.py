@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from typing import Any, cast
 
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
@@ -195,14 +194,9 @@ class BaseToken:
             getattr(self.client.config.parent, 'default_config', None)
             if is_parent
             else getattr(self.client.config.child, 'default_config', None)
-        )
+        ) or {}
 
-        default_config_dict = asdict(default_config) if default_config else {}
-        from_ = default_config_dict.pop('from_', None)
-        if from_:
-            default_config_dict['from'] = from_
-
-        merged_config = dict(default_config_dict)
+        merged_config = dict(default_config)
         merged_config.update(tx_config or {})
 
         tx_config = cast(ITransactionRequestConfig, merged_config)
@@ -231,12 +225,7 @@ class BaseToken:
             raise EIP1559NotSupportedException
 
         if not tx_config.get('gas_limit'):
-            tx_config['gas_limit'] = estimate_gas(
-                tx_config
-                # ITransactionRequestConfig(
-                #     {'from': tx_config['from'], 'value': tx_config.get('value')}
-                # )
-            )
+            tx_config['gas_limit'] = estimate_gas(tx_config)
 
         if not tx_config.get('nonce'):
             tx_config['nonce'] = client.get_transaction_count(
