@@ -9,7 +9,6 @@ from matic.exceptions import (
     EIP1559NotSupportedException,
 )
 from matic.json_types import (
-    IContractInitParam,
     ITransactionOption,
     ITransactionRequestConfig,
     ITransactionWriteResult,
@@ -30,12 +29,10 @@ class BaseToken:
         client: Web3SideChainClient,
         bridge_type: str | None = None,
     ):
-        self.contract_param = IContractInitParam(
-            address=address,
-            is_parent=is_parent,
-            name=name,
-            bridge_type=bridge_type,
-        )
+        self.address = address
+        self.is_parent = is_parent
+        self.name = name
+        self.bridge_type = bridge_type
         self.client = client
 
     @property
@@ -45,12 +42,12 @@ class BaseToken:
             return self._contract
 
         abi = self.client.get_abi(
-            self.contract_param.name,
-            self.contract_param.bridge_type,
+            self.name,
+            self.bridge_type,
         )
         self._contract = self._get_contract(
-            self.contract_param.is_parent,
-            self.contract_param.address,
+            self.is_parent,
+            self.address,
             abi,
         )
         assert self._contract
@@ -84,7 +81,7 @@ class BaseToken:
             tx_config=option,
             is_write=True,
             method=method,
-            is_parent=self.contract_param.is_parent,
+            is_parent=self.is_parent,
         )
 
         self.client.logger.info('process write config: %s', config)
@@ -98,14 +95,14 @@ class BaseToken:
     # def send_transaction(
     #     self, option: ITransactionOption | None = None
     # ) -> ITransactionWriteResult | ITransactionRequestConfig:
-    #     is_parent = self.contract_param.is_parent
+    #     is_parent = self.is_parent
     #     client = self.get_client(is_parent)
 
     #     config = self.create_transaction_config(
     #         tx_config=option,
     #         is_write=True,
     #         method=None,
-    #         is_parent=self.contract_param.is_parent,
+    #         is_parent=self.is_parent,
     #     )
 
     #     client.logger.info('process write config: %s', config)
@@ -128,14 +125,14 @@ class BaseToken:
             ITransactionRequestConfig: if `return_transaction=True`.
                 Builds the final transaction dictionary and returns it.
         """
-        is_parent = self.contract_param.is_parent
+        is_parent = self.is_parent
         client = self.get_client(is_parent)
 
         config = self.create_transaction_config(
             tx_config=option,
             is_write=True,
             method=None,
-            is_parent=self.contract_param.is_parent,
+            is_parent=self.is_parent,
         )
 
         client.logger.info('process read config: %s', config)
@@ -163,7 +160,7 @@ class BaseToken:
             tx_config=option,
             is_write=False,
             method=method,
-            is_parent=self.contract_param.is_parent,
+            is_parent=self.is_parent,
         )
         self.client.logger.info('read tx config created: %s', config)
 
@@ -271,12 +268,12 @@ class BaseToken:
 
     def check_for_root(self) -> None:
         """Assert that method is called on parent chain instance."""
-        if not self.contract_param.is_parent:
+        if not self.is_parent:
             raise AllowedOnRootException
 
     def check_for_child(self) -> None:
         """Assert that method is called on child chain instance."""
-        if self.contract_param.is_parent:
+        if self.is_parent:
             raise AllowedOnChildException
 
     def transfer_erc_1155(

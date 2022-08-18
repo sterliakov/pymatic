@@ -137,17 +137,6 @@ class IBlockWithTransaction(IBaseBlock):
 
 
 @dataclass
-class IContractInitParam:
-    """FIXME: to be removed."""
-
-    address: str
-    is_parent: bool
-    name: str
-    """Used to get the predicate."""
-    bridge_type: str | None = None  # was NotRequired
-
-
-@dataclass
 class IPOSContracts:
     """FIXME: to be removed."""
 

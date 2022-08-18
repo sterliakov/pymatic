@@ -45,7 +45,7 @@ class ERC20(POSToken):
     ):
         """Approve specified amount to contract."""
         spender_address = option.get('spender_address') if option else None
-        if not spender_address and not self.contract_param.is_parent:
+        if not spender_address and not self.is_parent:
             raise NullSpenderAddressException
 
         predicate_address = (
@@ -73,7 +73,7 @@ class ERC20(POSToken):
         amount_in_abi = self.client.parent.encode_parameters([amount], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
-            self.contract_param.address,
+            self.address,
             amount_in_abi,
             private_key,
             option,

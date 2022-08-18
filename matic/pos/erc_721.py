@@ -75,7 +75,7 @@ class ERC721(TokenWithApproveAll):
         amount_in_abi = self.client.parent.encode_parameters([token_id], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
-            self.contract_param.address,
+            self.address,
             amount_in_abi,
             private_key,
             option,
@@ -94,7 +94,7 @@ class ERC721(TokenWithApproveAll):
         amount_in_abi = self.client.parent.encode_parameters([token_ids], ['uint256[]'])
         return self.root_chain_manager.deposit(
             user_address,
-            self.contract_param.address,
+            self.address,
             amount_in_abi,
             private_key,
             option,

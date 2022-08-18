@@ -48,9 +48,7 @@ class POSToken(BaseToken):
         if self._predicate_address:
             return self._predicate_address
 
-        token_type = self.root_chain_manager.method(
-            'tokenToType', self.contract_param.address
-        ).read()
+        token_type = self.root_chain_manager.method('tokenToType', self.address).read()
 
         if not token_type:
             raise ValueError('Invalid Token Type')
