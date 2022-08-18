@@ -3,7 +3,7 @@ import os
 import pytest
 from web3 import Web3
 
-from matic.json_types import ConfigWithFrom, IPOSClientConfig, NeighbourClientConfig
+from matic.json_types import IPOSClientConfig, NeighbourClientConfig
 from matic.pos import POSClient
 from matic.utils.abi_manager import ABIManager
 
@@ -131,16 +131,15 @@ def parent_provider(rpc):
 def pos_client(user1, parent_provider, child_provider):
     return POSClient(
         IPOSClientConfig(
-            # log: true,
             network='testnet',
             version='mumbai',
             parent=NeighbourClientConfig(
                 provider=parent_provider,
-                default_config=ConfigWithFrom(user1['address']),
+                default_config={'from': user1['address']},
             ),
             child=NeighbourClientConfig(
                 provider=child_provider,
-                default_config=ConfigWithFrom(user1['address']),
+                default_config={'from': user1['address']},
             ),
         )
     )
@@ -150,16 +149,15 @@ def pos_client(user1, parent_provider, child_provider):
 def pos_client_for_to(user2, parent_provider, child_provider):
     return POSClient(
         IPOSClientConfig(
-            # log: true,
             network='testnet',
             version='mumbai',
             parent=NeighbourClientConfig(
                 provider=parent_provider,
-                default_config=ConfigWithFrom(user2['address']),
+                default_config={'from': user2['address']},
             ),
             child=NeighbourClientConfig(
                 provider=child_provider,
-                default_config=ConfigWithFrom(user2['address']),
+                default_config={'from': user2['address']},
             ),
         )
     )

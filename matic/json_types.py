@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from matic.pos.root_chain_manager import RootChainManager
 
 
-_TDictWithFrom = TypedDict('_TDictWithFrom', {'from': Required[str]})
+ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[str]})
 
 
-class ITransactionRequestConfig(_TDictWithFrom, total=False):
+class ITransactionRequestConfig(ConfigWithFrom, total=False):
     to: str
     value: int
     gas_limit: int
@@ -59,11 +59,6 @@ class ITransactionData:
 
 
 IApproveTransactionOption = IAllowanceTransactionOption  # FIXME: remove
-
-
-@dataclass
-class ConfigWithFrom:
-    from_: bytes
 
 
 @dataclass
