@@ -57,7 +57,7 @@ jobs:
     strategy:
       max-parallel: 1  # Actions use the same credentials, so race sometimes
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.10']  # Only run this for one version
       fail-fast: false
     steps:
       - name: Checkout
