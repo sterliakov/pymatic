@@ -89,6 +89,14 @@ class IBaseClientConfig(TypedDict):
     log: NotRequired[bool]
 
 
+class IPOSClientConfig(IBaseClientConfig):
+    """Configuration for POS client."""
+
+    root_chain_manager: NotRequired[str]
+    root_chain: NotRequired[str]
+    erc_1155_mintable_predicate: NotRequired[str]
+
+
 @dataclass
 class IBaseBlock:
     """Base block parameters."""
@@ -130,6 +138,8 @@ class IBlockWithTransaction(IBaseBlock):
 
 @dataclass
 class IContractInitParam:
+    """FIXME: to be removed."""
+
     address: str
     is_parent: bool
     name: str
@@ -137,14 +147,10 @@ class IContractInitParam:
     bridge_type: str | None = None  # was NotRequired
 
 
-class IPOSClientConfig(IBaseClientConfig):
-    root_chain_manager: NotRequired[str]
-    root_chain: NotRequired[str]
-    erc_1155_mintable_predicate: NotRequired[str]
-
-
 @dataclass
 class IPOSContracts:
+    """FIXME: to be removed."""
+
     root_chain_manager: RootChainManager
     exit_util: ExitUtil
 
@@ -178,35 +184,30 @@ class IJsonRpcResponse(TypedDict):
     error: NotRequired[str]
 
 
-class ITransactionResult(ABC):
-    @abstractmethod
-    def estimate_gas(self, tx: ITransactionRequestConfig | None = None) -> int:
-        ...
-
-    @abstractmethod
-    def encode_abi(self) -> bytes:
-        ...
-
-
 class ITransactionWriteResult(ABC):
     """Interface for result of ``process_write`` method."""
 
     @property
     @abstractmethod
     def transaction_hash(self) -> bytes:
+        """Get hash of executed transaction."""
         ...
 
     @property
     def receipt(self) -> ITransactionReceipt:
+        """Property for convenient access to receipt."""
         return self.get_receipt()
 
     @abstractmethod
     def get_receipt(self, timeout: int = ...) -> ITransactionReceipt:
+        """Get receipt (wait max ``timeout`` seconds)."""
         ...
 
 
 @dataclass
 class ILog:
+    """Log data."""
+
     address: str
     data: str
     topics: Sequence[bytes]
@@ -225,6 +226,8 @@ class _RawLogData(TypedDict):
 
 @dataclass
 class IEventLog:
+    """Event logs (can occur in transaction receipts)."""
+
     event: str
     address: bytes
     return_values: Any
@@ -259,12 +262,16 @@ class ITransactionReceipt:
 
 @dataclass
 class IChainBlockInfo:
+    """WTF?"""
+
     last_child_block: int
     tx_block_number: int
 
 
 @dataclass
 class CheckpointedBlock(IRootBlockInfo):
+    """Block info obtained from API to construct a proof."""
+
     header_block_number: int
     block_number: int
     start: int
