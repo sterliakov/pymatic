@@ -190,13 +190,16 @@ class BaseToken:
         Warning: this method may raise if your transaction cannot be executed,
             pass ``gas_limit`` to prevent it from happening.
         """
-        default_config = (
-            getattr(self.client.config.parent, 'default_config', None)
-            if is_parent
-            else getattr(self.client.config.child, 'default_config', None)
-        ) or {}
+        if is_parent:
+            default_config = (self.client.config.get('parent') or {}).get(
+                'default_config'  # type: ignore
+            )
+        else:
+            default_config = (self.client.config.get('child') or {}).get(
+                'default_config'  # type: ignore
+            )
 
-        merged_config = dict(default_config)
+        merged_config = dict(default_config or {})
         merged_config.update(tx_config or {})
 
         tx_config = cast(ITransactionRequestConfig, merged_config)

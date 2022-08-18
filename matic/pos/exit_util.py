@@ -164,7 +164,7 @@ class ExitUtil:
     def _get_root_block_info_from_api(self, tx_block_number: int) -> IRootBlockInfo:
         try:
             header_block = services.get_block_included(
-                self.config.network, tx_block_number
+                self.config['network'], tx_block_number
             )
             self._matic_client.logger.debug('block info from API %s', header_block)
 
@@ -195,7 +195,7 @@ class ExitUtil:
     ) -> bytes:
         try:
             block_proof = services.get_proof(
-                self.config.network,
+                self.config['network'],
                 root_block_info.start,
                 root_block_info.end,
                 tx_block_number,

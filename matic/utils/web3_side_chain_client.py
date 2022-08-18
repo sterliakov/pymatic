@@ -30,17 +30,17 @@ class Web3SideChainClient:
         self.resolution = matic.utils.UnstoppableDomains or None
 
         self.parent = web3_client_cls(
-            getattr(config.parent, 'provider', None), self.logger
+            (config.get('parent') or {}).get('provider'), self.logger  # type: ignore
         )
         self.child = web3_client_cls(
-            getattr(config.child, 'provider', None), self.logger
+            (config.get('child') or {}).get('provider'), self.logger  # type: ignore
         )
 
         try:
-            self.abi_manager = ABIManager(config.network, config.version)
+            self.abi_manager = ABIManager(config['network'], config['version'])
         except Exception as e:
             raise ValueError(
-                f'network {config.network} - {config.version} is not supported'
+                f'network {config["network"]} - {config["version"]} is not supported'
             ) from e
 
     def get_abi(self, name: str, type_: str | None = None) -> dict[str, Any]:

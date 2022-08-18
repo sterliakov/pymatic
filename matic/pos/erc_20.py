@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from matic.constants import MAX_AMOUNT, LogEventSignature
 from matic.exceptions import NullSpenderAddressException
-from matic.json_types import (
-    IAllowanceTransactionOption,
-    IApproveTransactionOption,
-    ITransactionOption,
-)
+from matic.json_types import IAllowanceTransactionOption, ITransactionOption
 from matic.pos.pos_token import POSToken
 
 
@@ -45,7 +41,7 @@ class ERC20(POSToken):
         self,
         amount: int,
         private_key: str,
-        option: IApproveTransactionOption | None = None,
+        option: IAllowanceTransactionOption | None = None,
     ):
         """Approve specified amount to contract."""
         spender_address = option.get('spender_address') if option else None
@@ -60,7 +56,7 @@ class ERC20(POSToken):
         return self.process_write(method, option, private_key)
 
     def approve_max(
-        self, private_key: str, option: IApproveTransactionOption | None = None
+        self, private_key: str, option: IAllowanceTransactionOption | None = None
     ):
         """Approve max possible amount of token to contract."""
         return self.approve(MAX_AMOUNT, private_key, option)

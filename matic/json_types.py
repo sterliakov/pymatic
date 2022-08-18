@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 
 from typing_extensions import NotRequired, Required, TypedDict
 from web3.types import RPCEndpoint
@@ -16,6 +16,8 @@ ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[str]})
 
 
 class ITransactionRequestConfig(ConfigWithFrom, total=False):
+    """Transaction config - an actual configuration used to interact with chain."""
+
     to: str
     value: int
     gas_limit: int
@@ -31,10 +33,14 @@ class ITransactionRequestConfig(ConfigWithFrom, total=False):
 
 
 class ITransactionOption(ITransactionRequestConfig):
+    """Transaction config: this can be passed as option to almost all methods."""
+
     return_transaction: NotRequired[bool]
 
 
 class IAllowanceTransactionOption(ITransactionOption):
+    """Transaction config for approve/allowance methods."""
+
     spender_address: NotRequired[bytes]
     """Address of spender.
 
@@ -43,8 +49,16 @@ class IAllowanceTransactionOption(ITransactionOption):
     """
 
 
+class IExitTransactionOption(ITransactionOption):
+    """Transaction config for ``withdraw_exit_*`` operations."""
+
+    burn_event_signature: NotRequired[bytes]
+
+
 @dataclass
 class ITransactionData:
+    """Transaction parameters that can be obtained from blockchain."""
+
     transaction_hash: bytes
     nonce: int
     block_hash: bytes | None
@@ -58,26 +72,27 @@ class ITransactionData:
     input: bytes
 
 
-IApproveTransactionOption = IAllowanceTransactionOption  # FIXME: remove
+class NeighbourClientConfig(TypedDict):
+    """Configuration for parent/child of :class:`matic.utils.web3_side_chain_client.Web3SideChainClient."""  # noqa
 
-
-@dataclass
-class NeighbourClientConfig:
     provider: Any
     default_config: ConfigWithFrom
 
 
-@dataclass
-class IBaseClientConfig:
+class IBaseClientConfig(TypedDict):
+    """Configuration for :class:`matic.utils.web3_side_chain_client.Web3SideChainClient."""  # noqa
+
     network: str
     version: str
-    parent: NeighbourClientConfig | None = None
-    child: NeighbourClientConfig | None = None
-    log: bool = True
+    parent: NotRequired[NeighbourClientConfig]
+    child: NotRequired[NeighbourClientConfig]
+    log: NotRequired[bool]
 
 
 @dataclass
 class IBaseBlock:
+    """Base block parameters."""
+
     size: int
     difficulty: int
     total_difficulty: int
@@ -101,11 +116,15 @@ class IBaseBlock:
 
 @dataclass
 class IBlock(IBaseBlock):
+    """Block with raw transactions (bytes)."""
+
     transactions: Sequence[bytes] = field(default_factory=list)
 
 
 @dataclass
 class IBlockWithTransaction(IBaseBlock):
+    """Block with decoded transactions."""
+
     transactions: Sequence[ITransactionData] = field(default_factory=list)
 
 
@@ -118,29 +137,10 @@ class IContractInitParam:
     bridge_type: str | None = None  # was NotRequired
 
 
-class IExitTransactionOption(ITransactionOption):
-    burn_event_signature: NotRequired[bytes]
-
-
-class IMethod(TypedDict, total=False):
-    name: Required[str]
-    call: Required[str]
-    params: int
-    input_formatter: Sequence[Callable[[], None] | None]
-    output_formatter: Callable[[], None]
-    transform_payload: Callable[[], None]
-    extra_formatters: Any
-    default_block: str
-    default_account: str | None
-    abi_coder: Any
-    handle_revert: bool
-
-
-@dataclass
 class IPOSClientConfig(IBaseClientConfig):
-    root_chain_manager: str | None = None
-    root_chain: str | None = None
-    erc_1155_mintable_predicate: str | None = None
+    root_chain_manager: NotRequired[str]
+    root_chain: NotRequired[str]
+    erc_1155_mintable_predicate: NotRequired[str]
 
 
 @dataclass
@@ -151,6 +151,8 @@ class IPOSContracts:
 
 @dataclass
 class IRootBlockInfo:
+    """Root block info (used in proofs)."""
+
     start: int
     """Block start number."""
     end: int
@@ -160,12 +162,16 @@ class IRootBlockInfo:
 
 
 class IJsonRpcRequestPayload(TypedDict):
+    """JSON-RPC request parameters dict."""
+
     method: RPCEndpoint | str
     params: list[Any]
     id: NotRequired[str | int]
 
 
 class IJsonRpcResponse(TypedDict):
+    """JSON-RPC response parameters dict."""
+
     jsonrpc: str
     id: int
     result: NotRequired[Any]
@@ -183,6 +189,8 @@ class ITransactionResult(ABC):
 
 
 class ITransactionWriteResult(ABC):
+    """Interface for result of ``process_write`` method."""
+
     @property
     @abstractmethod
     def transaction_hash(self) -> bytes:
@@ -230,6 +238,8 @@ class IEventLog:
 
 @dataclass
 class ITransactionReceipt:
+    """Transaction receipt format used internally."""
+
     transaction_hash: bytes
     transaction_index: int
     block_hash: bytes

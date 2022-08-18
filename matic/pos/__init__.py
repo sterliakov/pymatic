@@ -23,20 +23,20 @@ class POSClient(BridgeClient):
     def __init__(self, config: IPOSClientConfig):
         super().__init__(config)
         main_pos_contracts = self.client.main_pos_contracts
-        config.root_chain_manager = (
-            config.root_chain_manager or main_pos_contracts['RootChainManagerProxy']
+        config['root_chain_manager'] = (
+            config['root_chain_manager'] or main_pos_contracts['RootChainManagerProxy']
         )
-        config.root_chain = (
-            config.root_chain or self.client.main_plasma_contracts['RootChainProxy']
+        config['root_chain'] = (
+            config['root_chain'] or self.client.main_plasma_contracts['RootChainProxy']
         )
         self.client.config = config
 
         self.root_chain_manager = RootChainManager(
-            self.client, config.root_chain_manager
+            self.client, config['root_chain_manager']
         )
 
         self.exit_util = ExitUtil(
-            self.client, RootChain(self.client, config.root_chain)
+            self.client, RootChain(self.client, config['root_chain'])
         )
 
     def erc_20(self, token_address: str, is_parent: bool = False) -> ERC20:
