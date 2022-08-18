@@ -11,6 +11,12 @@ from matic.utils.bridge_client import BridgeClient
 
 
 class POSClient(BridgeClient):
+    """POS bridge client.
+
+    Used to manage instantiation of ``ERC20``, ``ERC721`` and ``ERC1155`` classes
+    and perform some common operations.
+    """
+
     root_chain_manager: RootChainManager
     config: IPOSClientConfig
 
@@ -33,13 +39,31 @@ class POSClient(BridgeClient):
             self.client, RootChain(self.client, config.root_chain)
         )
 
-    def erc_20(self, token_address, is_parent: bool = False):
+    def erc_20(self, token_address: str, is_parent: bool = False) -> ERC20:
+        """Instantiate :class:`~matic.pos.ERC20` for token address.
+
+        Args:
+            token_address: address where token contract is deployed.
+            is_parent: Whether this belongs to parent or child chain.
+        """
         return ERC20(token_address, is_parent, self.client, self._get_contracts)
 
-    def erc_721(self, token_address, is_parent: bool = False):
+    def erc_721(self, token_address: str, is_parent: bool = False) -> ERC721:
+        """Instantiate :class:`~matic.pos.ERC721` for token address.
+
+        Args:
+            token_address: address where token contract is deployed.
+            is_parent: Whether this belongs to parent or child chain.
+        """
         return ERC721(token_address, is_parent, self.client, self._get_contracts)
 
-    def erc_1155(self, token_address, is_parent: bool = False):
+    def erc_1155(self, token_address: str, is_parent: bool = False) -> ERC1155:
+        """Instantiate :class:`~matic.pos.ERC1155` for token address.
+
+        Args:
+            token_address: address where token contract is deployed.
+            is_parent: Whether this belongs to parent or child chain.
+        """
         return ERC1155(token_address, is_parent, self.client, self._get_contracts)
 
     def deposit_ether(
@@ -49,8 +73,9 @@ class POSClient(BridgeClient):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
+        """Deposit given amount of ether to polygon chain."""
         return ERC20(
-            b'',
+            '',
             True,
             self.client,
             self._get_contracts,

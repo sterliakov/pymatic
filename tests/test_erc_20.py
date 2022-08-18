@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import pytest
 
 from matic import services
@@ -79,14 +81,13 @@ def test_is_withdraw_exited(erc_20_parent):
 @pytest.mark.read()
 def test_call_get_block_included():
     result = services.get_block_included('testnet', 1000)
-    int(result['start'])
-    assert result['start']  # may be '0'
-    assert int(result['end'])
-    assert result['headerBlockNumber'].startswith('0x')
-    assert result['proposer'].startswith('0x')
-    assert result['root'].startswith('0x')
-    assert int(result['blockNumber']) == 1000
-    assert int(result['createdAt'])
+    # assert result.start  # may be '0'
+    assert result.end
+    assert result.header_block_number.startswith('0x')
+    assert result.proposer.startswith('0x')
+    assert result.root.startswith('0x')
+    assert result.block_number == 1000
+    assert result.created_at
 
 
 @pytest.mark.read()
@@ -293,7 +294,7 @@ def test_child_transfer(
 
 
 @pytest.mark.online()
-def test_approve_and_deposit(erc_20_parent, from_, from_pk):
+def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
     result = erc_20_parent.approve(10, from_pk)
     assert result.transaction_hash
     print(result.transaction_hash)
@@ -303,9 +304,20 @@ def test_approve_and_deposit(erc_20_parent, from_, from_pk):
 
     result = erc_20_parent.deposit(10, from_, from_pk)
 
-    assert result.transaction_hash
-    print(result.transaction_hash)
+    tx_hash = result.transaction_hash
+    assert tx_hash
+    print(tx_hash)
     result.receipt
+
+    start_time = time.time()
+    timeout = 20 * 60
+    while True:
+        if pos_client.is_deposited(tx_hash):
+            break
+        elif time.time() - start_time > timeout:
+            pytest.fail(f'Transaction {tx_hash.hex()} still not deposited')
+        else:
+            time.sleep(10)
 
 
 @pytest.mark.online()
@@ -318,8 +330,6 @@ def test_deposit_ether(pos_client, from_, from_pk):
 @pytest.mark.online()
 @pytest.mark.trylast()
 def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
-    import time
-
     start = erc_20_child.withdraw_start(10, from_pk)
     tx_hash = start.transaction_hash
     erc_20_child.client.logger.info('Start hash: %s', tx_hash.hex())

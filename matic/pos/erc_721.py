@@ -8,8 +8,10 @@ from matic.pos.pos_token import TokenWithApproveAll
 
 
 class ERC721(TokenWithApproveAll):
+    """Arbitrary ERC-721-compliant token."""
+
     CONTRACT_NAME: str = 'ChildERC721'
-    BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_721_TRANSFER
+    BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_721_TRANSFER
 
     @staticmethod
     def _validate_many(token_ids: Sequence[int]) -> list[int]:
@@ -23,14 +25,14 @@ class ERC721(TokenWithApproveAll):
         self, user_address: str, options: ITransactionOption | None = None
     ) -> int:
         """Get tokens count for the user."""
-        method = self.contract.method('balanceOf', user_address)
+        method = self.method('balanceOf', user_address)
         return int(self.process_read(method, options))
 
     def get_token_id_at_index_for_user(
         self, index: int, user_address: str, options: ITransactionOption | None = None
     ) -> int:
         """Get token id on supplied index for user."""
-        method = self.contract.method('tokenOfOwnerByIndex', user_address, index)
+        method = self.method('tokenOfOwnerByIndex', user_address, index)
 
         return int(self.process_read(method, options))
 
@@ -50,16 +52,15 @@ class ERC721(TokenWithApproveAll):
     ) -> bool:
         """Check if given token is approved for contract."""
         self.check_for_root()
-
-        method = self.contract.method('getApproved', token_id)
+        method = self.method('getApproved', token_id)
         return self.predicate_address == self.process_read(method, option)
 
     def approve(
         self, token_id: int, private_key: str, option: ITransactionOption | None = None
     ):
+        """Approve token with given id to contract (root chain)."""
         self.check_for_root()
-
-        method = self.contract.method('approve', self.predicate_address, token_id)
+        method = self.method('approve', self.predicate_address, token_id)
         return self.process_write(method, option, private_key)
 
     def deposit(
@@ -69,8 +70,8 @@ class ERC721(TokenWithApproveAll):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
+        """Deposit given token from root chain to child."""
         self.check_for_root()
-
         amount_in_abi = self.client.parent.encode_parameters([token_id], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
@@ -87,8 +88,8 @@ class ERC721(TokenWithApproveAll):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
+        """Deposit given tokens from root chain to child."""
         self.check_for_root()
-
         self._validate_many(token_ids)
         amount_in_abi = self.client.parent.encode_parameters([token_ids], ['uint256[]'])
         return self.root_chain_manager.deposit(
@@ -102,17 +103,17 @@ class ERC721(TokenWithApproveAll):
     def withdraw_start(
         self, token_id: int, private_key: str, option: ITransactionOption | None = None
     ):
+        """Begin withdrawal to root chain (on child chain)."""
         self.check_for_child()
-
-        method = self.contract.method('withdraw', token_id)
+        method = self.method('withdraw', token_id)
         return self.process_write(method, option, private_key)
 
     def withdraw_start_with_metadata(
         self, token_id: int, private_key: str, option: ITransactionOption | None = None
     ):
+        """Begin withdrawal to root chain with writing of metadata (on child chain)."""
         self.check_for_child()
-
-        method = self.contract.method('withdrawWithMetadata', token_id)
+        method = self.method('withdrawWithMetadata', token_id)
         return self.process_write(method, option, private_key)
 
     def withdraw_start_many(
@@ -121,10 +122,10 @@ class ERC721(TokenWithApproveAll):
         private_key: str,
         option: ITransactionOption | None = None,
     ):
+        """Begin withdrawal of multiple tokens to root chain (on child chain)."""
         self.check_for_child()
-
         self._validate_many(token_ids)
-        method = self.contract.method('withdrawBatch', token_ids)
+        method = self.method('withdrawBatch', token_ids)
         return self.process_write(method, option, private_key)
 
     def withdraw_exit_on_index(
@@ -150,13 +151,12 @@ class ERC721(TokenWithApproveAll):
             option=option,
         )
 
-    def is_withdraw_exited(self, tx_hash: bytes) -> bool:
-        return self.is_withdrawn(tx_hash, LogEventSignature.ERC_721_TRANSFER)
-
     def is_withdraw_exited_many(self, tx_hash: bytes) -> bool:
+        """Check if batch withdrawal is already exited for given transaction."""
         return self.is_withdrawn(tx_hash, LogEventSignature.ERC_721_BATCH_TRANSFER)
 
     def is_withdraw_exited_on_index(self, tx_hash: bytes, index: int) -> bool:
+        """Check if withdrawal is already exited for given transaction on index."""
         return self.is_withdrawn_on_index(
             tx_hash, index, LogEventSignature.ERC_721_TRANSFER
         )

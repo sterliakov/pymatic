@@ -9,7 +9,7 @@ from matic.pos.pos_token import TokenWithApproveAll
 
 class ERC1155(TokenWithApproveAll):
     CONTRACT_NAME: str = 'ChildERC1155'
-    BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_1155_TRANSFER
+    BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_1155_TRANSFER
 
     @property
     def mintable_predicate_address(self) -> str | None:
@@ -21,7 +21,7 @@ class ERC1155(TokenWithApproveAll):
         self, user_address: str, token_id: int, option: ITransactionOption | None = None
     ) -> int:
         """Get balance of a user for supplied token."""
-        method = self.contract.method('balanceOf', user_address, token_id)
+        method = self.method('balanceOf', user_address, token_id)
         return self.process_read(method, option)
 
     def approve_all_for_mintable(
@@ -92,7 +92,7 @@ class ERC1155(TokenWithApproveAll):
         """Start withdraw process by burning the required amount for a token."""
         self.check_for_child()
 
-        method = self.contract.method('withdrawSingle', token_id, amount)
+        method = self.method('withdrawSingle', token_id, amount)
         return self.process_write(method, option, private_key)
 
     def withdraw_start_many(
@@ -105,7 +105,7 @@ class ERC1155(TokenWithApproveAll):
         """Start the withdraw process by burning multiple tokens at a time."""
         self.check_for_child()
 
-        method = self.contract.method('withdrawBatch', token_ids, amounts)
+        method = self.method('withdrawBatch', token_ids, amounts)
         return self.process_write(method, option, private_key)
 
     def withdraw_exit_many(
@@ -149,10 +149,6 @@ class ERC1155(TokenWithApproveAll):
             True,
             option=option,
         )
-
-    def is_withdraw_exited(self, tx_hash: bytes) -> bool:
-        """Check if exit has been completed for a transaction hash."""
-        return self.is_withdrawn(tx_hash, LogEventSignature.ERC_1155_TRANSFER)
 
     def is_withdraw_exited_many(self, tx_hash: bytes) -> bool:
         """Check if batch exit has been completed for a transaction hash."""

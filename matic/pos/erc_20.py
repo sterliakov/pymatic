@@ -11,6 +11,8 @@ from matic.pos.pos_token import POSToken
 
 
 class ERC20(POSToken):
+    """Arbitrary ERC-20-compliant token."""
+
     CONTRACT_NAME: str = 'ChildERC20'
     BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_20_TRANSFER
 
@@ -18,7 +20,7 @@ class ERC20(POSToken):
         self, user_address: str, option: ITransactionOption | None = None
     ) -> int:
         """Get balance of a user for supplied token."""
-        method = self.contract.method(
+        method = self.method(
             'balanceOf',
             user_address,
         )
@@ -32,7 +34,7 @@ class ERC20(POSToken):
             option['spender_address'] if option else None
         ) or self.predicate_address
 
-        method = self.contract.method(
+        method = self.method(
             'allowance',
             user_address,
             predicate_address,
@@ -54,7 +56,7 @@ class ERC20(POSToken):
             spender_address if spender_address else self.predicate_address
         )
 
-        method = self.contract.method('approve', predicate_address, amount)
+        method = self.method('approve', predicate_address, amount)
         return self.process_write(method, option, private_key)
 
     def approve_max(
@@ -72,7 +74,6 @@ class ERC20(POSToken):
     ):
         """Deposit given amount of token for user."""
         self.check_for_root()
-
         amount_in_abi = self.client.parent.encode_parameters([amount], ['uint256'])
         return self.root_chain_manager.deposit(
             user_address,
@@ -90,7 +91,6 @@ class ERC20(POSToken):
         option: ITransactionOption | None = None,
     ):
         self.check_for_root()
-
         method = self.root_chain_manager.method('depositEtherFor', user_address)
         return self.process_write(method, option, private_key)
 
@@ -102,13 +102,8 @@ class ERC20(POSToken):
     ):
         """Initiate withdraw by burning provided amount."""
         self.check_for_child()
-
-        method = self.contract.method('withdraw', amount)
+        method = self.method('withdraw', amount)
         return self.process_write(method, option, private_key)
-
-    def is_withdraw_exited(self, burn_tx_hash: bytes):
-        """Check if exit has been completed for a transaction hash."""
-        return self.is_withdrawn(burn_tx_hash, LogEventSignature.ERC_20_TRANSFER)
 
     def transfer(
         self,

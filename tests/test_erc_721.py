@@ -205,7 +205,7 @@ def test_transfer_write(
 def test_withdraw_full_cycle(pos_client, erc_721_child, erc_721_parent, from_pk, from_):
     import time
 
-    token = erc_721_parent.get_all_tokens(from_, 1)[0]
+    token = erc_721_child.get_all_tokens(from_, 1)[0]
     start = erc_721_child.withdraw_start(token, from_pk)
     tx_hash = start.transaction_hash
     erc_721_child.client.logger.info('Start hash: %s', tx_hash.hex())

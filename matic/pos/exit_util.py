@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Final
+from typing import Final
 
 import rlp
 
@@ -9,7 +8,12 @@ from matic import services
 from matic.abstracts import BaseWeb3Client
 from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
-from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
+from matic.json_types import (
+    IBaseClientConfig,
+    IChainBlockInfo,
+    IRootBlockInfo,
+    ITransactionReceipt,
+)
 from matic.pos.root_chain import RootChain
 from matic.utils.proof_utils import ProofUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
@@ -25,13 +29,9 @@ HASHES_2: Final = {
 ZERO_SIG: Final = bytes(32)
 
 
-@dataclass
-class IChainBlockInfo:
-    last_child_block: str
-    tx_block_number: int
-
-
 class ExitUtil:
+    """Helper utility class for building and performing exit actions with POS bridge."""
+
     _matic_client: BaseWeb3Client
     root_chain: RootChain
     config: IBaseClientConfig
@@ -130,6 +130,7 @@ class ExitUtil:
         return log_indices
 
     def get_chain_block_info(self, burn_tx_hash: bytes) -> IChainBlockInfo:
+        """Obtain information about block that includes given transaction."""
         tx = self._matic_client.get_transaction(burn_tx_hash)
         tx_block = tx.block_number
         assert tx_block is not None
@@ -143,6 +144,7 @@ class ExitUtil:
         return int(data.last_child_block) >= int(data.tx_block_number)
 
     def is_checkpointed(self, burn_tx_hash: bytes) -> bool:
+        """Check if given transaction is checkpointed."""
         return self._is_checkpointed(self.get_chain_block_info(burn_tx_hash))
 
     def _get_root_block_info(self, tx_block_number: int) -> IRootBlockInfo:
@@ -150,8 +152,7 @@ class ExitUtil:
         # find in which block child was included in parent
         block_number = self.root_chain.find_root_block_from_child(tx_block_number)
         _, start, end, _, _ = self.root_chain.method(
-            'headerBlocks',
-            block_number,
+            'headerBlocks', block_number
         ).read()
 
         return IRootBlockInfo(
@@ -160,14 +161,12 @@ class ExitUtil:
             end=end,
         )
 
-    def _get_root_block_info_from_api(self, tx_block_number: int):
-        self._matic_client.logger.debug('block info from API 1')
-
+    def _get_root_block_info_from_api(self, tx_block_number: int) -> IRootBlockInfo:
         try:
             header_block = services.get_block_included(
                 self.config.network, tx_block_number
             )
-            self._matic_client.logger.debug('block info from API 2', header_block)
+            self._matic_client.logger.debug('block info from API %s', header_block)
 
             if not (
                 header_block
@@ -178,11 +177,12 @@ class ExitUtil:
                 raise ValueError('Network API Error')
             return header_block
         except Exception as e:  # noqa
-            self._matic_client.logger.debug('Block info from API error: %r', e)
+            self._matic_client.logger.error('Block info from API error: %r', e)
             return self._get_root_block_info(tx_block_number)
 
-    def _get_block_proof(self, tx_block_number: int, root_block_info: Any) -> bytes:
-        # FIXME: root_block_info -> start + end or -> _AnyWithStartEnd (worseee)
+    def _get_block_proof(
+        self, tx_block_number: int, root_block_info: IRootBlockInfo
+    ) -> bytes:
         return ProofUtil.build_block_proof(
             self._matic_client,
             int(root_block_info.start),
@@ -191,7 +191,7 @@ class ExitUtil:
         )
 
     def _get_block_proof_from_api(
-        self, tx_block_number: int, root_block_info: Any
+        self, tx_block_number: int, root_block_info: IRootBlockInfo
     ) -> bytes:
         try:
             block_proof = services.get_proof(
@@ -214,6 +214,7 @@ class ExitUtil:
     def build_payload_for_exit(
         self, burn_tx_hash: bytes, index: int, log_event_sig: bytes, is_fast: bool
     ):
+        """Build exit payload for transaction hash."""
         if is_fast and not services.DEFAULT_PROOF_API_URL:
             raise ProofAPINotSetException
 
@@ -276,6 +277,7 @@ class ExitUtil:
     def build_multiple_payloads_for_exit(
         self, burn_tx_hash: bytes, log_event_sig: bytes, is_fast: bool
     ):
+        """Build exit payload for multiple indices."""
         if is_fast and not services.DEFAULT_PROOF_API_URL:
             raise ProofAPINotSetException
 
@@ -369,7 +371,10 @@ class ExitUtil:
             ]
         )
 
-    def get_exit_hash(self, burn_tx_hash, index, log_event_sig) -> bytes:
+    def get_exit_hash(
+        self, burn_tx_hash: bytes, index: int, log_event_sig: bytes
+    ) -> bytes:
+        """Build exit hash for burn transaction."""
         last_child_block = self.root_chain.last_child_block
         receipt = self._matic_client.get_transaction_receipt(burn_tx_hash)
         block_result = self._matic_client.get_block_with_transaction(

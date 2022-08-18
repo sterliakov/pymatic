@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import cast
+from typing import Any, cast
 
-from matic.abstracts import BaseContract, BaseContractMethod
+from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.exceptions import (
     AllowedOnChildException,
     AllowedOnRootException,
@@ -17,15 +17,10 @@ from matic.json_types import (
 )
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-# export interface ITransactionConfigParam {
-#     tx_config: ITransactionRequestConfig
-#     method?: BaseContractMethod
-#     is_write?: boolean
-#     is_parent?: boolean
-# }
-
 
 class BaseToken:
+    """Base class for all tokens."""
+
     _contract: BaseContract | None = None
 
     def __init__(
@@ -38,6 +33,7 @@ class BaseToken:
 
     @property
     def contract(self) -> BaseContract:
+        """Contract object."""
         if self._contract:
             return self._contract
 
@@ -53,12 +49,30 @@ class BaseToken:
         assert self._contract
         return self._contract
 
+    def method(self, method_name: str, *args: Any) -> Any:
+        """Call arbitrary JSON-RPC method."""
+        return self.contract.method(method_name, *args)
+
     def process_write(
         self,
         method: BaseContractMethod,
         option: ITransactionOption | None = None,
         private_key: str | None = None,
     ) -> ITransactionWriteResult | ITransactionRequestConfig:
+        """Perform write (modifying) operation.
+
+        Args:
+            method: Method instance (with arguments passed on instantiation)
+            option: Additional parameters.
+                May contain special key ``return_transaction`` (see Returns section)
+            private_key: Sender private key
+                (may be missing, if your provider supports implicit tx signing)
+
+        Returns:
+            ITransactionWriteResult: if actual write was performed.
+            ITransactionRequestConfig: if `return_transaction=True`.
+                Builds the final transaction dictionary and returns it.
+        """
         config = self.create_transaction_config(
             tx_config=option,
             is_write=True,
@@ -95,7 +109,18 @@ class BaseToken:
 
     def read_transaction(
         self, option: ITransactionOption | None = None
-    ) -> ITransactionWriteResult | ITransactionRequestConfig:
+    ) -> Any | ITransactionRequestConfig:
+        """Send read (non-modifying) transaction without RPC method.
+
+        Args:
+            option: Additional parameters.
+                May contain special key ``return_transaction`` (see Returns section)
+
+        Returns:
+            Any: if actual read was performed (type depends on executed request.
+            ITransactionRequestConfig: if `return_transaction=True`.
+                Builds the final transaction dictionary and returns it.
+        """
         is_parent = self.contract_param.is_parent
         client = self.get_client(is_parent)
 
@@ -114,7 +139,19 @@ class BaseToken:
 
     def process_read(
         self, method: BaseContractMethod, option: ITransactionOption | None = None
-    ):
+    ) -> Any:
+        """Perform read (non-modifying) operation.
+
+        Args:
+            method: Method instance (with arguments passed on instantiation)
+            option: Additional parameters.
+                May contain special key ``return_transaction`` (see Returns section)
+
+        Returns:
+            Any: if actual read was performed (type depends on executed request.
+            ITransactionRequestConfig: if `return_transaction=True`.
+                Builds the final transaction dictionary and returns it.
+        """
         config = self.create_transaction_config(
             tx_config=option,
             is_write=False,
@@ -130,22 +167,17 @@ class BaseToken:
 
         return method.read(config)
 
-    def get_client(self, is_parent: bool):
+    def get_client(self, is_parent: bool) -> BaseWeb3Client:
+        """Get web3 client instance."""
         if is_parent:
             return self.client.parent
         return self.client.child
 
-    def _get_contract(self, is_parent, token_address, abi):
+    def _get_contract(
+        self, is_parent: bool, token_address: str, abi: dict[str, Any]
+    ) -> BaseContract:
         client = self.get_client(is_parent)
         return client.get_contract(token_address, abi)
-
-    @property
-    def parent_default_config(self):
-        return getattr(self.client.config.parent, 'default_config', None)
-
-    @property
-    def child_default_config(self):
-        return getattr(self.client.config.child, 'default_config', None)
 
     def create_transaction_config(
         self,
@@ -154,9 +186,17 @@ class BaseToken:
         is_parent: bool,
         is_write: bool,
     ) -> ITransactionRequestConfig:
+        """Fill in missing fields in transaction request.
+
+        Warning: this method may raise if your transaction cannot be executed,
+            pass ``gas_limit`` to prevent it from happening.
+        """
         default_config = (
-            self.parent_default_config if is_parent else self.child_default_config
+            getattr(self.client.config.parent, 'default_config', None)
+            if is_parent
+            else getattr(self.client.config.child, 'default_config', None)
         )
+
         default_config_dict = asdict(default_config) if default_config else {}
         from_ = default_config_dict.pop('from_', None)
         if from_:
@@ -213,6 +253,7 @@ class BaseToken:
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
+        """Transfer ERC-20 token."""
         method = self.contract.method('transfer', to, amount)
         return self.process_write(method, option, private_key)
 
@@ -224,14 +265,17 @@ class BaseToken:
         private_key: str,
         option: ITransactionOption | None = None,
     ):
+        """Transfer ERC-721 token."""
         method = self.contract.method('transferFrom', from_, to, token_id)
         return self.process_write(method, option, private_key)
 
     def check_for_root(self) -> None:
+        """Assert that method is called on parent chain instance."""
         if not self.contract_param.is_parent:
             raise AllowedOnRootException
 
     def check_for_child(self) -> None:
+        """Assert that method is called on child chain instance."""
         if self.contract_param.is_parent:
             raise AllowedOnChildException
 
@@ -245,6 +289,7 @@ class BaseToken:
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
+        """Transfer ERC-1155 token."""
         method = self.contract.method(
             'safeTransferFrom',
             from_,

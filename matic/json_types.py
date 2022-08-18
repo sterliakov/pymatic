@@ -117,7 +117,7 @@ class IBlockWithTransaction(IBaseBlock):
 
 @dataclass
 class IContractInitParam:
-    address: bytes
+    address: str
     is_parent: bool
     name: str
     """Used to get the predicate."""
@@ -144,8 +144,8 @@ class IMethod(TypedDict, total=False):
 
 @dataclass
 class IPOSClientConfig(IBaseClientConfig):
-    root_chain_manager: bytes | None = None
-    root_chain: bytes | None = None
+    root_chain_manager: str | None = None
+    root_chain: str | None = None
     erc_1155_mintable_predicate: str | None = None
 
 
@@ -157,12 +157,12 @@ class IPOSContracts:
 
 @dataclass
 class IRootBlockInfo:
-    start: str
+    start: int
     """Block start number."""
-    end: str
+    end: int
     """Block end number."""
     header_block_number: int
-    """Header block number - root block int in which child block exist."""
+    """Header block number - root block number in which child block exist."""
 
 
 class IJsonRpcRequestPayload(TypedDict):
@@ -251,3 +251,21 @@ class ITransactionReceipt:
     status: bool | None = None
     logs: Sequence[ILog] = field(default_factory=list)
     events: dict[str, IEventLog] = field(default_factory=dict)
+
+
+@dataclass
+class IChainBlockInfo:
+    last_child_block: int
+    tx_block_number: int
+
+
+@dataclass
+class CheckpointedBlock(IRootBlockInfo):
+    header_block_number: str  # type: ignore[assignment] # hex string, with "0x"
+    block_number: int
+    start: int
+    end: int
+    proposer: str  # hex string, with "0x"
+    root: str  # hex string, with "0x"
+    created_at: int
+    message: str

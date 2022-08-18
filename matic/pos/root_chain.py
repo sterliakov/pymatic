@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from typing import Any
-
 from matic.json_types import IContractInitParam
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-# import { BaseToken, utils, Web3SideChainClient } from "../utils"
-# import { TYPE_AMOUNT } from "../types"
-# import { IPOSClientConfig, ITransactionOption } from "../interfaces"
-# import { BaseBigNumber } from ".."
-
 
 class RootChain(BaseToken):
-    def __init__(self, client: Web3SideChainClient, address: bytes):
+    """Root chain implementation.
+
+    This represents a connection between parent (root) and child chains.
+    For example, Goerli testnet is a root chain for Mumbai testnet.
+    """
+
+    def __init__(self, client: Web3SideChainClient, address: str):
         super().__init__(
             IContractInitParam(
                 address=address,
@@ -23,14 +22,13 @@ class RootChain(BaseToken):
             client=client,
         )
 
-    def method(self, method_name: str, *args: Any) -> Any:
-        return self.contract.method(method_name, *args)
-
     @property
-    def last_child_block(self):
+    def last_child_block(self) -> int:
+        """Get last block number on child chain."""
         return self.method('getLastChildBlock').read()
 
     def find_root_block_from_child(self, child_block_number: int) -> int:
+        """Find root block corresponding to child block of given number."""
         checkpoint_interval = 10000
 
         # First checkpoint id = start * 10000

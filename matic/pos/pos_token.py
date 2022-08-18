@@ -21,11 +21,11 @@ class POSToken(BaseToken):
 
     def __init__(
         self,
-        token_address: bytes,
+        token_address: str,
         is_parent: bool,
         client: Web3SideChainClient,
         get_pos_contracts: Callable[[], IPOSContracts],
-    ):
+    ) -> None:
         super().__init__(
             IContractInitParam(  # FIXME: never, please
                 is_parent=is_parent,
@@ -39,10 +39,12 @@ class POSToken(BaseToken):
 
     @property
     def root_chain_manager(self) -> RootChainManager:
+        """Get RootChainManager instance."""
         return self.get_pos_contracts().root_chain_manager
 
     @property
     def exit_util(self) -> ExitUtil:
+        """Get ExitUtil instance."""
         return self.get_pos_contracts().exit_util
 
     @property
@@ -136,6 +138,10 @@ class POSToken(BaseToken):
             True,
             option=option,
         )
+
+    def is_withdraw_exited(self, tx_hash: bytes) -> bool:
+        """Check if exit has been completed for a transaction hash."""
+        return self.is_withdrawn(tx_hash, self.BURN_EVENT_SIGNATURE)
 
 
 class TokenWithApproveAll(POSToken):

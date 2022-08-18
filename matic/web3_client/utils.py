@@ -1,3 +1,5 @@
+"""Conversion utils: web3 structures to matic."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -13,6 +15,7 @@ from matic.json_types import (
 
 
 def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = None):
+    """Transaction request: matic to web3."""
     config: dict[str, Any] = dict(data or {})
     type_ = config.get('type')
     prepared = {
@@ -33,6 +36,7 @@ def matic_tx_request_config_to_web3(data: ITransactionRequestConfig | None = Non
 
 
 def web3_log_to_matic_log(log: Any) -> ILog:
+    """Log: web3 to matic."""
     return ILog(
         address=log.get('address'),
         data=log.get('data'),
@@ -47,6 +51,7 @@ def web3_log_to_matic_log(log: Any) -> ILog:
 
 
 def web3_receipt_to_matic_receipt(receipt: Any) -> ITransactionReceipt:
+    """Transaction receipt: web3 to matic."""
     return ITransactionReceipt(
         block_hash=receipt.get('blockHash'),
         block_number=receipt.get('blockNumber'),
@@ -66,7 +71,8 @@ def web3_receipt_to_matic_receipt(receipt: Any) -> ITransactionReceipt:
     )
 
 
-def web3_tx_to_matic_tx(tx):
+def web3_tx_to_matic_tx(tx) -> ITransactionData:
+    """Transaction: web3 to matic."""
     return ITransactionData(
         transaction_hash=tx.hash,
         nonce=tx.nonce,

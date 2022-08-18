@@ -28,3 +28,6 @@ class LogEventSignature:
     ERC_721_TRANSFER_WITH_METADATA: Final = bytes.fromhex(
         'f94915c6d1fd521cee85359239227480c7e8776d7caf1fc3bacad5c269b66a14'
     )
+    STATE_SYNCED_EVENT: Final = bytes.fromhex(
+        '103fed9db65eac19c4d870f49ab7520fe03b99f1838e5996caf47e9e43308392'
+    )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Iterator
 
 import rlp
 from mpt import MerklePatriciaTrie as BaseTrie
@@ -8,7 +8,7 @@ from mpt.nibble_path import NibblePath
 from mpt.node import Node
 
 from matic.abstracts import BaseWeb3Client
-from matic.json_types import IBlockWithTransaction, ITransactionReceipt
+from matic.json_types import IBaseBlock, IBlockWithTransaction, ITransactionReceipt
 from matic.utils import keccak256
 from matic.utils.merkle_tree import MerkleTree
 from matic.utils.polyfill import removeprefix
@@ -19,11 +19,21 @@ from matic.utils.polyfill import removeprefix
 
 
 class Trie(BaseTrie):
-    def find_path(self, encoded_key):
+    """Merkle-Patricia trie with `find_path` helper."""
+
+    def find_path(self, encoded_key: bytes) -> Iterator[Node.Node]:
+        """Find the path from encoding key to trie root.
+
+        Args:
+            encoded_key: Key to find in a trie.
+
+        Yields:
+            Nodes of path.
+        """
         path = NibblePath(encoded_key)
         yield from self._find_path(self._root, path)
 
-    def _find_path(self, node_ref, path):
+    def _find_path(self, node_ref: bytes, path: NibblePath) -> Iterator[Node.Node]:
         node = self._get_node(node_ref)
 
         # If path is empty, our travel is over.
@@ -59,6 +69,8 @@ class Trie(BaseTrie):
 
 
 class ProofUtil:
+    """Helper class to generate proofs for receipts."""
+
     @classmethod
     def get_fast_merkle_proof(
         cls,
@@ -67,6 +79,7 @@ class ProofUtil:
         start_block: int,
         end_block: int,
     ) -> list[bytes]:
+        """Get fast Merkle proof for block."""
         tree_depth = MerkleTree.estimate_depth(end_block - start_block + 1)
 
         # We generate the proof root down, whereas we need from leaf up
@@ -148,6 +161,7 @@ class ProofUtil:
         end_block: int,
         block_number: int,
     ) -> bytes:
+        """Get proof for block as single byte string."""
         proof = cls.get_fast_merkle_proof(
             matic_web3, block_number, start_block, end_block
         )
@@ -157,10 +171,12 @@ class ProofUtil:
     def query_root_hash(
         cls, client: BaseWeb3Client, start_block: int, end_block: int
     ) -> bytes:
+        """Get root hash."""
         return client.get_root_hash(start_block, end_block)
 
     @classmethod
     def recursive_zero_hash(cls, n: int, client: BaseWeb3Client) -> bytes:
+        """Get n-th recursive zero hash."""
         if n == 0:
             return bytes(32)
 
@@ -176,6 +192,7 @@ class ProofUtil:
         request_concurrency: int | None = None,
         receipts_val: Iterable[ITransactionReceipt] | None = None,
     ):
+        """Get proof for receipt."""
         state_sync_tx_hash = cls.get_state_sync_tx_hash(block).hex()
         receipts_trie = Trie({})
 
@@ -215,18 +232,18 @@ class ProofUtil:
 
     @classmethod
     def is_typed_receipt(cls, receipt: ITransactionReceipt) -> bool:
+        """Check if transaction was performed and type is non-zero."""
         return bool(receipt.status is not None and receipt.type not in {'0x0', '0x'})
 
     @classmethod
-    def get_state_sync_tx_hash(cls, block) -> bytes:
-        """
-        get_state_sync_tx_hash returns block's tx hash for state-sync receipt
+    def get_state_sync_tx_hash(cls, block: IBaseBlock) -> bytes:
+        """Get block's tx hash for state-sync receipt.
+
         Bor blockchain includes extra receipt/tx for state-sync logs,
         but it is not included in transactionRoot or receiptRoot.
         So, while calculating proof, we have to exclude them.
 
-        This is derived from block's hash and int
-        state-sync tx hash = keccak256("matic-bor-receipt-" + block.int + block.hash)
+        This is derived from block's hash and int.
         """
         return keccak256(
             [
@@ -238,7 +255,8 @@ class ProofUtil:
         )
 
     @classmethod
-    def get_receipt_bytes(cls, receipt: ITransactionReceipt):
+    def get_receipt_bytes(cls, receipt: ITransactionReceipt) -> bytes:
+        """Get binary representation of receipt for storing in trie."""
         encoded_data = rlp.encode(
             [
                 (

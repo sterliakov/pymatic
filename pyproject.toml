@@ -11,7 +11,7 @@ dynamic = ["version"]
 name = "pymatic"
 authors = [{name = "sterliakov", email = "terlya.stas@gmail.com"}]
 readme = "README.md"
-description = "Python port of matic.js - "
+description = "Python port of matic.js - library to interact with Polygon"
 license = { file = "LICENSE" }
 classifiers = [
     "Programming Language :: Python :: 3.8",
@@ -78,6 +78,7 @@ addopts = """
     --doctest-modules
     --doctest-continue-on-failure
     --ignore=docs
+    --color=yes
 """
 
 
@@ -150,8 +151,11 @@ extend_ignore = [
     "D401",  # Imperative mood of first docstring line is not always encouraged
     "RST306",  # Plugin can't resolve links defined in other docstrings.
     "RST304",  # No builtin roles, so too much to do manually.
+    "RST301", "RST201",  # Incompatible with google doc style
     "E203",  # Invalid. Expressions like `[len(x) :]` conform with PEP8, but raise this.
-    "D",  # FIXME: temporary only
+    "D100",  # Modules may remain unannotated
+    "D104",  # Packages may remain unannotated
+    "D107",  # __init__ may remain unannotated
 ]
 # Ignore
 per-file-ignores = [
