@@ -5,6 +5,7 @@ import pytest
 from matic import services
 
 services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+TOKEN_ID = 123
 
 
 @pytest.fixture()
@@ -24,13 +25,13 @@ def erc_1155_parent(pos_client, erc_1155):
 
 @pytest.mark.read()
 def test_get_balance_child(erc_1155_child, from_):
-    balance = erc_1155_child.get_balance(from_, 123)
+    balance = erc_1155_child.get_balance(from_, TOKEN_ID)
     assert balance > 0
 
 
 @pytest.mark.read()
 def test_get_balance_parent(erc_1155_parent, from_):
-    balance = erc_1155_parent.get_balance(from_, 123)
+    balance = erc_1155_parent.get_balance(from_, TOKEN_ID)
     assert balance > 0
 
 
@@ -52,7 +53,7 @@ def test_is_deposited(pos_client):
 @pytest.mark.offline()
 def test_transfer_return_tx(erc_1155_child, from_, to, from_pk, erc_1155):
     result = erc_1155_child.transfer(
-        {'amount': 1, 'from_': from_, 'to': to, 'token_id': 123},
+        {'amount': 1, 'from_': from_, 'to': to, 'token_id': TOKEN_ID},
         from_pk,
         {'return_transaction': True, 'gas_limit': 200_000},
     )
@@ -68,7 +69,7 @@ def test_approve_all_return_tx(erc_1155_parent, from_pk, erc_1155):
 @pytest.mark.offline()
 def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
     tx = erc_1155_parent.deposit(
-        {'amount': 10, 'token_id': 123, 'user_address': from_},
+        {'amount': 1, 'token_id': TOKEN_ID, 'user_address': from_},
         from_pk,
         {'return_transaction': True, 'gas_limit': 200_000},
     )
@@ -91,7 +92,7 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
 @pytest.mark.offline()
 def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
     result = erc_1155_child.withdraw_start(
-        123, 10, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
+        TOKEN_ID, 1, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     )
     assert result['to'].lower() == erc_1155['child'].lower()
 
@@ -99,7 +100,7 @@ def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
 @pytest.mark.offline()
 def test_withdraw_start_many_return_tx(erc_1155_child, erc_1155, from_pk):
     result = erc_1155_child.withdraw_start_many(
-        [123], [10], from_pk, {'return_transaction': True, 'gas_limit': 200_000}
+        [TOKEN_ID], [1], from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     )
     assert result['to'].lower() == erc_1155['child'].lower()
 
@@ -108,13 +109,12 @@ def test_withdraw_start_many_return_tx(erc_1155_child, erc_1155, from_pk):
 def test_transfer_write(
     erc_1155_child, pos_client_for_to, to, from_, from_pk, to_private_key, erc_1155
 ):
-    target_token = 123
-    all_tokens_from = erc_1155_child.get_balance(from_, target_token)
-    all_tokens_to = erc_1155_child.get_balance(to, target_token)
+    all_tokens_from = erc_1155_child.get_balance(from_, TOKEN_ID)
+    all_tokens_to = erc_1155_child.get_balance(to, TOKEN_ID)
     amount_to_transfer = 1
     result = erc_1155_child.transfer(
         {
-            'token_id': target_token,
+            'token_id': TOKEN_ID,
             'from_': from_,
             'to': to,
             'amount': amount_to_transfer,
@@ -133,9 +133,9 @@ def test_transfer_write(
     assert tx_receipt.gas_used > 0
     assert tx_receipt.cumulative_gas_used > 0
 
-    new_all_tokens_from = erc_1155_child.get_balance(from_, target_token)
+    new_all_tokens_from = erc_1155_child.get_balance(from_, TOKEN_ID)
     assert new_all_tokens_from == all_tokens_from - 1
-    new_all_tokens_to = erc_1155_child.get_balance(to, target_token)
+    new_all_tokens_to = erc_1155_child.get_balance(to, TOKEN_ID)
     assert new_all_tokens_to == all_tokens_to + 1
 
     erc_1155_child_token = pos_client_for_to.erc_1155(erc_1155['child'])
@@ -143,7 +143,7 @@ def test_transfer_write(
     # transfer token back to sender
     result = erc_1155_child_token.transfer(
         {
-            'token_id': target_token,
+            'token_id': TOKEN_ID,
             'to': from_,
             'from_': to,
             'amount': amount_to_transfer,
@@ -153,8 +153,8 @@ def test_transfer_write(
     tx_hash = result.transaction_hash
     tx_receipt = result.receipt
 
-    new_from_count = erc_1155_child.get_balance(from_, target_token)
-    new_to_count = erc_1155_child.get_balance(to, target_token)
+    new_from_count = erc_1155_child.get_balance(from_, TOKEN_ID)
+    new_to_count = erc_1155_child.get_balance(to, TOKEN_ID)
 
     assert new_from_count == all_tokens_from
     assert new_to_count == all_tokens_to
@@ -162,16 +162,13 @@ def test_transfer_write(
 
 @pytest.mark.online()
 def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
-    target_token = 123
-    # all_tokens_from = erc_1155_child.get_balance(from_, target_token)
-
     approve_tx = erc_1155_parent.approve_all(from_pk)
     assert approve_tx.receipt
 
     deposit_tx = erc_1155_parent.deposit(
         {
             'amount': 1,
-            'token_id': target_token,
+            'token_id': TOKEN_ID,
             'user_address': from_,
         },
         from_pk,
@@ -185,7 +182,7 @@ def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
 def test_withdraw_full_cycle(pos_client, erc_1155_child, erc_1155_parent, from_pk):
     import time
 
-    start = erc_1155_child.withdraw_start(123, 1, from_pk)
+    start = erc_1155_child.withdraw_start(TOKEN_ID, 1, from_pk)
     tx_hash = start.transaction_hash
     erc_1155_child.client.logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
