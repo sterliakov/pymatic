@@ -73,8 +73,8 @@ class BaseWeb3Client(ABC):
     ) -> IBlockWithTransaction:
         ...
 
-    def get_root_hash(self, start_block: int, end_block: int):
-        return str(
+    def get_root_hash(self, start_block: int, end_block: int) -> bytes:
+        return bytes.fromhex(
             self.send_rpc_request(
                 {
                     'method': 'eth_getRootHash',

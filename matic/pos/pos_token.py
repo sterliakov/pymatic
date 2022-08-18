@@ -84,11 +84,12 @@ class POSToken(BaseToken):
         *,
         option: IExitTransactionOption | None = None,
     ) -> None:
+        self.check_for_root()
+
         event_signature = (
             option.get('burn_event_signature') if option is not None else None
         ) or event_signature
 
-        self.check_for_root()
         payload = self.exit_util.build_payload_for_exit(
             burn_tx_hash, index, event_signature, is_fast
         )

@@ -12,7 +12,7 @@ from matic.pos.pos_token import POSToken
 
 class ERC20(POSToken):
     CONTRACT_NAME: str = 'ChildERC20'
-    BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_20_TRANSFER
+    BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_20_TRANSFER
 
     def get_balance(
         self, user_address: str, option: ITransactionOption | None = None

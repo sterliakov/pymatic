@@ -183,12 +183,8 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent, fr
 
 @pytest.mark.offline()
 def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child, from_pk):
-    services.DEFAULT_PROOF_API_URL = ''  # Without initialization it's empty string
-    try:
-        with pytest.raises(NullSpenderAddressException):
-            erc_20_child.approve(1, from_pk)
-    finally:
-        services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
+    with pytest.raises(NullSpenderAddressException):
+        erc_20_child.approve(1, from_pk)
 
 
 @pytest.mark.offline()
@@ -228,16 +224,20 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
 
 @pytest.mark.offline()
 def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, from_pk):
-    with pytest.raises(ProofAPINotSetException):
-        erc_20_parent.withdraw_exit_faster(
-            EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-        )
+    services.DEFAULT_PROOF_API_URL = ''  # Without initialization it's empty string
+    try:
+        with pytest.raises(ProofAPINotSetException):
+            erc_20_parent.withdraw_exit_faster(
+                EXITED_TX_HASH,
+                from_pk,
+                {'return_transaction': True, 'gas_limit': 200_000},
+            )
+    finally:
+        services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1/'
 
 
 @pytest.mark.offline()
 def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
-    services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1'
-
     result = erc_20_parent.withdraw_exit_faster(
         EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     )

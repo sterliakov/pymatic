@@ -52,4 +52,4 @@ def get_proof(network: str, start, end, block_number, base_url: str | None = Non
         network,
         f'/fast-merkle-proof?start={start}&end={end}&number={block_number}',
     )
-    return requests.get(url).json()['proof']
+    return bytes.fromhex(removeprefix(requests.get(url).json()['proof'], '0x'))

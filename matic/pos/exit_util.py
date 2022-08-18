@@ -11,7 +11,6 @@ from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
 from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
 from matic.pos.root_chain import RootChain
-from matic.utils.polyfill import removeprefix
 from matic.utils.proof_utils import ProofUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
@@ -182,7 +181,7 @@ class ExitUtil:
             self._matic_client.logger.debug('Block info from API error: %r', e)
             return self._get_root_block_info(tx_block_number)
 
-    def _get_block_proof(self, tx_block_number: int, root_block_info: Any):
+    def _get_block_proof(self, tx_block_number: int, root_block_info: Any) -> bytes:
         # FIXME: root_block_info -> start + end or -> _AnyWithStartEnd (worseee)
         return ProofUtil.build_block_proof(
             self._matic_client,
@@ -191,7 +190,9 @@ class ExitUtil:
             tx_block_number,
         )
 
-    def _get_block_proof_from_api(self, tx_block_number: int, root_block_info: Any):
+    def _get_block_proof_from_api(
+        self, tx_block_number: int, root_block_info: Any
+    ) -> bytes:
         try:
             block_proof = services.get_proof(
                 self.config.network,
@@ -233,20 +234,18 @@ class ExitUtil:
 
         # step  3 - get information about block saved in parent chain
         if is_fast:
-            root_block_info_result = self._get_root_block_info_from_api(tx_block_number)
+            root_block_info = self._get_root_block_info_from_api(tx_block_number)
         else:
-            root_block_info_result = self._get_root_block_info(tx_block_number)
+            root_block_info = self._get_root_block_info(tx_block_number)
 
-        root_block_info = root_block_info_result
         # step 4 - build block proof
         if is_fast:
-            block_proof_result = self._get_block_proof_from_api(
+            block_proof = self._get_block_proof_from_api(
                 tx_block_number, root_block_info
             )
         else:
-            block_proof_result = self._get_block_proof(tx_block_number, root_block_info)
+            block_proof = self._get_block_proof(tx_block_number, root_block_info)
 
-        block_proof = block_proof_result
         # step 5- create receipt proof
         receipt_proof = ProofUtil.get_receipt_proof(receipt, block, self._matic_client)
 
@@ -295,11 +294,10 @@ class ExitUtil:
 
         # step  3 - get information about block saved in parent chain
         if is_fast:
-            root_block_info_result = self._get_root_block_info_from_api(tx_block_number)
+            root_block_info = self._get_root_block_info_from_api(tx_block_number)
         else:
-            root_block_info_result = self._get_root_block_info(tx_block_number)
+            root_block_info = self._get_root_block_info(tx_block_number)
 
-        root_block_info = root_block_info_result
         # step 4 - build block proof
         if is_fast:
             block_proof_result = self._get_block_proof_from_api(
@@ -316,7 +314,7 @@ class ExitUtil:
         return [
             self._encode_payload(
                 root_block_info.header_block_number,
-                bytes.fromhex(block_proof_result),
+                block_proof_result,
                 tx_block_number,
                 block.timestamp,
                 block.transactions_root,
@@ -332,7 +330,7 @@ class ExitUtil:
     def _encode_payload(
         self,
         header_number,
-        build_block_proof,
+        block_proof: bytes,
         block_number,
         timestamp,
         transactions_root,
@@ -342,10 +340,24 @@ class ExitUtil:
         path,
         log_index,
     ) -> bytes:
+        print(
+            [
+                header_number,
+                block_proof,
+                block_number,
+                timestamp,
+                transactions_root,
+                receipts_root,
+                receipt,
+                rlp.encode(receipt_parent_nodes),
+                b'\x00' + path,
+                log_index,
+            ]
+        )
         return rlp.encode(
             [
                 header_number,
-                bytes.fromhex(removeprefix(build_block_proof, '0x')),
+                block_proof,
                 block_number,
                 timestamp,
                 transactions_root,

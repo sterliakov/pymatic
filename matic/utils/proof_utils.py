@@ -66,11 +66,11 @@ class ProofUtil:
         block_number: int,
         start_block: int,
         end_block: int,
-    ):
+    ) -> list[bytes]:
         tree_depth = MerkleTree.estimate_depth(end_block - start_block + 1)
 
         # We generate the proof root down, whereas we need from leaf up
-        reversed_proof: list[str] = []
+        reversed_proof: list[bytes] = []
 
         offset = start_block
         target_index = block_number - offset
@@ -147,14 +147,16 @@ class ProofUtil:
         start_block: int,
         end_block: int,
         block_number: int,
-    ):
+    ) -> bytes:
         proof = cls.get_fast_merkle_proof(
             matic_web3, block_number, start_block, end_block
         )
-        return b''.join(map(bytes.fromhex, proof)).hex()
+        return b''.join(proof)
 
     @classmethod
-    def query_root_hash(cls, client: BaseWeb3Client, start_block: int, end_block: int):
+    def query_root_hash(
+        cls, client: BaseWeb3Client, start_block: int, end_block: int
+    ) -> bytes:
         return client.get_root_hash(start_block, end_block)
 
     @classmethod
