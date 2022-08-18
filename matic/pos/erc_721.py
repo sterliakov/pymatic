@@ -3,12 +3,13 @@ from __future__ import annotations
 from typing import Sequence
 
 from matic.constants import LogEventSignature
-from matic.json_types import ITransactionOption
+from matic.json_types import IExitTransactionOption, ITransactionOption
 from matic.pos.pos_token import POSToken
 
 
 class ERC721(POSToken):
     CONTRACT_NAME: str = 'ChildERC721'
+    BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_721_TRANSFER
 
     @staticmethod
     def _validate_many(token_ids: Sequence[int]) -> list[int]:
@@ -145,80 +146,28 @@ class ERC721(POSToken):
         method = self.contract.method('withdrawBatch', token_ids)
         return self.process_write(method, option, private_key)
 
-    def withdraw_exit(
-        self,
-        burn_transaction_hash: bytes,
-        private_key: str,
-        option: ITransactionOption | None = None,
-    ):
-        self.check_for_root()
-
-        payload = self.exit_util.build_payload_for_exit(
-            burn_transaction_hash, 0, LogEventSignature.ERC_721_TRANSFER, False
-        )
-        return self.root_chain_manager.exit(payload, private_key, option)
-
     def withdraw_exit_on_index(
         self,
         burn_transaction_hash: bytes,
         index: int,
         private_key: str,
-        option: ITransactionOption | None = None,
+        option: IExitTransactionOption | None = None,
     ):
-        self.check_for_root()
+        """Complete withdraw process for token on given index.
 
-        payload = self.exit_util.build_payload_for_exit(
-            burn_transaction_hash, index, LogEventSignature.ERC_721_TRANSFER, False
+        This function should be called after checkpoint has been submitted
+        for the block containing burn tx.
+
+        This function uses API to fetch proof data.
+        """
+        return self.withdraw_exit_pos(
+            burn_transaction_hash,
+            self.BURN_EVENT_SIGNATURE,
+            private_key,
+            True,
+            index,
+            option=option,
         )
-        return self.root_chain_manager.exit(payload, private_key, option)
-
-    # async withdrawExitMany(
-    #     burn_transaction_hash: bytes, option: ITransactionOption | None = None
-    # ) {
-    #     self.check_for_root()
-    #     return self.exit_util.buildMultiplePayloadsForExit(
-    #         burn_transaction_hash,
-    #         LogEventSignature.ERC_721_BATCH_TRANSFER,
-    #         False
-    #     ).then(async payloads => {
-    #         const exitTxs = []
-    #         if()
-    #         for(const i in payloads) {
-    #           exitTxs.push(self.root_chain_manager.exit(
-    #             payloads[i], option
-    #         ))
-    #         }
-    #         return Promise.all(exitTxs)
-    #         })
-    # }
-
-    def withdraw_exit_faster(
-        self,
-        burn_transaction_hash: bytes,
-        private_key: str,
-        option: ITransactionOption | None = None,
-    ):
-        self.check_for_root()
-
-        payload = self.exit_util.build_payload_for_exit(
-            burn_transaction_hash, 0, LogEventSignature.ERC_721_TRANSFER, True
-        )
-        return self.root_chain_manager.exit(payload, private_key, option)
-
-    # withdrawExitFasterMany(
-    #     burn_transaction_hash: bytes, option: ITransactionOption | None = None
-    # ) {
-    #     self.check_for_root()
-    #     return self.exit_util.build_payload_for_exit(
-    #         burn_transaction_hash,
-    #         LogEventSignature.ERC_721_BATCH_TRANSFER,
-    #         True
-    #     ).then(payload => {
-    #         return self.root_chain_manager.exit(
-    #             payload, option
-    #         )
-    #     })
-    # }
 
     def is_withdraw_exited(self, tx_hash: bytes) -> bool:
         return self.is_withdrawn(tx_hash, LogEventSignature.ERC_721_TRANSFER)

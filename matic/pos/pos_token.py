@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from matic.json_types import IContractInitParam, IPOSContracts, ITransactionOption
+from matic.json_types import IContractInitParam, IExitTransactionOption, IPOSContracts
 from matic.pos.exit_util import ExitUtil
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.base_token import BaseToken
@@ -12,6 +12,7 @@ from matic.utils.web3_side_chain_client import Web3SideChainClient
 class POSToken(BaseToken):
     _predicate_address: str | None = None
     CONTRACT_NAME: str  # TODO: should be abstract
+    BURN_EVENT_SIGNATURE: bytes  # TODO: should be abstract
 
     def __init__(
         self,
@@ -74,9 +75,58 @@ class POSToken(BaseToken):
         event_signature: bytes,
         private_key: str,
         is_fast: bool = True,
-        option: ITransactionOption | None = None,
+        index: int = 0,
+        *,
+        option: IExitTransactionOption | None = None,
     ) -> None:
+        event_signature = (
+            option.get('burn_event_signature') if option is not None else None
+        ) or event_signature
+
+        self.check_for_root()
         payload = self.exit_util.build_payload_for_exit(
-            burn_tx_hash, 0, event_signature, is_fast
+            burn_tx_hash, index, event_signature, is_fast
         )
         return self.root_chain_manager.exit(payload, private_key, option)
+
+    def withdraw_exit(
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: IExitTransactionOption | None = None,
+    ):
+        """Complete withdraw process.
+
+        This function should be called after checkpoint has been submitted
+        for the block containing burn tx.
+
+        This function fetches required blocks and builds proof using them.
+        """
+        return self.withdraw_exit_pos(
+            burn_transaction_hash,
+            self.BURN_EVENT_SIGNATURE,
+            private_key,
+            False,
+            option=option,
+        )
+
+    def withdraw_exit_faster(
+        self,
+        burn_transaction_hash: bytes,
+        private_key: str,
+        option: IExitTransactionOption | None = None,
+    ):
+        """Complete withdraw process.
+
+        This function should be called after checkpoint has been submitted
+        for the block containing burn tx.
+
+        This function uses API to fetch proof data.
+        """
+        return self.withdraw_exit_pos(
+            burn_transaction_hash,
+            self.BURN_EVENT_SIGNATURE,
+            private_key,
+            True,
+            option=option,
+        )

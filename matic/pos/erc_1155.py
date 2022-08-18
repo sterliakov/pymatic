@@ -4,6 +4,7 @@ from typing import Sequence
 
 from matic.constants import LogEventSignature
 from matic.json_types import (
+    IExitTransactionOption,
     ITransactionOption,
     POSERC1155DepositBatchParam,
     POSERC1155DepositParam,
@@ -14,6 +15,7 @@ from matic.pos.pos_token import POSToken
 
 class ERC1155(POSToken):
     CONTRACT_NAME: str = 'ChildERC1155'
+    BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_1155_TRANSFER
 
     @property
     def mintable_predicate_address(self) -> str | None:
@@ -134,43 +136,11 @@ class ERC1155(POSToken):
         method = self.contract.method('withdrawBatch', token_ids, amounts)
         return self.process_write(method, option, private_key)
 
-    def withdraw_exit(
-        self,
-        burn_transaction_hash: bytes,
-        private_key: str,
-        option: ITransactionOption | None = None,
-    ):
-        """Exit the withdraw process and get the burned amount on root chain."""
-        self.check_for_root()
-        return self.withdraw_exit_pos(
-            burn_transaction_hash,
-            LogEventSignature.ERC_1155_TRANSFER,
-            private_key,
-            False,
-            option,
-        )
-
-    def withdraw_exit_faster(
-        self,
-        burn_transaction_hash: bytes,
-        private_key: str,
-        option: ITransactionOption | None = None,
-    ):
-        """Exit the withdraw process and get the burned amount on root chain."""
-        self.check_for_root()
-        return self.withdraw_exit_pos(
-            burn_transaction_hash,
-            LogEventSignature.ERC_1155_TRANSFER,
-            private_key,
-            True,
-            option,
-        )
-
     def withdraw_exit_many(
         self,
         burn_transaction_hash: bytes,
         private_key: str,
-        option: ITransactionOption | None = None,
+        option: IExitTransactionOption | None = None,
     ):
         """Exit the multiple withdraw process.
 
@@ -179,20 +149,19 @@ class ERC1155(POSToken):
 
         This function fetches blocks and builds a proof manually.
         """
-        self.check_for_root()
         return self.withdraw_exit_pos(
             burn_transaction_hash,
             LogEventSignature.ERC_1155_BATCH_TRANSFER,
             private_key,
             False,
-            option,
+            option=option,
         )
 
     def withdraw_exit_faster_many(
         self,
         burn_transaction_hash: bytes,
         private_key: str,
-        option: ITransactionOption | None = None,
+        option: IExitTransactionOption | None = None,
     ):
         """Exit the multiple withdraw process.
 
@@ -201,13 +170,12 @@ class ERC1155(POSToken):
 
         This function uses API to get proof faster.
         """
-        self.check_for_root()
         return self.withdraw_exit_pos(
             burn_transaction_hash,
             LogEventSignature.ERC_1155_BATCH_TRANSFER,
             private_key,
             True,
-            option,
+            option=option,
         )
 
     def is_withdraw_exited(self, tx_hash: bytes) -> bool:
