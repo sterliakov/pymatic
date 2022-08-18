@@ -4,10 +4,10 @@ from typing import Iterable, Sequence
 
 from matic.constants import LogEventSignature
 from matic.json_types import IExitTransactionOption, ITransactionOption
-from matic.pos.pos_token import POSToken
+from matic.pos.pos_token import TokenWithApproveAll
 
 
-class ERC1155(POSToken):
+class ERC1155(TokenWithApproveAll):
     CONTRACT_NAME: str = 'ChildERC1155'
     BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_1155_TRANSFER
 
@@ -23,32 +23,6 @@ class ERC1155(POSToken):
         """Get balance of a user for supplied token."""
         method = self.contract.method('balanceOf', user_address, token_id)
         return self.process_read(method, option)
-
-    def is_approved_all(
-        self, user_address: str, option: ITransactionOption | None = None
-    ) -> bool:
-        """Check if a user is approved for all tokens."""
-        self.check_for_root()
-
-        method = self.contract.method(
-            'isApprovedForAll', user_address, self.predicate_address
-        )
-        return bool(self.process_read(method, option))
-
-    def _approve_all(
-        self,
-        predicate_address: str,
-        private_key: str,
-        option: ITransactionOption | None = None,
-    ):
-        self.check_for_root()
-        method = self.contract.method('setApprovalForAll', predicate_address, True)
-        return self.process_write(method, option, private_key)
-
-    def approve_all(self, private_key: str, option: ITransactionOption | None = None):
-        """Approve all tokens."""
-        self.check_for_root()
-        return self._approve_all(self.predicate_address, private_key, option)
 
     def approve_all_for_mintable(
         self, private_key: str, option: ITransactionOption | None = None

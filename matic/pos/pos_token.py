@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import Callable
 
-from matic.json_types import IContractInitParam, IExitTransactionOption, IPOSContracts
+from matic.json_types import (
+    IContractInitParam,
+    IExitTransactionOption,
+    IPOSContracts,
+    ITransactionOption,
+)
 from matic.pos.exit_util import ExitUtil
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.base_token import BaseToken
@@ -130,3 +135,31 @@ class POSToken(BaseToken):
             True,
             option=option,
         )
+
+
+class TokenWithApproveAll(POSToken):
+    """This is a general token with common methods for ERC721 and ERC1155"""
+
+    def is_approved_all(
+        self, user_address: str, option: ITransactionOption | None = None
+    ) -> bool:
+        """Check if a user is approved for all tokens."""
+        self.check_for_root()
+        method = self.contract.method(
+            'isApprovedForAll', user_address, self.predicate_address
+        )
+        return bool(self.process_read(method, option))
+
+    def _approve_all(
+        self,
+        predicate_address: str,
+        private_key: str,
+        option: ITransactionOption | None = None,
+    ):
+        self.check_for_root()
+        method = self.contract.method('setApprovalForAll', predicate_address, True)
+        return self.process_write(method, option, private_key)
+
+    def approve_all(self, private_key: str, option: ITransactionOption | None = None):
+        """Approve all tokens."""
+        return self._approve_all(self.predicate_address, private_key, option)

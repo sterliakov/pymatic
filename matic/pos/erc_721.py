@@ -4,10 +4,10 @@ from typing import Sequence
 
 from matic.constants import LogEventSignature
 from matic.json_types import IExitTransactionOption, ITransactionOption
-from matic.pos.pos_token import POSToken
+from matic.pos.pos_token import TokenWithApproveAll
 
 
-class ERC721(POSToken):
+class ERC721(TokenWithApproveAll):
     CONTRACT_NAME: str = 'ChildERC721'
     BURN_EVENT_SIGNATURE_SINGLE: bytes = LogEventSignature.ERC_721_TRANSFER
 
@@ -54,29 +54,12 @@ class ERC721(POSToken):
         method = self.contract.method('getApproved', token_id)
         return self.predicate_address == self.process_read(method, option)
 
-    def is_approved_all(
-        self, user_address: str, option: ITransactionOption | None = None
-    ) -> bool:
-        """Check if all tokens owned by user are approved for contract."""
-        self.check_for_root()
-
-        method = self.contract.method(
-            'isApprovedForAll', user_address, self.predicate_address
-        )
-        return bool(self.process_read(method, option))
-
     def approve(
         self, token_id: int, private_key: str, option: ITransactionOption | None = None
     ):
         self.check_for_root()
 
         method = self.contract.method('approve', self.predicate_address, token_id)
-        return self.process_write(method, option, private_key)
-
-    def approve_all(self, private_key: str, option: ITransactionOption | None = None):
-        self.check_for_root()
-
-        method = self.contract.method('setApprovalForAll', self.predicate_address, True)
         return self.process_write(method, option, private_key)
 
     def deposit(
