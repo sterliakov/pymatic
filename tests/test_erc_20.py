@@ -190,7 +190,7 @@ def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child, f
 @pytest.mark.offline()
 def test_deposit_return_tx(abi_manager, erc_20_parent, from_, from_pk):
     result = erc_20_parent.deposit(
-        9, from_, from_pk, {'return_transaction': True, 'gas_limit': 200000}
+        9, from_, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     )
 
     root_chain_manager = abi_manager.get_config(
@@ -212,7 +212,7 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
     result = erc_20_parent.withdraw_exit(
         EXITED_TX_HASH,
         from_pk,
-        {'return_transaction': True, 'gas_limit': 200000},
+        {'return_transaction': True, 'gas_limit': 200_000},
     )
     assert result['data'].hex() == exit_data.hex()
 
@@ -226,7 +226,7 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
 def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, from_pk):
     with pytest.raises(ProofAPINotSetException):
         erc_20_parent.withdraw_exit_faster(
-            EXITED_TX_HASH, from_pk, {'return_transaction': True}
+            EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
         )
 
 
@@ -235,7 +235,7 @@ def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
     services.DEFAULT_PROOF_API_URL = 'https://apis.matic.network/api/v1'
 
     result = erc_20_parent.withdraw_exit_faster(
-        EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200000}
+        EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     )
     assert result['data'] == exit_data
 
