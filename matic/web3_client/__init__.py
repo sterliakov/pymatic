@@ -63,7 +63,7 @@ class EthMethod(BaseContractMethod):
 
         if private_key:
             tx_prep = self.method.build_transaction(web3_tx)
-            print('Prepared tx: ', tx_prep)
+            self.logger.debug('Prepared tx: ', tx_prep)
             tx_signed = self.client._web3.eth.account.sign_transaction(
                 tx_prep, private_key
             )
