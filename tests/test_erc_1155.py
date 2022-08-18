@@ -119,8 +119,8 @@ def test_transfer_write(
     amount_to_transfer = 1
     result = erc_1155_child.transfer(
         token_id=TOKEN_ID,
-        to=from_,
-        from_=to,
+        to=to,
+        from_=from_,
         amount=amount_to_transfer,
         private_key=from_pk,
     )
