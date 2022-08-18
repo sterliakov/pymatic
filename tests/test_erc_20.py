@@ -310,7 +310,7 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
     result.receipt
 
     start_time = time.time()
-    timeout = 20 * 60
+    timeout = 60 * 60
     while True:
         if pos_client.is_deposited(tx_hash):
             break
