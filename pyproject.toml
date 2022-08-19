@@ -31,9 +31,7 @@ dependencies = [
     "rlp ~= 2.0.1",
     "web3 ~= 5.30.0",
     "ethers ~= 0.1.1",
-
     "merkle-patricia-trie ~= 0.3.1",
-
     "typing_extensions ~= 4.3.0",
     "python-dotenv",
 ]
