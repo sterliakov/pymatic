@@ -262,7 +262,7 @@ def test_child_transfer(
 ):
     old_balance = erc_20_child.get_balance(to)
     amount = 10
-    result = erc_20_child.transfer(amount, to, from_pk, {'gas_limit': 300000})
+    result = erc_20_child.transfer(amount, to, from_pk, {'gas_limit': 300_000})
 
     tx_hash = result.transaction_hash
     erc_20_child.client.logger.info('Forward: %s', tx_hash.hex())
@@ -293,7 +293,7 @@ def test_child_transfer(
     # transfer money back to user
     erc_20_child_token = pos_client_for_to.erc_20(erc_20['child'])
     result = erc_20_child_token.transfer(
-        amount, from_, to_private_key, {'gas_limit': 300000}
+        amount, from_, to_private_key, {'gas_limit': 300_000}
     )
     print('Back: ', result.transaction_hash.hex())
     result.receipt
@@ -301,7 +301,7 @@ def test_child_transfer(
 
 @pytest.mark.online()
 def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
-    result = erc_20_parent.approve(10, from_pk)
+    result = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
     assert result.transaction_hash
     print(result.transaction_hash.hex())
     print(erc_20_parent.get_allowance(from_))
@@ -309,7 +309,7 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
     tx_receipt = result.receipt
     assert tx_receipt.type == '0x2'
 
-    result = erc_20_parent.deposit(10, from_, from_pk)
+    result = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
 
     tx_hash = result.transaction_hash
     assert tx_hash
@@ -337,7 +337,7 @@ def test_deposit_ether(pos_client, from_, from_pk):
 @pytest.mark.online()
 @pytest.mark.trylast()
 def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
-    start = erc_20_child.withdraw_start(10, from_pk)
+    start = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
     tx_hash = start.transaction_hash
     erc_20_child.client.logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
