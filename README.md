@@ -9,7 +9,7 @@
 
 **Disclaimer: this package is not officialy maintained by Polygon affiliates.**
 
-Read or [documentation](https://readthedocs.org/projects/pymatic/badge/?version=latest) on ReadTheDocs.
+Read our [documentation](https://readthedocs.org/projects/pymatic/badge/?version=latest) on ReadTheDocs.
 
 This project is a direct python port of [matic.js](https://github.com/maticnetwork/matic.js/) library. It includes also [maticjs-web3](https://github.com/maticnetwork/maticjs-web3/) port.
 
@@ -40,9 +40,22 @@ Supported extras:
 
 # Obtaining tokens: initial setup
 
-Refer to `.env.example` in project root for environment configuration. The RPC provided can be used as-is for testnet (Mumbai - child chain, Goerli - parent chain).
+To proceed woth testing, you'll need environment configuration based on the following template:
 
-To run any of test examples, you'll need two addresses. **Don't use real addresses on testnet!** TO begin with, you may copy `.env.example` configuration and provide addresses and private keys.
+```bash
+USER1_FROM=  # 0x...
+USER1_PRIVATE_KEY=  # Without prefix
+USER2_FROM=  # 0x...
+USER2_PRIVATE_KEY=  # Without prefix
+
+ROOT_RPC=https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161
+MATIC_RPC=https://rpc-mumbai.maticvigil.com
+PROOF_API=https://apis.matic.network/api/v1/
+```
+
+The RPC provided can be used as-is for testnet (Mumbai - child chain, Goerli - parent chain).
+
+To run any of test examples, you'll need two addresses. **Don't use real addresses on testnet!**
 
 Then, to execute any transactions you'll need some MATIC tokens. You can obtain them via the [polygon faucet](https://faucet.polygon.technology/) (better - for both addresses, so you don't think later how to transfer something back).
 
