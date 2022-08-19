@@ -10,6 +10,8 @@ Welcome to pymatic's documentation!
    :maxdepth: 3
    :caption: Contents:
 
+   installation
+   quickstart
    common
    pos_bridge
    utils

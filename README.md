@@ -3,7 +3,7 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/pymatic.svg)](https://pypi.python.org/pypi/pymatic/)
 [![Read the Docs](https://readthedocs.org/projects/pymatic/badge/?version=latest)](https://pymatic.readthedocs.io/en/latest/?badge=latest)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: black](https://img.shields.io/badge/code%20style-blue-blue.svg)](https://blue.readthedocs.io/)
 
 
 # PyMatic - Python SDK to assist developers on Polygon blockchain.
@@ -29,6 +29,7 @@ Install from source:
 
 ```bash
 git clone https://github.com/sterliakov/pymatic/
+cd pymatic
 pip install .
 ```
 
@@ -41,7 +42,6 @@ Supported extras:
 # Obtaining tokens: initial setup
 
 Refer to `.env.example` in project root for environment configuration. The RPC provided can be used as-is for testnet (Mumbai - child chain, Goerli - parent chain).
-
 
 To run any of test examples, you'll need two addresses. **Don't use real addresses on testnet!** TO begin with, you may copy `.env.example` configuration and provide addresses and private keys.
 
