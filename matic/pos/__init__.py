@@ -72,7 +72,7 @@ class POSClient(BridgeClient):
         self,
         amount: int,
         user_address: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit given amount of ether to polygon chain."""

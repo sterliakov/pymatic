@@ -43,7 +43,7 @@ class RootChainManager(BaseToken):
     def exit(  # noqa: A003
         self,
         exit_payload: bytes,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Finish exit operation.

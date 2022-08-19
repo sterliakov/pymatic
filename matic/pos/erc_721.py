@@ -56,7 +56,10 @@ class ERC721(TokenWithApproveAll):
         return self.predicate_address == self.process_read(method, option)
 
     def approve(
-        self, token_id: int, private_key: str, option: ITransactionOption | None = None
+        self,
+        token_id: int,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ):
         """Approve token with given id to contract (root chain)."""
         self.check_for_root()
@@ -67,7 +70,7 @@ class ERC721(TokenWithApproveAll):
         self,
         token_id: int,
         user_address: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit given token from root chain to child."""
@@ -85,7 +88,7 @@ class ERC721(TokenWithApproveAll):
         self,
         token_ids: Sequence[int],
         user_address: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit given tokens from root chain to child."""
@@ -101,7 +104,10 @@ class ERC721(TokenWithApproveAll):
         )
 
     def withdraw_start(
-        self, token_id: int, private_key: str, option: ITransactionOption | None = None
+        self,
+        token_id: int,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ):
         """Begin withdrawal to root chain (on child chain)."""
         self.check_for_child()
@@ -109,7 +115,10 @@ class ERC721(TokenWithApproveAll):
         return self.process_write(method, option, private_key)
 
     def withdraw_start_with_metadata(
-        self, token_id: int, private_key: str, option: ITransactionOption | None = None
+        self,
+        token_id: int,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ):
         """Begin withdrawal to root chain with writing of metadata (on child chain)."""
         self.check_for_child()
@@ -119,7 +128,7 @@ class ERC721(TokenWithApproveAll):
     def withdraw_start_many(
         self,
         token_ids: Sequence[int],
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Begin withdrawal of multiple tokens to root chain (on child chain)."""
@@ -132,7 +141,7 @@ class ERC721(TokenWithApproveAll):
         self,
         burn_transaction_hash: bytes,
         index: int,
-        private_key: str,
+        private_key: str | None = None,
         option: IExitTransactionOption | None = None,
     ):
         """Complete withdraw process for token on given index.
@@ -166,7 +175,7 @@ class ERC721(TokenWithApproveAll):
         token_id: int,
         from_: str,
         to: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Transfer to another user."""

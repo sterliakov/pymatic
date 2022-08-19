@@ -76,7 +76,7 @@ class POSToken(BaseToken):
         self,
         burn_tx_hash: bytes,
         event_signature: bytes,
-        private_key: str,
+        private_key: str | None = None,
         is_fast: bool = True,
         index: int = 0,
         *,
@@ -97,7 +97,7 @@ class POSToken(BaseToken):
     def withdraw_exit(
         self,
         burn_transaction_hash: bytes,
-        private_key: str,
+        private_key: str | None = None,
         option: IExitTransactionOption | None = None,
     ):
         """Complete withdraw process.
@@ -118,7 +118,7 @@ class POSToken(BaseToken):
     def withdraw_exit_faster(
         self,
         burn_transaction_hash: bytes,
-        private_key: str,
+        private_key: str | None = None,
         option: IExitTransactionOption | None = None,
     ):
         """Complete withdraw process.
@@ -157,13 +157,15 @@ class TokenWithApproveAll(POSToken):
     def _approve_all(
         self,
         predicate_address: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         self.check_for_root()
         method = self.contract.method('setApprovalForAll', predicate_address, True)
         return self.process_write(method, option, private_key)
 
-    def approve_all(self, private_key: str, option: ITransactionOption | None = None):
+    def approve_all(
+        self, private_key: str | None = None, option: ITransactionOption | None = None
+    ):
         """Approve all tokens."""
         return self._approve_all(self.predicate_address, private_key, option)

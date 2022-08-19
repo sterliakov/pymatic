@@ -28,7 +28,7 @@ class ERC1155(TokenWithApproveAll):
         return self.process_read(method, option)
 
     def approve_all_for_mintable(
-        self, private_key: str, option: ITransactionOption | None = None
+        self, private_key: str | None = None, option: ITransactionOption | None = None
     ):
         """Approve all tokens for mintable token."""
         self.check_for_root()
@@ -89,7 +89,7 @@ class ERC1155(TokenWithApproveAll):
         self,
         token_id: int,
         amount: int,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Start withdraw process by burning the required amount for a token."""
@@ -102,7 +102,7 @@ class ERC1155(TokenWithApproveAll):
         self,
         token_ids: Sequence[int],
         amounts: Sequence[int],
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Start the withdraw process by burning multiple tokens at a time."""
@@ -114,7 +114,7 @@ class ERC1155(TokenWithApproveAll):
     def withdraw_exit_many(
         self,
         burn_transaction_hash: bytes,
-        private_key: str,
+        private_key: str | None = None,
         option: IExitTransactionOption | None = None,
     ):
         """Exit the multiple withdraw process.
@@ -135,7 +135,7 @@ class ERC1155(TokenWithApproveAll):
     def withdraw_exit_faster_many(
         self,
         burn_transaction_hash: bytes,
-        private_key: str,
+        private_key: str | None = None,
         option: IExitTransactionOption | None = None,
     ):
         """Exit the multiple withdraw process.

@@ -259,7 +259,7 @@ class BaseToken:
         from_: str,
         to: str,
         token_id: int,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Transfer ERC-721 token."""

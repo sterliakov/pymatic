@@ -40,7 +40,7 @@ class ERC20(POSToken):
     def approve(
         self,
         amount: int,
-        private_key: str,
+        private_key: str | None = None,
         option: IAllowanceTransactionOption | None = None,
     ):
         """Approve specified amount to contract."""
@@ -65,7 +65,7 @@ class ERC20(POSToken):
         self,
         amount: int,
         user_address: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit given amount of token for user."""
@@ -83,7 +83,7 @@ class ERC20(POSToken):
         self,
         amount: int,
         user_address: str,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         self.check_for_root()
@@ -93,7 +93,7 @@ class ERC20(POSToken):
     def withdraw_start(
         self,
         amount: int,
-        private_key: str,
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Initiate withdraw by burning provided amount."""
