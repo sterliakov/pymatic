@@ -11,8 +11,8 @@ dynamic = ["version"]
 name = "pymatic"
 authors = [{name = "sterliakov", email = "terlya.stas@gmail.com"}]
 readme = "README.md"
-description = "Python port of matic.js - library to interact with Polygon"
-license = { file = "LICENSE" }
+description = "Python port of matic.js - library to interact with Polygon blockchain"
+license = { file = "LICENSE.md" }
 classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -32,7 +32,8 @@ dependencies = [
     "web3 ~= 5.30.0",
     "ethers ~= 0.1.1",
     "eth-mpt @ git+https://github.com/sterliakov/merkle-patricia-trie@462320b69f7b0eda65020d85013537041cf655ca",
-    "typing_extensions ~= 4.3.0"
+    "typing_extensions ~= 4.3.0",
+    "python-dotenv",
 ]
 requires-python = ">=3.8"
 
@@ -45,7 +46,6 @@ test = [
     "pytest-cov",
     "pytest-mock",
     "pre-commit",
-    "python-dotenv",
 ]
 docs = [
     'docutils>=0.14,<0.18',  # Sphinx haven't upgraded yet
@@ -58,7 +58,7 @@ docs = [
 Home = "https://github.com/sterliakov/pymatic"
 Source = "https://github.com/sterliakov/pymatic"
 Issues = "https://github.com/sterliakov/pymatic/issues"
-Documentation = "https://github.com/sterliakov/pymatic"  # FIXME: move to RTD
+Documentation = "https://readthedocs.org/projects/pymatic/badge/?version=latest"
 
 
 [tool.pytest.ini_options]
