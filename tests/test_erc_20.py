@@ -102,17 +102,23 @@ def test_is_deposited(pos_client):
 @pytest.mark.offline()
 def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to, from_pk):
     amount = 1
-    # with pytest.raises(EIP1559NotSupportedException):
-    erc_20_child.transfer(
+    # Using enormous max_fee_per_gas, otherwise this test sometimes fails with
+    # > max fee per gas less than block base fee:
+    # > address ***, maxFeePerGas: 30 baseFee: 879 (supplied gas 10010499)'}
+    result = erc_20_child.transfer(
         amount,
         to,
         from_pk,
         {
-            'max_fee_per_gas': 30,
-            'max_priority_fee_per_gas': 30,
+            'max_fee_per_gas': 1000,
+            'max_priority_fee_per_gas': 1000,
             'return_transaction': True,
         },
     )
+    assert result['max_fee_per_gas'] == 1000
+    assert result['max_priority_fee_per_gas'] == 1000
+    assert 'gas_price' not in result
+    assert result['chain_id'] == 80001
 
 
 @pytest.mark.offline()
@@ -126,8 +132,6 @@ def test_child_transfer_return_transaction(erc_20_child, to, from_pk):
     )
     assert 'max_fee_per_gas' not in result
     assert 'max_priority_fee_per_gas' not in result
-    # was commented out
-    # assert result['gas_price'] > 0
     assert result['chain_id'] == 80001
 
 
