@@ -7,8 +7,13 @@ Welcome to pymatic's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
+
+   common
+   pos_bridge
+   utils
+   web3_client
 
 
 

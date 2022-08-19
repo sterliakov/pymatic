@@ -136,4 +136,4 @@ You can obtain tokens on both testnets via the [polygon faucet](https://faucet.p
 
 # Troubleshooting
 
-If you feel like something is going wrong with RPC, try waiting first. Although JS SDK claims to provide low timeouts, on average checkpoint event takes 30-40 minutes to complete, StateSync - up to 20. If transactions are lost or pending for a long time, try sending zero MATIC to your address - sometimes it resolves this issue.
+If you feel like something is going wrong with RPC, try waiting first. Although JS SDK claims to provide low timeouts, sometimes checkpoint event takes 2 hours to complete (see CI tests run time - it's waiting for 3 checkpoint events), StateSync - up to 20 minutes. If transactions are lost or pending for a long time, try sending zero MATIC to your address - sometimes it resolves this issue.

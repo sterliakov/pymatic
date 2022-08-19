@@ -73,9 +73,9 @@ class BaseToken:
                 (may be missing, if your provider supports implicit tx signing)
 
         Returns:
-            ITransactionWriteResult: if actual write was performed.
-            ITransactionRequestConfig: if `return_transaction=True`.
-                Builds the final transaction dictionary and returns it.
+            ITransactionWriteResult if actual write was performed;
+                ITransactionRequestConfig if `return_transaction=True`.
+                (builds the final transaction dictionary and returns it).
         """
         config = self.create_transaction_config(
             tx_config=option,
@@ -121,9 +121,9 @@ class BaseToken:
                 May contain special key ``return_transaction`` (see Returns section)
 
         Returns:
-            Any: if actual read was performed (type depends on executed request.
-            ITransactionRequestConfig: if `return_transaction=True`.
-                Builds the final transaction dictionary and returns it.
+            ITransactionWriteResult if actual write was performed;
+                ITransactionRequestConfig if `return_transaction=True`.
+                (builds the final transaction dictionary and returns it).
         """
         is_parent = self.is_parent
         client = self.get_client(is_parent)
@@ -152,9 +152,9 @@ class BaseToken:
                 May contain special key ``return_transaction`` (see Returns section)
 
         Returns:
-            Any: if actual read was performed (type depends on executed request.
-            ITransactionRequestConfig: if `return_transaction=True`.
-                Builds the final transaction dictionary and returns it.
+            ITransactionWriteResult if actual write was performed;
+                ITransactionRequestConfig if `return_transaction=True`.
+                (builds the final transaction dictionary and returns it).
         """
         config = self.create_transaction_config(
             tx_config=option,

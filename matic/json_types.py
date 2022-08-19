@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[str]})
+"""Configuration dictionary with required key "from" (type str) and any other keys."""
 
 
 class ITransactionRequestConfig(ConfigWithFrom, total=False):
@@ -73,19 +74,23 @@ class ITransactionData:
 
 
 class NeighbourClientConfig(TypedDict):
-    """Configuration for parent/child of :class:`matic.utils.web3_side_chain_client.Web3SideChainClient."""  # noqa
+    """Configuration for parent/child of :class:`~matic.utils.web3_side_chain_client.Web3SideChainClient`."""  # noqa
 
     provider: Any
     default_config: ConfigWithFrom
 
 
 class IBaseClientConfig(TypedDict):
-    """Configuration for :class:`matic.utils.web3_side_chain_client.Web3SideChainClient."""  # noqa
+    """Configuration for :class:`~matic.utils.web3_side_chain_client.Web3SideChainClient`."""  # noqa
 
     network: str
+    """Network to connect - 'testnet' or 'mainnet'."""
     version: str
+    """Network version - 'mumbai' or 'v1'."""
     parent: NotRequired[NeighbourClientConfig]
+    """Parent chain configuration."""
     child: NotRequired[NeighbourClientConfig]
+    """Child chain configuration."""
     log: NotRequired[bool]
 
 
