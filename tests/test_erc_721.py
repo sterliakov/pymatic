@@ -145,10 +145,10 @@ def test_withdraw_start_with_meta_data_return_tx(
 def test_approve_and_deposit(erc_721_parent, from_, from_pk):
     token = erc_721_parent.get_all_tokens(from_, 1)[0]
 
-    approve_tx = erc_721_parent.approve(token, from_pk)
+    approve_tx = erc_721_parent.approve(token, from_pk, {'gas_limit': 200_000})
     assert approve_tx.receipt
 
-    deposit_tx = erc_721_parent.deposit(token, from_, from_pk)
+    deposit_tx = erc_721_parent.deposit(token, from_, from_pk, {'gas_limit': 200_000})
     assert deposit_tx.receipt
 
 
