@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import Iterable, Iterator
+from typing import Iterable
 
 import rlp
-from mpt import MerklePatriciaTrie as BaseTrie
-from mpt.nibble_path import NibblePath
-from mpt.node import Node
+from mpt import MerklePatriciaTrie as Trie
 
 from matic.abstracts import BaseWeb3Client
 from matic.json_types import IBaseBlock, IBlockWithTransaction, ITransactionReceipt
@@ -15,56 +13,6 @@ from matic.utils.polyfill import removeprefix
 
 # Implementation adapted from Tom French's `matic-proofs` library used under MIT License
 # https://github.com/TomAFrench/matic-proofs
-
-
-class Trie(BaseTrie):
-    """Merkle-Patricia trie with `find_path` helper."""
-
-    def find_path(self, encoded_key: bytes) -> Iterator[Node.Node]:
-        """Find the path from encoding key to trie root.
-
-        Args:
-            encoded_key: Key to find in a trie.
-
-        Yields:
-            Nodes of path.
-        """
-        path = NibblePath(encoded_key)
-        yield from self._find_path(self._root, path)
-
-    def _find_path(self, node_ref: bytes, path: NibblePath) -> Iterator[Node.Node]:
-        node = self._get_node(node_ref)
-
-        # If path is empty, our travel is over.
-        # Main `get` method will check if this node has a value.
-        if len(path) == 0:
-            yield node
-            return
-
-        if isinstance(node, Node.Leaf):
-            # If we found a leaf, it's either the leaf we're looking for or wrong one.
-            if node.path == path:
-                yield node
-                return
-        elif isinstance(node, Node.Extension):
-            # If we found an extension, we need to go deeper.
-            if path.starts_with(node.path):
-                for _ in range(len(node.path)):
-                    yield node.path[path.at(0)]
-                    path.consume(1)
-                yield from self._find_path(node.next_ref, path)
-                return
-        elif isinstance(node, Node.Branch):
-            # If we found a branch node, go to the appropriate branch.
-            curr = path.at(0)
-            yield node
-            path.consume(1)
-            branch = node.branches[curr]
-            if len(branch) > 0:
-                yield from self._find_path(branch, path)
-                return
-
-        raise KeyError
 
 
 def get_fast_merkle_proof(
@@ -196,19 +144,9 @@ def get_receipt_proof(
     stack = list(receipts_trie.find_path(rlp.encode(receipt.transaction_index)))
     node = stack[-1]
 
-    def node_to_raw(node: Node.Leaf | Node.Branch | Node.Extension) -> list[bytes]:
-        if isinstance(node, Node.Leaf):
-            return [node.path.encode(True), node.data]
-        elif isinstance(node, Node.Extension):
-            return [node.path.encode(False), node.data]
-        elif isinstance(node, Node.Branch):
-            return [*node.branches, node.data]
-        else:
-            raise ValueError('Unknown node type.')
-
     return {
         'block_hash': receipt.block_hash,
-        'parent_nodes': list(map(node_to_raw, stack)),
+        'parent_nodes': [n.raw() for n in stack],
         'root': block.receipts_root,
         'path': rlp.encode(receipt.transaction_index),
         'value': (node.data if is_typed_receipt(receipt) else rlp.decode(node.data)),
