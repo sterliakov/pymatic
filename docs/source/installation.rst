@@ -5,7 +5,7 @@ You can install ``thor_devkit`` with ``pip``:
 
 .. code-block:: bash
 
-	pip install -U pymatic
+	pip install -U matic
 
 Installing from source:
 
@@ -18,5 +18,5 @@ Installing from source:
 
 Supported extras:
 
-- ``test``: install test and development dependencies (``pip install pymatic[test]``)
-- ``docs``: dependencies for building documentation (``pip install pymatic[docs]``)
+- ``test``: install test and development dependencies (``pip install matic[test]``)
+- ``docs``: dependencies for building documentation (``pip install matic[docs]``)

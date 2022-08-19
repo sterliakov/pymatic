@@ -1,12 +1,11 @@
->
-[![PyPi Version](https://img.shields.io/pypi/v/pymatic.svg)](https://pypi.python.org/pypi/pymatic/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/pymatic.svg)](https://pypi.python.org/pypi/pymatic/)
+[![PyPi Version](https://img.shields.io/pypi/v/matic.svg)](https://pypi.python.org/pypi/matic/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/matic.svg)](https://pypi.python.org/pypi/matic/)
 [![Read the Docs](https://readthedocs.org/projects/pymatic/badge/?version=latest)](https://pymatic.readthedocs.io/en/latest/?badge=latest)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Code style: black](https://img.shields.io/badge/code%20style-blue-blue.svg)](https://blue.readthedocs.io/)
 
 
-# PyMatic - Python SDK to assist developers on Polygon blockchain.
+# Matic - Python SDK to assist developers on Polygon blockchain.
 
 **Disclaimer: this package is not officialy maintained by Polygon affiliates.**
 
@@ -22,7 +21,7 @@ This library is very new, so documentation improvement is currently in progress.
 Install with pip:
 
 ```bash
-pip install -U pymatic
+pip install -U matic
 ```
 
 Install from source:
@@ -35,8 +34,8 @@ pip install .
 
 Supported extras:
 
-- `test`: install test and development dependencies (`pip install pymatic[test]`)
-- `docs`: dependencies for building documentation (`pip install pymatic[docs]`)
+- `test`: install test and development dependencies (`pip install matic[test]`)
+- `docs`: dependencies for building documentation (`pip install matic[docs]`)
 
 
 # Obtaining tokens: initial setup

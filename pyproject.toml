@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 dynamic = ["version"]
-name = "pymatic"
+name = "matic"
 authors = [{name = "sterliakov", email = "terlya.stas@gmail.com"}]
 readme = "README.md"
 description = "Python port of matic.js - library to interact with Polygon blockchain"
