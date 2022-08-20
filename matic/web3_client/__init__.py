@@ -145,12 +145,18 @@ class Web3Client(BaseWeb3Client):
         """Perform a reading (non-modifying) operation."""
         return self._web3.eth.call(matic_tx_request_config_to_web3(config))
 
-    def write(self, config: ITransactionRequestConfig):
+    def write(
+        self, config: ITransactionRequestConfig, private_key: str | None = None
+    ) -> TransactionWriteResult:
         """Perform a writing (modifying) operation."""
-        return TransactionWriteResult(
-            self._web3.eth.send_transaction(matic_tx_request_config_to_web3(config)),
-            self,
-        )
+        web3_tx = matic_tx_request_config_to_web3(config)
+        if private_key:
+            tx_signed = self._web3.eth.account.sign_transaction(web3_tx, private_key)
+            tx_result = self._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
+        else:
+            tx_result = self._web3.eth.send_transaction(web3_tx)
+
+        return TransactionWriteResult(tx_result, self)
 
     def get_contract(self, address: str, abi: dict[str, Any]) -> Web3Contract:
         """Obtain a contract from deployment address and ABI dictionary."""

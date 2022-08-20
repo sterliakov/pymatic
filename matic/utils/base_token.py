@@ -93,24 +93,25 @@ class BaseToken:
 
         return method.write(config, private_key)
 
-    # def send_transaction(
-    #     self, option: ITransactionOption | None = None
-    # ) -> ITransactionWriteResult | ITransactionRequestConfig:
-    #     is_parent = self.is_parent
-    #     client = self.get_client(is_parent)
+    def send_transaction(
+        self, option: ITransactionOption | None = None, private_key: str | None = None
+    ) -> ITransactionWriteResult | ITransactionRequestConfig:
+        """Sign and send the transaction."""
+        is_parent = self.is_parent
+        client = self.get_client(is_parent)
 
-    #     config = self.create_transaction_config(
-    #         tx_config=option,
-    #         is_write=True,
-    #         method=None,
-    #         is_parent=self.is_parent,
-    #     )
+        config = self.create_transaction_config(
+            tx_config=option,
+            is_write=True,
+            method=None,
+            is_parent=self.is_parent,
+        )
 
-    #     logger.info('process write config: %s', config)
-    #     if option and option.get('return_transaction', False):
-    #         return config
+        logger.info('process write config: %s', config)
+        if option and option.get('return_transaction', False):
+            return config
 
-    #     return client.write(config)
+        return client.write(config)
 
     def read_transaction(
         self, option: ITransactionOption | None = None
