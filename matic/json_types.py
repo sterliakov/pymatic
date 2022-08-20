@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from matic.pos.root_chain_manager import RootChainManager
 
 
-_Class = TypeVar('_Class', bound=type[Any])
+_Class = TypeVar('_Class', bound='type[Any]')
 
 
 def _with_doc_mro(*bases: type[Any]) -> Callable[[_Class], _Class]:
