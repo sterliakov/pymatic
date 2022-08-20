@@ -5,7 +5,7 @@ from typing import Callable, Final
 
 import rlp
 
-from matic import services
+from matic import logger, services
 from matic.abstracts import BaseWeb3Client
 from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
@@ -170,7 +170,7 @@ class ExitUtil:
             header_block = services.get_block_included(
                 self.config['network'], tx_block_number
             )
-            self._matic_client.logger.debug('block info from API %s', header_block)
+            logger.debug('block info from API %s', header_block)
 
             if not (
                 header_block
@@ -181,7 +181,7 @@ class ExitUtil:
                 raise ValueError('Network API Error')
             return header_block
         except Exception as e:  # noqa
-            self._matic_client.logger.error('Block info from API error: %r', e)
+            logger.error('Block info from API error: %r', e)
             return self._get_root_block_info(tx_block_number)
 
     def _get_block_proof(
@@ -207,12 +207,12 @@ class ExitUtil:
             if not block_proof:
                 raise RuntimeError('Network API Error')
 
-            self._matic_client.logger.debug('block proof from API 1')
+            logger.debug('block proof from API 1')
             return block_proof
         except ProofAPINotSetException:
             raise
         except Exception as e:  # noqa
-            self._matic_client.logger.error('API error: %r', e)
+            logger.error('API error: %r', e)
             return self._get_block_proof(tx_block_number, root_block_info)
 
     def build_payload_for_exit(

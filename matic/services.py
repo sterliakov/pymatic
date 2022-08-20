@@ -8,6 +8,15 @@ import requests
 from matic.json_types import CheckpointedBlock
 from matic.utils.polyfill import removeprefix, removesuffix
 
+__all__ = [
+    'DEFAULT_ABI_STORE_URL',
+    'DEFAULT_PROOF_API_URL',
+    'get_abi',
+    'get_address',
+    'get_block_included',
+    'get_proof',
+]
+
 DEFAULT_ABI_STORE_URL: str = os.getenv(
     'MATIC_ABI_STORE', 'https://static.matic.network/network'
 )

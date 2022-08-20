@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from logging import Logger
 from typing import Any, Iterable, Literal, Sequence, cast
 
 from eth_abi import decode_abi, encode_abi
@@ -11,6 +10,7 @@ from web3.method import Method
 from web3.providers.base import BaseProvider
 from web3.types import RPCEndpoint
 
+from matic import logger
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.json_types import (
     IBlock,
@@ -34,7 +34,7 @@ __all__ = ['TransactionWriteResult', 'EthMethod', 'Web3Contract', 'Web3Client']
 class TransactionWriteResult(ITransactionWriteResult):
     """Result of any writing call."""
 
-    def __init__(self, tx_hash: bytes, client):
+    def __init__(self, tx_hash: bytes, client: Web3Client) -> None:
         self.tx_hash = tx_hash
         self.client = client
 
@@ -45,7 +45,7 @@ class TransactionWriteResult(ITransactionWriteResult):
             timeout: max seconds to wait.
         """
         receipt = self.client._web3.eth.wait_for_transaction_receipt(
-            self.tx_hash, timeout=timeout
+            HexBytes(self.tx_hash), timeout=timeout
         )
         return web3_receipt_to_matic_receipt(receipt)
 
@@ -58,10 +58,8 @@ class TransactionWriteResult(ITransactionWriteResult):
 class EthMethod(BaseContractMethod):
     """Wrapper around web3 contract method (:class:`web3.method.Method`)."""
 
-    def __init__(
-        self, address: str, logger: Logger, method: Method[Any], client: Web3Client
-    ) -> None:
-        super().__init__(address, logger, method)
+    def __init__(self, address: str, method: Method[Any], client: Web3Client) -> None:
+        super().__init__(address, method)
         self.method = method
         self.address = address
         self.client = client
@@ -71,7 +69,7 @@ class EthMethod(BaseContractMethod):
 
         This does not sign a transaction and does not affect the chain.
         """
-        self.logger.debug('sending tx with config %s', tx)
+        logger.debug('sending tx with config %s', tx)
         return self.method.call(matic_tx_request_config_to_web3(tx))
 
     def write(
@@ -87,7 +85,7 @@ class EthMethod(BaseContractMethod):
 
         if private_key:
             tx_prep = self.method.build_transaction(web3_tx)
-            self.logger.debug('Prepared tx: ', tx_prep)
+            logger.debug('Prepared tx: ', tx_prep)
             tx_signed = self.client._web3.eth.account.sign_transaction(
                 tx_prep, private_key
             )
@@ -116,19 +114,16 @@ class EthMethod(BaseContractMethod):
 class Web3Contract(BaseContract):
     """A wrapper around web3 contract (:class:`web3.contract.Contract`)."""
 
-    def __init__(
-        self, address: str, contract: Contract, logger: Logger, client: Web3Client
-    ):
-        super().__init__(address, logger)
+    def __init__(self, address: str, contract: Contract, client: Web3Client):
+        super().__init__(address)
         self.contract = contract
         self.client = client
 
     def method(self, method_name: str, *args: Any) -> EthMethod:
         """Obtain a method object by name and call arguments."""
-        self.logger.debug('method_name %s; args method %s', method_name, args)
+        logger.debug('method_name %s; args method %s', method_name, args)
         return EthMethod(
             self.address,
-            self.logger,
             self.contract.get_function_by_name(method_name)(*args),
             self.client,
         )
@@ -139,10 +134,10 @@ class Web3Client(BaseWeb3Client):
 
     _web3: Web3
 
-    def __init__(self, provider: BaseProvider, logger: Logger):
+    def __init__(self, provider: BaseProvider):
         from web3.middleware import geth_poa_middleware
 
-        super().__init__(provider, logger)
+        super().__init__(provider)
         self._web3 = Web3(provider)
         self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -160,7 +155,7 @@ class Web3Client(BaseWeb3Client):
     def get_contract(self, address: str, abi: dict[str, Any]) -> Web3Contract:
         """Obtain a contract from deployment address and ABI dictionary."""
         cont = self._web3.eth.contract(abi=abi, address=cast(Any, address))
-        return Web3Contract(address, cont, self.logger, self)
+        return Web3Contract(address, cont, self)
 
     @property
     def gas_price(self) -> int:

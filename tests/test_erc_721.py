@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from matic import services
+from matic import logger, services
 
 DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
 services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
@@ -205,7 +205,7 @@ def test_withdraw_full_cycle(pos_client, erc_721_child, erc_721_parent, from_pk,
     token = erc_721_child.get_all_tokens(from_, 1)[0]
     start = erc_721_child.withdraw_start(token, from_pk)
     tx_hash = start.transaction_hash
-    erc_721_child.client.logger.info('Start hash: %s', tx_hash.hex())
+    logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
 
     start_time = time.time()
@@ -219,6 +219,6 @@ def test_withdraw_full_cycle(pos_client, erc_721_child, erc_721_parent, from_pk,
             time.sleep(10)
 
     end = erc_721_parent.withdraw_exit(tx_hash, from_pk)
-    erc_721_child.client.logger.info('End hash: %s', end.transaction_hash.hex())
+    logger.info('End hash: %s', end.transaction_hash.hex())
     assert end.transaction_hash
     assert end.receipt

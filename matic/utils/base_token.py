@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from matic import logger
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.exceptions import (
     AllowedOnChildException,
@@ -84,7 +85,7 @@ class BaseToken:
             is_parent=self.is_parent,
         )
 
-        self.client.logger.info('process write config: %s', config)
+        logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
             config['data'] = method.encode_abi()
             config['to'] = method.address
@@ -105,7 +106,7 @@ class BaseToken:
     #         is_parent=self.is_parent,
     #     )
 
-    #     client.logger.info('process write config: %s', config)
+    #     logger.info('process write config: %s', config)
     #     if option and option.get('return_transaction', False):
     #         return config
 
@@ -135,7 +136,7 @@ class BaseToken:
             is_parent=self.is_parent,
         )
 
-        client.logger.info('process read config: %s', config)
+        logger.info('process read config: %s', config)
         if option and option.get('return_transaction', False):
             return config
 
@@ -162,7 +163,7 @@ class BaseToken:
             method=method,
             is_parent=self.is_parent,
         )
-        self.client.logger.info('read tx config created: %s', config)
+        logger.info('read tx config created: %s', config)
 
         if option and option.get('return_transaction', False):
             assert self.contract
@@ -173,9 +174,7 @@ class BaseToken:
 
     def get_client(self, is_parent: bool) -> BaseWeb3Client:
         """Get web3 client instance."""
-        if is_parent:
-            return self.client.parent
-        return self.client.child
+        return self.client.parent if is_parent else self.client.child
 
     def _get_contract(
         self, is_parent: bool, token_address: str, abi: dict[str, Any]
@@ -209,8 +208,8 @@ class BaseToken:
 
         tx_config = cast(ITransactionRequestConfig, merged_config)
 
-        client = self.client.parent if is_parent else self.client.child
-        client.logger.info(
+        client = self.get_client(is_parent)
+        logger.info(
             'tx_config=%s, is_parent=%s, is_write=%s', tx_config, is_parent, is_write
         )
 

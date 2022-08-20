@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from logging import Logger
 from typing import Any, Iterable, Sequence
 
 from matic.json_types import (
@@ -20,9 +19,8 @@ from matic.json_types import (
 class BaseWeb3Client(ABC):
     """Web3 client reference implementation."""
 
-    def __init__(self, provider: Any, logger: Logger):
+    def __init__(self, provider: Any):
         self.provider = provider
-        self.logger = logger
 
     @abstractmethod
     def get_contract(self, address: str, abi: Any) -> BaseContract:
@@ -104,9 +102,8 @@ class BaseWeb3Client(ABC):
 class BaseContractMethod(ABC):
     """Reference implementation of class defining smart contract method."""
 
-    def __init__(self, address: str, logger: Logger, method: Any) -> None:
+    def __init__(self, address: str, method: Any) -> None:
         self.address = address
-        self.logger = logger
         self.method = method
 
     @abstractmethod
@@ -141,9 +138,8 @@ class BaseContractMethod(ABC):
 class BaseContract(ABC):
     """Reference implementation of class defining smart contract."""
 
-    def __init__(self, address: str, logger: Logger):
+    def __init__(self, address: str):
         self.address = address
-        self.logger = logger
 
     @abstractmethod
     def method(self, method_name: str, *args: Any) -> BaseContractMethod:

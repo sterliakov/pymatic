@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from logging import getLogger
-from typing import Any, Final
+from typing import Any
 
 import matic.utils
 from matic.abstracts import BaseWeb3Client
@@ -16,8 +15,6 @@ class Web3SideChainClient:
     child: BaseWeb3Client
     abi_manager: ABIManager
 
-    logger: Final = getLogger(__package__)
-
     def __init__(self, config: IBaseClientConfig) -> None:
         # config.parent.default_config = config.parent.default_config or {}
         # config.child.default_config = config.child.default_config or {}
@@ -30,10 +27,10 @@ class Web3SideChainClient:
         self.resolution = matic.utils.UnstoppableDomains or None
 
         self.parent = web3_client_cls(
-            (config.get('parent') or {}).get('provider'), self.logger  # type: ignore
+            (config.get('parent') or {}).get('provider')  # type: ignore
         )
         self.child = web3_client_cls(
-            (config.get('child') or {}).get('provider'), self.logger  # type: ignore
+            (config.get('child') or {}).get('provider')  # type: ignore
         )
 
         try:

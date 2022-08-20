@@ -4,7 +4,7 @@ import os
 
 import pytest
 
-from matic import services
+from matic import logger, services
 
 DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
 services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
@@ -191,7 +191,7 @@ def test_withdraw_full_cycle(pos_client, erc_1155_child, erc_1155_parent, from_p
         TOKEN_ID, 1, from_pk, option={'gas_limit': 200_000}
     )
     tx_hash = start.transaction_hash
-    erc_1155_child.client.logger.info('Start hash: %s', tx_hash.hex())
+    logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
 
     start_time = time.time()
@@ -205,6 +205,6 @@ def test_withdraw_full_cycle(pos_client, erc_1155_child, erc_1155_parent, from_p
             time.sleep(10)
 
     end = erc_1155_parent.withdraw_exit(tx_hash, from_pk)
-    erc_1155_child.client.logger.info('End hash: %s', end.transaction_hash.hex())
+    logger.info('End hash: %s', end.transaction_hash.hex())
     assert end.transaction_hash
     assert end.receipt

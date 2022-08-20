@@ -143,7 +143,7 @@ class IBlockWithTransaction(IBaseBlock):
 
 @dataclass
 class IPOSContracts:
-    """Return type of ``get_pos_contracts`` parameter of :class:`matic.pos.POSToken`."""
+    """Return type of ``get_pos_contracts`` parameter of :class:`matic.pos.pos_token.POSToken`."""  # noqa
 
     root_chain_manager: RootChainManager
     exit_util: ExitUtil

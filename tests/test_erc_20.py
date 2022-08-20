@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from matic import services
+from matic import logger, services
 from matic.exceptions import NullSpenderAddressException, ProofAPINotSetException
 
 DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
@@ -265,7 +265,7 @@ def test_child_transfer(
     result = erc_20_child.transfer(amount, to, from_pk, {'gas_limit': 300_000})
 
     tx_hash = result.transaction_hash
-    erc_20_child.client.logger.info('Forward: %s', tx_hash.hex())
+    logger.info('Forward: %s', tx_hash.hex())
     print('Forward: ', tx_hash.hex())
     assert tx_hash
 
@@ -339,7 +339,7 @@ def test_deposit_ether(pos_client, from_, from_pk):
 def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
     start = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
     tx_hash = start.transaction_hash
-    erc_20_child.client.logger.info('Start hash: %s', tx_hash.hex())
+    logger.info('Start hash: %s', tx_hash.hex())
     assert start.receipt
 
     start_time = time.time()
@@ -353,6 +353,6 @@ def test_withdraw_full_cycle(pos_client, erc_20_child, erc_20_parent, from_pk):
             time.sleep(10)
 
     end = erc_20_parent.withdraw_exit(tx_hash, from_pk)
-    erc_20_child.client.logger.info('End hash: %s', end.transaction_hash.hex())
+    logger.info('End hash: %s', end.transaction_hash.hex())
     assert end.transaction_hash
     assert end.receipt
