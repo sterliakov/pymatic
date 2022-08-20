@@ -10,7 +10,9 @@ class ERC20(POSToken):
     """Arbitrary ERC-20-compliant token."""
 
     CONTRACT_NAME: str = 'ChildERC20'
+    """Name of a contract."""
     BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_20_TRANSFER
+    """Burn event signature: used for exit methods."""
 
     def get_balance(
         self, user_address: str, option: ITransactionOption | None = None

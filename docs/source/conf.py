@@ -14,6 +14,11 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('.'))
+
+from ext.monkey_patch_sphinx import monkey_patch
+
+monkey_patch()
 
 
 # -- Project information -----------------------------------------------------
@@ -40,6 +45,8 @@ extensions = [
     'sphinx.ext.viewcode',  # Links to source
     # Third-party
     'autodocsumm',  # Table of module/class elements
+    # Custom
+    'ext.monkey_patch_sphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

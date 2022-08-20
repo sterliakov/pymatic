@@ -10,7 +10,7 @@ from web3.method import Method
 from web3.providers.base import BaseProvider
 from web3.types import RPCEndpoint
 
-from matic import logger
+import matic
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.json_types import (
     IBlock,
@@ -69,7 +69,7 @@ class EthMethod(BaseContractMethod):
 
         This does not sign a transaction and does not affect the chain.
         """
-        logger.debug('sending tx with config %s', tx)
+        matic.logger.debug('sending tx with config %s', tx)
         return self.method.call(matic_tx_request_config_to_web3(tx))
 
     def write(
@@ -85,7 +85,7 @@ class EthMethod(BaseContractMethod):
 
         if private_key:
             tx_prep = self.method.build_transaction(web3_tx)
-            logger.debug('Prepared tx: ', tx_prep)
+            matic.logger.debug('Prepared tx: ', tx_prep)
             tx_signed = self.client._web3.eth.account.sign_transaction(
                 tx_prep, private_key
             )
@@ -121,7 +121,7 @@ class Web3Contract(BaseContract):
 
     def method(self, method_name: str, *args: Any) -> EthMethod:
         """Obtain a method object by name and call arguments."""
-        logger.debug('method_name %s; args method %s', method_name, args)
+        matic.logger.debug('method_name %s; args method %s', method_name, args)
         return EthMethod(
             self.address,
             self.contract.get_function_by_name(method_name)(*args),

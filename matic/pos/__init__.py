@@ -13,15 +13,19 @@ from matic.utils.bridge_client import BridgeClient
 class POSClient(BridgeClient):
     """POS bridge client.
 
-    Used to manage instantiation of ``ERC20``, ``ERC721`` and ``ERC1155`` classes
+    Used to manage instantiation of
+    :class:`matic.pos.erc_20.ERC20`,
+    :class:`matic.pos.erc_721.ERC721` and
+    :class:`matic.pos.erc_1155.ERC1155` classes
     and perform some common operations.
     """
 
     root_chain_manager: RootChainManager
-    config: IPOSClientConfig
+    """Root chain manager."""
 
     def __init__(self, config: IPOSClientConfig):
         super().__init__(config)
+
         main_pos_contracts = self.client.main_pos_contracts
         config['root_chain_manager'] = (
             config.get('root_chain_manager')

@@ -11,7 +11,12 @@ class BridgeClient:
     """Base class for POS bridge with reusable methods."""
 
     client: Web3SideChainClient
+    """Actual connecting client."""
     exit_util: ExitUtil
+    """Helper class for exit data building.
+
+    Should be set after instantiation to prevent cycles.
+    """
 
     def __init__(self, config: IBaseClientConfig):
         self.client = Web3SideChainClient(config)

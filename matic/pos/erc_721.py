@@ -11,7 +11,9 @@ class ERC721(TokenWithApproveAll):
     """Arbitrary ERC-721-compliant token."""
 
     CONTRACT_NAME: str = 'ChildERC721'
+    """Name of a contract."""
     BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_721_TRANSFER
+    """Burn event signature: used for exit methods."""
 
     @staticmethod
     def _validate_many(token_ids: Sequence[int]) -> list[int]:

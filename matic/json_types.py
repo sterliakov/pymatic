@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence, TypedDict, TypeVar
 
-from typing_extensions import NotRequired, Required, TypedDict
+from typing_extensions import NotRequired, Required
 from web3.types import RPCEndpoint
 
 if TYPE_CHECKING:
@@ -12,10 +12,46 @@ if TYPE_CHECKING:
     from matic.pos.root_chain_manager import RootChainManager
 
 
+_Class = TypeVar('_Class', bound=type[Any])
+
+
+def _with_doc_mro(*bases: type[Any]) -> Callable[[_Class], _Class]:
+    r"""Internal function for documentation enhancement.
+
+    Designed use case: ``sphinx.ext.autosummary`` doesn't play well
+    with inheritance of :class:`~typing.TypedDict`. It throws errors
+    for every parent-defined key. This helper (and monkey-patching module,
+    of course) allows to overcome this.
+
+    Args:
+        \*bases: Classes you inherit from (and their parents, optionally).
+            Attributes of these (and only these) classes will be documented.
+
+    Returns:
+        Class decorator.
+
+    Note: The reason behind that is the implementation of :class:`~typing.TypedDict`.
+        It does not include parents into __mro__, for every typed dict::
+
+            __mro__ = (<This class>, dict, object)
+
+        This behaviour does not allow ``autodoc`` and ``autosummary`` process
+        members properly. We set special ``__doc_mro__`` attribute and read it
+        when building MRO for documentation.
+    """
+
+    def wrapper(cls: _Class) -> _Class:
+        cls.__doc_mro__ = (cls, *bases)
+        return cls
+
+    return wrapper
+
+
 ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[str]})
 """Configuration dictionary with required key "from" (type str) and any other keys."""
 
 
+@_with_doc_mro(ConfigWithFrom)
 class ITransactionRequestConfig(ConfigWithFrom, total=False):
     """Transaction config - an actual configuration used to interact with chain."""
 
@@ -45,6 +81,7 @@ class ITransactionRequestConfig(ConfigWithFrom, total=False):
     """Transaction type, hex string (0x)."""
 
 
+@_with_doc_mro(ITransactionRequestConfig)
 class ITransactionOption(ITransactionRequestConfig):
     """Transaction config: this can be passed as option to almost all methods."""
 
@@ -52,6 +89,7 @@ class ITransactionOption(ITransactionRequestConfig):
     """Skip writing step and return prepared transaction."""
 
 
+@_with_doc_mro(ITransactionOption, ITransactionRequestConfig)
 class IAllowanceTransactionOption(ITransactionOption):
     """Transaction config for approve/allowance methods."""
 
@@ -63,6 +101,7 @@ class IAllowanceTransactionOption(ITransactionOption):
     """
 
 
+@_with_doc_mro(ITransactionOption, ITransactionRequestConfig)
 class IExitTransactionOption(ITransactionOption):
     """Transaction config for ``withdraw_exit_*`` operations."""
 
@@ -120,6 +159,7 @@ class IBaseClientConfig(TypedDict):
     """Child chain configuration."""
 
 
+@_with_doc_mro(IBaseClientConfig)
 class IPOSClientConfig(IBaseClientConfig):
     """Configuration for POS client."""
 

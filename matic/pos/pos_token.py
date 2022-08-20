@@ -13,8 +13,10 @@ class POSToken(BaseToken):
     """Base class for all tokens based on POS bridge protocol."""
 
     _predicate_address: str | None = None
-    CONTRACT_NAME: str  # TODO: should be abstract
-    BURN_EVENT_SIGNATURE: bytes  # TODO: should be abstract
+    CONTRACT_NAME: str
+    """Name of a contract."""
+    BURN_EVENT_SIGNATURE: bytes
+    """Burn event signature: used for exit methods."""
 
     def __init__(
         self,

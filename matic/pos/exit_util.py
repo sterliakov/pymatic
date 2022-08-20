@@ -5,7 +5,8 @@ from typing import Callable, Final
 
 import rlp
 
-from matic import logger, services
+import matic
+from matic import services
 from matic.abstracts import BaseWeb3Client
 from matic.constants import LogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
@@ -14,15 +15,15 @@ from matic.pos.root_chain import RootChain
 from matic.utils import proof_utils
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
-ERC_721_HASHES: Final = {
+_ERC_721_HASHES: Final = {
     LogEventSignature.ERC_721_TRANSFER,
     LogEventSignature.ERC_721_TRANSFER_WITH_METADATA,
 }
-ERC_1155_HASHES: Final = {
+_ERC_1155_HASHES: Final = {
     LogEventSignature.ERC_1155_TRANSFER,
     LogEventSignature.ERC_1155_BATCH_TRANSFER,
 }
-ZERO_SIG: Final = bytes(32)
+_ZERO_SIG: Final = bytes(32)
 
 
 @dataclass
@@ -38,7 +39,9 @@ class ExitUtil:
 
     _matic_client: BaseWeb3Client
     root_chain: RootChain
+    """Root chain address."""
     config: IBaseClientConfig
+    """Configuration (same as of client)."""
 
     def __init__(self, client: Web3SideChainClient, root_chain: RootChain):
         self._matic_client = client.child
@@ -48,7 +51,7 @@ class ExitUtil:
     def _get_log_index(self, log_event_sig: bytes, receipt: ITransactionReceipt) -> int:
         log_index = None
 
-        if log_event_sig in ERC_721_HASHES:
+        if log_event_sig in _ERC_721_HASHES:
             log_index = next(
                 (
                     i
@@ -56,12 +59,12 @@ class ExitUtil:
                     if (
                         len(log.topics) >= 2
                         and log.topics[0].lower() == log_event_sig.lower()
-                        and log.topics[2].lower() == ZERO_SIG
+                        and log.topics[2].lower() == _ZERO_SIG
                     )
                 ),
                 None,
             )
-        elif log_event_sig in ERC_1155_HASHES:
+        elif log_event_sig in _ERC_1155_HASHES:
             log_index = next(
                 (
                     i
@@ -69,7 +72,7 @@ class ExitUtil:
                     if (
                         len(log.topics) >= 3
                         and log.topics[0].lower() == log_event_sig.lower()
-                        and log.topics[3].lower() == ZERO_SIG
+                        and log.topics[3].lower() == _ZERO_SIG
                     )
                 ),
                 None,
@@ -91,24 +94,24 @@ class ExitUtil:
     def _get_all_log_indices(
         self, log_event_sig: bytes, receipt: ITransactionReceipt
     ) -> list[int]:
-        if log_event_sig in ERC_721_HASHES:
+        if log_event_sig in _ERC_721_HASHES:
             log_indices = [
                 i
                 for i, log in enumerate(receipt.logs)
                 if (
                     len(log.topics) >= 2
                     and log.topics[0].lower() == log_event_sig.lower()
-                    and log.topics[2].lower() == ZERO_SIG
+                    and log.topics[2].lower() == _ZERO_SIG
                 )
             ]
-        elif log_event_sig in ERC_1155_HASHES:
+        elif log_event_sig in _ERC_1155_HASHES:
             log_indices = [
                 i
                 for i, log in enumerate(receipt.logs)
                 if (
                     len(log.topics) >= 3
                     and log.topics[0].lower() == log_event_sig.lower()
-                    and log.topics[3].lower() == ZERO_SIG
+                    and log.topics[3].lower() == _ZERO_SIG
                 )
             ]
         elif log_event_sig == LogEventSignature.ERC_721_BATCH_TRANSFER:
@@ -118,7 +121,7 @@ class ExitUtil:
                 if (
                     len(log.topics) >= 2
                     and log.topics[0].lower() == LogEventSignature.ERC_20_TRANSFER
-                    and log.topics[2].lower() == ZERO_SIG
+                    and log.topics[2].lower() == _ZERO_SIG
                 )
             ]
         else:
@@ -170,7 +173,7 @@ class ExitUtil:
             header_block = services.get_block_included(
                 self.config['network'], tx_block_number
             )
-            logger.debug('block info from API %s', header_block)
+            matic.logger.debug('block info from API %s', header_block)
 
             if not (
                 header_block
@@ -181,7 +184,7 @@ class ExitUtil:
                 raise ValueError('Network API Error')
             return header_block
         except Exception as e:  # noqa
-            logger.error('Block info from API error: %r', e)
+            matic.logger.error('Block info from API error: %r', e)
             return self._get_root_block_info(tx_block_number)
 
     def _get_block_proof(
@@ -207,12 +210,12 @@ class ExitUtil:
             if not block_proof:
                 raise RuntimeError('Network API Error')
 
-            logger.debug('block proof from API 1')
+            matic.logger.debug('block proof from API 1')
             return block_proof
         except ProofAPINotSetException:
             raise
         except Exception as e:  # noqa
-            logger.error('API error: %r', e)
+            matic.logger.error('API error: %r', e)
             return self._get_block_proof(tx_block_number, root_block_info)
 
     def build_payload_for_exit(

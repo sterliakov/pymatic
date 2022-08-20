@@ -12,8 +12,11 @@ class Web3SideChainClient:
     """Web3 client class for a side chain."""
 
     parent: BaseWeb3Client
+    """Parent client instance."""
     child: BaseWeb3Client
+    """Child client instance."""
     abi_manager: ABIManager
+    """ABI manager instance."""
 
     def __init__(self, config: IBaseClientConfig) -> None:
         # config.parent.default_config = config.parent.default_config or {}

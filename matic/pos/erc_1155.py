@@ -11,7 +11,9 @@ class ERC1155(TokenWithApproveAll):
     """Arbitrary ERC-1155-compliant token."""
 
     CONTRACT_NAME: str = 'ChildERC1155'
+    """Name of a contract."""
     BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_1155_TRANSFER
+    """Burn event signature: used for exit methods."""
 
     @property
     def mintable_predicate_address(self) -> str | None:

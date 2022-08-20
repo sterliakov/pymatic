@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from matic import logger
+import matic
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.exceptions import (
     AllowedOnChildException,
@@ -85,7 +85,7 @@ class BaseToken:
             is_parent=self.is_parent,
         )
 
-        logger.info('process write config: %s', config)
+        matic.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
             config['data'] = method.encode_abi()
             config['to'] = method.address
@@ -107,7 +107,7 @@ class BaseToken:
             is_parent=self.is_parent,
         )
 
-        logger.info('process write config: %s', config)
+        matic.logger.info('process write config: %s', config)
         if option and option.get('return_transaction', False):
             return config
 
@@ -137,7 +137,7 @@ class BaseToken:
             is_parent=self.is_parent,
         )
 
-        logger.info('process read config: %s', config)
+        matic.logger.info('process read config: %s', config)
         if option and option.get('return_transaction', False):
             return config
 
@@ -164,7 +164,7 @@ class BaseToken:
             method=method,
             is_parent=self.is_parent,
         )
-        logger.info('read tx config created: %s', config)
+        matic.logger.info('read tx config created: %s', config)
 
         if option and option.get('return_transaction', False):
             assert self.contract
@@ -210,7 +210,7 @@ class BaseToken:
         tx_config = cast(ITransactionRequestConfig, merged_config)
 
         client = self.get_client(is_parent)
-        logger.info(
+        matic.logger.info(
             'tx_config=%s, is_parent=%s, is_write=%s', tx_config, is_parent, is_write
         )
 

@@ -9,11 +9,13 @@ from matic.utils import keccak256
 class MerkleTree:
     """Hash tree.
 
-    See https://en.wikipedia.org/wiki/Merkle_tree
+    See `this article <https://en.wikipedia.org/wiki/Merkle_tree>`_.
     """
 
     leaves: list[bytes]
+    """Tree leaves."""
     layers: list[list[bytes]]
+    """Tree layers."""
 
     def __init__(self, leaves: Sequence[bytes] | None = None):
         if not leaves:
