@@ -4,25 +4,10 @@ import os
 
 import pytest
 
-from matic import logger, services
+from matic import services
 
 DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
 services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
-
-
-@pytest.fixture()
-def erc_721(pos):
-    return {'parent': pos['parent']['erc_721'], 'child': pos['child']['erc_721']}
-
-
-@pytest.fixture()
-def erc_721_child(pos_client, erc_721):
-    return pos_client.erc_721(erc_721['child'])
-
-
-@pytest.fixture()
-def erc_721_parent(pos_client, erc_721):
-    return pos_client.erc_721(erc_721['parent'], True)
 
 
 @pytest.mark.read()
@@ -194,31 +179,3 @@ def test_transfer_write(
 
         assert new_from_count == len(all_tokens_from)
         assert new_to_count == len(all_tokens_to)
-
-
-@pytest.mark.can_timeout()
-@pytest.mark.online()
-@pytest.mark.trylast()
-def test_withdraw_full_cycle(pos_client, erc_721_child, erc_721_parent, from_pk, from_):
-    import time
-
-    token = erc_721_child.get_all_tokens(from_, 1)[0]
-    start = erc_721_child.withdraw_start(token, from_pk)
-    tx_hash = start.transaction_hash
-    logger.info('Start hash: %s', tx_hash.hex())
-    assert start.receipt
-
-    start_time = time.time()
-    timeout = 3 * 60 * 60
-    while True:
-        if pos_client.is_checkpointed(tx_hash):
-            break
-        elif time.time() - start_time > timeout:
-            pytest.fail(f'Transaction {tx_hash.hex()} still not checkpointed')
-        else:
-            time.sleep(10)
-
-    end = erc_721_parent.withdraw_exit(tx_hash, from_pk)
-    logger.info('End hash: %s', end.transaction_hash.hex())
-    assert end.transaction_hash
-    assert end.receipt

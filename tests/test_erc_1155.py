@@ -4,26 +4,11 @@ import os
 
 import pytest
 
-from matic import logger, services
+from matic import services
 
 DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
 services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 TOKEN_ID = 123
-
-
-@pytest.fixture()
-def erc_1155(pos):
-    return {'parent': pos['parent']['erc_1155'], 'child': pos['child']['erc_1155']}
-
-
-@pytest.fixture()
-def erc_1155_child(pos_client, erc_1155):
-    return pos_client.erc_1155(erc_1155['child'])
-
-
-@pytest.fixture()
-def erc_1155_parent(pos_client, erc_1155):
-    return pos_client.erc_1155(erc_1155['parent'], True)
 
 
 @pytest.mark.read()
@@ -179,32 +164,3 @@ def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
         option={'gas_limit': 200_000},
     )
     assert deposit_tx.receipt
-
-
-@pytest.mark.can_timeout()
-@pytest.mark.online()
-@pytest.mark.trylast()
-def test_withdraw_full_cycle(pos_client, erc_1155_child, erc_1155_parent, from_pk):
-    import time
-
-    start = erc_1155_child.withdraw_start(
-        TOKEN_ID, 1, from_pk, option={'gas_limit': 200_000}
-    )
-    tx_hash = start.transaction_hash
-    logger.info('Start hash: %s', tx_hash.hex())
-    assert start.receipt
-
-    start_time = time.time()
-    timeout = 3 * 60 * 60
-    while True:
-        if pos_client.is_checkpointed(tx_hash):
-            break
-        elif time.time() - start_time > timeout:
-            pytest.fail(f'Transaction {tx_hash.hex()} still not checkpointed')
-        else:
-            time.sleep(10)
-
-    end = erc_1155_parent.withdraw_exit(tx_hash, from_pk)
-    logger.info('End hash: %s', end.transaction_hash.hex())
-    assert end.transaction_hash
-    assert end.receipt

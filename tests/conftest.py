@@ -124,3 +124,48 @@ def pos_client_for_to(user2, parent_provider, child_provider):
 @pytest.fixture()
 def abi_manager():
     return ABIManager('testnet', 'mumbai')
+
+
+@pytest.fixture()
+def erc_20(pos):
+    return {'parent': pos['parent']['erc_20'], 'child': pos['child']['erc_20']}
+
+
+@pytest.fixture()
+def erc_20_child(pos_client, erc_20):
+    return pos_client.erc_20(erc_20['child'])
+
+
+@pytest.fixture()
+def erc_20_parent(pos_client, erc_20):
+    return pos_client.erc_20(erc_20['parent'], True)
+
+
+@pytest.fixture()
+def erc_721(pos):
+    return {'parent': pos['parent']['erc_721'], 'child': pos['child']['erc_721']}
+
+
+@pytest.fixture()
+def erc_721_child(pos_client, erc_721):
+    return pos_client.erc_721(erc_721['child'])
+
+
+@pytest.fixture()
+def erc_721_parent(pos_client, erc_721):
+    return pos_client.erc_721(erc_721['parent'], True)
+
+
+@pytest.fixture()
+def erc_1155(pos):
+    return {'parent': pos['parent']['erc_1155'], 'child': pos['child']['erc_1155']}
+
+
+@pytest.fixture()
+def erc_1155_child(pos_client, erc_1155):
+    return pos_client.erc_1155(erc_1155['child'])
+
+
+@pytest.fixture()
+def erc_1155_parent(pos_client, erc_1155):
+    return pos_client.erc_1155(erc_1155['parent'], True)
