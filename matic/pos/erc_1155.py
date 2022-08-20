@@ -15,7 +15,7 @@ class ERC1155(TokenWithApproveAll):
 
     @property
     def mintable_predicate_address(self) -> str | None:
-        """Address of mintable predicte for this token."""
+        """Address of mintable predicate for this token."""
         return getattr(
             self.client.config, 'erc_1155_mintable_predicate', ''
         ) or self.client.get_config('Main.POSContracts.MintableERC1155PredicateProxy')
