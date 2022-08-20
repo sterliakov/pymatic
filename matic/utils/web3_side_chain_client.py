@@ -52,12 +52,12 @@ class Web3SideChainClient:
         return self.abi_manager.get_config(path)
 
     @property
-    def main_plasma_contracts(self):
+    def main_plasma_contracts(self) -> dict[str, Any]:
         """Parameters of plasma contracts."""
         return self.get_config('Main.Contracts')
 
     @property
-    def main_pos_contracts(self):
+    def main_pos_contracts(self) -> dict[str, Any]:
         """Parameters of POS contracts."""
         return self.get_config('Main.POSContracts')
 

@@ -34,7 +34,7 @@ def keccak256(list_of_bytes: Iterable[bytes]) -> bytes:
     return m.digest()
 
 
-def resolve(obj: dict[str, Any], path: str | Iterable[str]):
+def resolve(obj: dict[str, Any], path: str | Iterable[str]) -> Any:
     """Get value from nested dictionary by dotted path."""
     if isinstance(path, str):
         path = path.split('.')

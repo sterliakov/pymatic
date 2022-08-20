@@ -312,16 +312,16 @@ class ExitUtil:
 
     def _encode_payload(
         self,
-        header_number,
+        header_number: int,
         block_proof: bytes,
-        block_number,
-        timestamp,
-        transactions_root,
-        receipts_root,
-        receipt,
-        receipt_parent_nodes,
-        path,
-        log_index,
+        block_number: int,
+        timestamp: int,
+        transactions_root: bytes,
+        receipts_root: bytes,
+        receipt: bytes,
+        receipt_parent_nodes: list[tuple[bytes, bytes]],
+        path: bytes,
+        log_index: int,
     ) -> bytes:
         return rlp.encode(
             [

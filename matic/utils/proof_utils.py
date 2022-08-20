@@ -6,7 +6,12 @@ import rlp
 from mpt import MerklePatriciaTrie as Trie
 
 from matic.abstracts import BaseWeb3Client
-from matic.json_types import IBaseBlock, IBlockWithTransaction, ITransactionReceipt
+from matic.json_types import (
+    IBaseBlock,
+    IBlockWithTransaction,
+    IReceiptProof,
+    ITransactionReceipt,
+)
 from matic.utils import keccak256
 from matic.utils.merkle_tree import MerkleTree
 from matic.utils.polyfill import removeprefix
@@ -125,7 +130,7 @@ def get_receipt_proof(
     web3: BaseWeb3Client,
     request_concurrency: int | None = None,
     receipts_val: Iterable[ITransactionReceipt] | None = None,
-):
+) -> IReceiptProof:
     """Get proof for receipt."""
     state_sync_tx_hash = get_state_sync_tx_hash(block).hex()
     receipts_trie = Trie({})

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from eth_typing import HexAddress
+
 import matic
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.exceptions import (
@@ -24,7 +26,7 @@ class BaseToken:
 
     def __init__(
         self,
-        address: str,
+        address: HexAddress,
         is_parent: bool,
         name: str,
         client: Web3SideChainClient,
@@ -178,7 +180,7 @@ class BaseToken:
         return self.client.parent if is_parent else self.client.child
 
     def _get_contract(
-        self, is_parent: bool, token_address: str, abi: dict[str, Any]
+        self, is_parent: bool, token_address: HexAddress, abi: dict[str, Any]
     ) -> BaseContract:
         client = self.get_client(is_parent)
         return client.get_contract(token_address, abi)

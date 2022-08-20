@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from eth_typing import HexAddress
+
 from matic.constants import MAX_AMOUNT, LogEventSignature
 from matic.exceptions import NullSpenderAddressException
 from matic.json_types import IAllowanceTransactionOption, ITransactionOption
@@ -15,7 +17,7 @@ class ERC20(POSToken):
     """Burn event signature: used for exit methods."""
 
     def get_balance(
-        self, user_address: str, option: ITransactionOption | None = None
+        self, user_address: HexAddress, option: ITransactionOption | None = None
     ) -> int:
         """Get balance of a user for supplied token."""
         method = self.method(
@@ -25,7 +27,9 @@ class ERC20(POSToken):
         return self.process_read(method, option)
 
     def get_allowance(
-        self, user_address: str, option: IAllowanceTransactionOption | None = None
+        self,
+        user_address: HexAddress,
+        option: IAllowanceTransactionOption | None = None,
     ):
         """Get allowance of user."""
         predicate_address = (
@@ -66,7 +70,7 @@ class ERC20(POSToken):
     def deposit(
         self,
         amount: int,
-        user_address: str,
+        user_address: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
@@ -84,7 +88,7 @@ class ERC20(POSToken):
     def _deposit_ether(
         self,
         amount: int,
-        user_address: str,
+        user_address: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
@@ -106,7 +110,7 @@ class ERC20(POSToken):
     def transfer(
         self,
         amount: int,
-        to: str,
+        to: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Callable
 
+from eth_typing import HexAddress
+
 from matic.json_types import IExitTransactionOption, IPOSContracts, ITransactionOption
 from matic.pos.exit_util import ExitUtil
 from matic.pos.root_chain_manager import RootChainManager
@@ -12,7 +14,7 @@ from matic.utils.web3_side_chain_client import Web3SideChainClient
 class POSToken(BaseToken):
     """Base class for all tokens based on POS bridge protocol."""
 
-    _predicate_address: str | None = None
+    _predicate_address: HexAddress | None = None
     CONTRACT_NAME: str
     """Name of a contract."""
     BURN_EVENT_SIGNATURE: bytes
@@ -20,7 +22,7 @@ class POSToken(BaseToken):
 
     def __init__(
         self,
-        token_address: str,
+        token_address: HexAddress,
         is_parent: bool,
         client: Web3SideChainClient,
         get_pos_contracts: Callable[[], IPOSContracts],
@@ -45,7 +47,7 @@ class POSToken(BaseToken):
         return self.get_pos_contracts().exit_util
 
     @property
-    def predicate_address(self) -> str:
+    def predicate_address(self) -> HexAddress:
         """Memoise and get predicate address from root chain manager."""
         if self._predicate_address:
             return self._predicate_address
@@ -147,7 +149,7 @@ class TokenWithApproveAll(POSToken):
     """This is a general token with common methods for ERC721 and ERC1155."""
 
     def is_approved_all(
-        self, user_address: str, option: ITransactionOption | None = None
+        self, user_address: HexAddress, option: ITransactionOption | None = None
     ) -> bool:
         """Check if a user is approved for all tokens."""
         self.check_for_root()
@@ -158,7 +160,7 @@ class TokenWithApproveAll(POSToken):
 
     def _approve_all(
         self,
-        predicate_address: str,
+        predicate_address: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):

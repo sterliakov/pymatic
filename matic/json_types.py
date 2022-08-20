@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Sequence, TypedDict, TypeVar
 
+from eth_typing import ChecksumAddress, HexAddress, HexStr
 from typing_extensions import NotRequired, Required
-from web3.types import RPCEndpoint
 
 if TYPE_CHECKING:
     from matic.pos.exit_util import ExitUtil
@@ -47,7 +47,7 @@ def _with_doc_mro(*bases: type[Any]) -> Callable[[_Class], _Class]:
     return wrapper
 
 
-ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[str]})
+ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[HexAddress]})
 """Configuration dictionary with required key "from" (type str) and any other keys."""
 
 
@@ -55,7 +55,7 @@ ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[str]})
 class ITransactionRequestConfig(ConfigWithFrom, total=False):
     """Transaction config - an actual configuration used to interact with chain."""
 
-    to: str
+    to: HexAddress
     """Transaction recipient."""
     value: int
     """MATIC (ETH) amount to send."""
@@ -77,7 +77,7 @@ class ITransactionRequestConfig(ConfigWithFrom, total=False):
     """ERP-1159 fee specification."""
     max_priority_fee_per_gas: int
     """ERP-1159 fee specification."""
-    type: str
+    type: HexStr
     """Transaction type, hex string (0x)."""
 
 
@@ -123,9 +123,9 @@ class ITransactionData:
     """Number of a block where transaction was included."""
     transaction_index: int | None
     """Index of a transaction in the block."""
-    from_: str
+    from_: HexAddress
     """Sender."""
-    to: str | None
+    to: HexAddress | None
     """Recipient."""
     value: int
     """Transferred token amount."""
@@ -133,8 +133,8 @@ class ITransactionData:
     """Actual gas price."""
     gas: int
     """Gas amount used."""
-    input: bytes
-    """Binary input data."""
+    input: HexStr
+    """Input data."""
 
 
 class NeighbourClientConfig(TypedDict):
@@ -163,11 +163,11 @@ class IBaseClientConfig(TypedDict):
 class IPOSClientConfig(IBaseClientConfig):
     """Configuration for POS client."""
 
-    root_chain_manager: NotRequired[str]
+    root_chain_manager: NotRequired[HexAddress]
     """Root chain manager address."""
-    root_chain: NotRequired[str]
+    root_chain: NotRequired[HexAddress]
     """Root chain address."""
-    erc_1155_mintable_predicate: NotRequired[str]
+    erc_1155_mintable_predicate: NotRequired[HexAddress]
     """Mintable predicate for ERC-1155 token address."""
 
 
@@ -253,38 +253,6 @@ class IRootBlockInfo:
     """Header block number - root block number in which child block exist."""
 
 
-class IJsonRpcRequestPayload(TypedDict):
-    """JSON-RPC request parameters dict.
-
-    Follows `specification <https://www.jsonrpc.org/specification>`_.
-    """
-
-    method: RPCEndpoint | str
-    """Method name to call."""
-    params: list[Any]
-    """List of arguments."""
-    id: NotRequired[str | int]
-    """Identifier to match request and response."""
-    jsonrpc: NotRequired[Literal['2.0']]
-    """Protocol version."""
-
-
-class IJsonRpcResponse(TypedDict):
-    """JSON-RPC response parameters dict.
-
-    Follows `specification <https://www.jsonrpc.org/specification>`_.
-    """
-
-    jsonrpc: Literal['2.0']
-    """Protocol version."""
-    id: int
-    """Identifier to match request and response."""
-    result: NotRequired[Any]
-    """Call result."""
-    error: NotRequired[str]
-    """JSON error format."""
-
-
 class ITransactionWriteResult(ABC):
     """Interface for result of ``process_write`` method."""
 
@@ -309,7 +277,7 @@ class ITransactionWriteResult(ABC):
 class ILog:
     """Log data."""
 
-    address: str
+    address: HexAddress
     """Log address."""
     data: str
     """Hashed log data (0x hex string)."""
@@ -372,11 +340,11 @@ class ITransactionReceipt:
     """Hash of the block that includes transaction this log is attached to."""
     block_number: int
     """Number of the block that includes transaction this log is attached to."""
-    from_: bytes
+    from_: HexStr
     """Sender address."""
-    to: bytes
+    to: HexStr
     """Recipient address."""
-    contract_address: bytes
+    contract_address: ChecksumAddress | None
     """Address of the contract transaction interacts with."""
     cumulative_gas_used: int
     """Total cumulative amount of gas used."""
@@ -384,9 +352,9 @@ class ITransactionReceipt:
     """Total amount of gas used."""
     logs_bloom: bytes
     """Binary logs Bloom filter representation."""
-    root: bytes
-    """Transaction root."""
-    type: str
+    root: HexStr | None
+    """Transaction root (hex string)."""
+    type: HexStr
     """Transaction type (hex string: 0x)."""
     status: bool | None = None
     """Transaction status: 0 on failure, 1 on success."""
@@ -408,11 +376,26 @@ class CheckpointedBlock(IRootBlockInfo):
     """Block start."""
     end: int
     """Block end."""
-    proposer: str  # hex string, with "0x"
+    proposer: HexStr
     """Block proposer address."""
-    root: str  # hex string, with "0x"
+    root: HexStr
     """Block root."""
     created_at: int
     """Block creation timestamp."""
     message: str
     """Message attached to the block."""
+
+
+class IReceiptProof(TypedDict):
+    """Receipt proof."""
+
+    block_hash: bytes
+    """Hash of the block."""
+    parent_nodes: list[tuple[bytes, bytes]]
+    """List of all parent nodes in raw form."""
+    root: bytes
+    """Receipt root."""
+    path: bytes
+    """Path obtained with trie."""
+    value: bytes
+    """Trie node value."""

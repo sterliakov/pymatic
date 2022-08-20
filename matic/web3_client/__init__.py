@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from typing import Any, Iterable, Literal, Sequence, cast
+from typing import Any, Iterable, Sequence, cast
 
 from eth_abi import decode_abi, encode_abi
+from eth_typing import HexAddress
 from hexbytes.main import HexBytes
 from web3 import Web3
 from web3.contract import Contract
 from web3.method import Method
 from web3.providers.base import BaseProvider
-from web3.types import RPCEndpoint
+from web3.types import BlockIdentifier, RPCEndpoint, RPCResponse
 
 import matic
 from matic.abstracts import BaseContract, BaseContractMethod, BaseWeb3Client
 from matic.json_types import (
     IBlock,
     IBlockWithTransaction,
-    IJsonRpcRequestPayload,
     ITransactionData,
     ITransactionReceipt,
     ITransactionRequestConfig,
@@ -38,7 +38,7 @@ class TransactionWriteResult(ITransactionWriteResult):
         self.tx_hash = tx_hash
         self.client = client
 
-    def get_receipt(self, timeout: int = 120):
+    def get_receipt(self, timeout: int = 120) -> ITransactionReceipt:
         """Get transaction receipt.
 
         Args:
@@ -58,13 +58,15 @@ class TransactionWriteResult(ITransactionWriteResult):
 class EthMethod(BaseContractMethod):
     """Wrapper around web3 contract method (:class:`web3.method.Method`)."""
 
-    def __init__(self, address: str, method: Method[Any], client: Web3Client) -> None:
+    def __init__(
+        self, address: HexAddress, method: Method[Any], client: Web3Client
+    ) -> None:
         super().__init__(address, method)
         self.method = method
         self.address = address
         self.client = client
 
-    def read(self, tx: ITransactionRequestConfig | None = None):
+    def read(self, tx: ITransactionRequestConfig | None = None) -> Any:
         """Perform a read operation.
 
         This does not sign a transaction and does not affect the chain.
@@ -114,7 +116,7 @@ class EthMethod(BaseContractMethod):
 class Web3Contract(BaseContract):
     """A wrapper around web3 contract (:class:`web3.contract.Contract`)."""
 
-    def __init__(self, address: str, contract: Contract, client: Web3Client):
+    def __init__(self, address: HexAddress, contract: Contract, client: Web3Client):
         super().__init__(address)
         self.contract = contract
         self.client = client
@@ -141,7 +143,7 @@ class Web3Client(BaseWeb3Client):
         self._web3 = Web3(provider)
         self._web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-    def read(self, config: ITransactionRequestConfig):
+    def read(self, config: ITransactionRequestConfig) -> Any:
         """Perform a reading (non-modifying) operation."""
         return self._web3.eth.call(matic_tx_request_config_to_web3(config))
 
@@ -158,7 +160,7 @@ class Web3Client(BaseWeb3Client):
 
         return TransactionWriteResult(tx_result, self)
 
-    def get_contract(self, address: str, abi: dict[str, Any]) -> Web3Contract:
+    def get_contract(self, address: HexAddress, abi: dict[str, Any]) -> Web3Contract:
         """Obtain a contract from deployment address and ABI dictionary."""
         cont = self._web3.eth.contract(abi=abi, address=cast(Any, address))
         return Web3Contract(address, cont, self)
@@ -177,11 +179,11 @@ class Web3Client(BaseWeb3Client):
         return self._web3.eth.get_transaction_count(address, block_number)
 
     @property
-    def chain_id(self):
+    def chain_id(self) -> int:
         """Current chain id."""
         return self._web3.eth.chain_id
 
-    def _ensure_transaction_not_null(self, data) -> None:
+    def _ensure_transaction_not_null(self, data: object) -> None:
         if not data:
             raise ValueError(
                 'Could not retrieve transaction.'
@@ -204,13 +206,7 @@ class Web3Client(BaseWeb3Client):
         self._ensure_transaction_not_null(data)
         return web3_receipt_to_matic_receipt(data)
 
-    def get_block(
-        self,
-        block_hash_or_block_number: Literal['latest', 'earliest', 'pending']
-        | bytes
-        | HexBytes
-        | int,
-    ) -> IBlock:
+    def get_block(self, block_hash_or_block_number: BlockIdentifier) -> IBlock:
         """Get block (with raw transaction data) by hash or number."""
         if isinstance(block_hash_or_block_number, bytes):
             block_hash_or_block_number = HexBytes(block_hash_or_block_number)
@@ -239,11 +235,7 @@ class Web3Client(BaseWeb3Client):
         )
 
     def get_block_with_transaction(
-        self,
-        block_hash_or_block_number: Literal['latest', 'earliest', 'pending']
-        | bytes
-        | HexBytes
-        | int,
+        self, block_hash_or_block_number: BlockIdentifier
     ) -> IBlockWithTransaction:
         """Get block (with decoded transaction data) by hash or number."""
         if isinstance(block_hash_or_block_number, bytes):
@@ -272,17 +264,19 @@ class Web3Client(BaseWeb3Client):
             transactions=list(map(web3_tx_to_matic_tx, data.transactions)),
         )
 
-    def send_rpc_request(self, request: IJsonRpcRequestPayload):
+    def send_rpc_request(
+        self, method: RPCEndpoint, params: Iterable[Any]
+    ) -> RPCResponse:
         """Perform arbitrary RPC request."""
-        return self._web3.provider.make_request(
-            cast(RPCEndpoint, request['method']), request['params']
-        )
+        return self._web3.provider.make_request(method, list(params))
 
-    def encode_parameters(self, params: Sequence[Any], types: Sequence[str]):
+    def encode_parameters(self, params: Sequence[Any], types: Sequence[str]) -> bytes:
         """Encode ABI parameters according to schema."""
         return encode_abi(types, params)
 
-    def decode_parameters(self, binary_data: bytes, types: Sequence[Any]):
+    def decode_parameters(
+        self, binary_data: bytes, types: Sequence[Any]
+    ) -> tuple[Any, ...]:
         """Decode binary data to ABI parameters according to schema."""
         return decode_abi(types, binary_data)
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from eth_typing import HexAddress
+
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
@@ -11,7 +13,7 @@ class RootChain(BaseToken):
     For example, Goerli testnet is a root chain for Mumbai testnet.
     """
 
-    def __init__(self, client: Web3SideChainClient, address: str):
+    def __init__(self, client: Web3SideChainClient, address: HexAddress):
         super().__init__(
             address=address,
             name='RootChain',

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Iterable, Sequence
 
+from eth_typing import HexAddress
+
 from matic.constants import LogEventSignature
 from matic.json_types import IExitTransactionOption, ITransactionOption
 from matic.pos.pos_token import TokenWithApproveAll
@@ -16,14 +18,17 @@ class ERC1155(TokenWithApproveAll):
     """Burn event signature: used for exit methods."""
 
     @property
-    def mintable_predicate_address(self) -> str | None:
+    def mintable_predicate_address(self) -> HexAddress | None:
         """Address of mintable predicate for this token."""
         return getattr(
-            self.client.config, 'erc_1155_mintable_predicate', ''
+            self.client.config, 'erc_1155_mintable_predicate', None
         ) or self.client.get_config('Main.POSContracts.MintableERC1155PredicateProxy')
 
     def get_balance(
-        self, user_address: str, token_id: int, option: ITransactionOption | None = None
+        self,
+        user_address: HexAddress,
+        token_id: int,
+        option: ITransactionOption | None = None,
     ) -> int:
         """Get balance of a user for supplied token."""
         method = self.method('balanceOf', user_address, token_id)
@@ -42,7 +47,7 @@ class ERC1155(TokenWithApproveAll):
         self,
         amount: int,
         token_id: int,
-        user_address: str,
+        user_address: HexAddress,
         data: bytes | None = None,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
@@ -62,7 +67,7 @@ class ERC1155(TokenWithApproveAll):
         self,
         amounts: Iterable[int],
         token_ids: Iterable[int],
-        user_address: str,
+        user_address: HexAddress,
         data: bytes | None = None,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
@@ -161,8 +166,8 @@ class ERC1155(TokenWithApproveAll):
 
     def transfer(
         self,
-        from_: str,
-        to: str,
+        from_: HexAddress,
+        to: HexAddress,
         amount: int,
         token_id: int,
         data: bytes | None = b'',

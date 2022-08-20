@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import Any, Iterable, Sequence
+
+from eth_typing import HexAddress
+from web3.types import BlockIdentifier, RPCEndpoint, RPCResponse
 
 from matic.json_types import (
     IBlock,
     IBlockWithTransaction,
-    IJsonRpcRequestPayload,
-    IJsonRpcResponse,
     ITransactionData,
     ITransactionReceipt,
     ITransactionRequestConfig,
@@ -23,11 +23,11 @@ class BaseWeb3Client(ABC):
         self.provider = provider
 
     @abstractmethod
-    def get_contract(self, address: str, abi: Any) -> BaseContract:
+    def get_contract(self, address: HexAddress, abi: Any) -> BaseContract:
         """Obtain a contract from deployment address and ABI dictionary."""
 
     @abstractmethod
-    def read(self, config: ITransactionRequestConfig) -> str:
+    def read(self, config: ITransactionRequestConfig) -> Any:
         """Perform a reading (non-modifying) operation."""
 
     @abstractmethod
@@ -49,7 +49,7 @@ class BaseWeb3Client(ABC):
         """Current chain id."""
 
     @abstractmethod
-    def get_transaction_count(self, address: str, block_number: Any) -> int:
+    def get_transaction_count(self, address: HexAddress, block_number: Any) -> int:
         """Get amount of transactions in specified block for given address."""
 
     @abstractmethod
@@ -61,12 +61,16 @@ class BaseWeb3Client(ABC):
         """Get receipt for transaction."""
 
     @abstractmethod
-    def get_block(self, block_hash_or_block_number) -> IBlock:
+    def get_block(
+        self,
+        block_hash_or_block_number: BlockIdentifier,
+    ) -> IBlock:
         """Get block (with raw transaction data) by hash or number."""
 
     @abstractmethod
     def get_block_with_transaction(
-        self, block_hash_or_block_number
+        self,
+        block_hash_or_block_number: BlockIdentifier,
     ) -> IBlockWithTransaction:
         """Get block (with decoded transaction data) by hash or number."""
 
@@ -74,16 +78,15 @@ class BaseWeb3Client(ABC):
         """Get root hash for two blocks."""
         return bytes.fromhex(
             self.send_rpc_request(
-                {
-                    'method': 'eth_getRootHash',
-                    'params': [int(start_block), int(end_block)],
-                    'id': round(datetime.now().timestamp()),
-                }
+                method=RPCEndpoint('eth_getRootHash'),
+                params=[int(start_block), int(end_block)],
             )['result']
         )
 
     @abstractmethod
-    def send_rpc_request(self, request: IJsonRpcRequestPayload) -> IJsonRpcResponse:
+    def send_rpc_request(
+        self, method: RPCEndpoint, params: Iterable[Any]
+    ) -> RPCResponse:
         """Perform arbitrary RPC request."""
 
     @abstractmethod
@@ -102,7 +105,7 @@ class BaseWeb3Client(ABC):
 class BaseContractMethod(ABC):
     """Reference implementation of class defining smart contract method."""
 
-    def __init__(self, address: str, method: Any) -> None:
+    def __init__(self, address: HexAddress, method: Any) -> None:
         self.address = address
         self.method = method
 
@@ -138,7 +141,7 @@ class BaseContractMethod(ABC):
 class BaseContract(ABC):
     """Reference implementation of class defining smart contract."""
 
-    def __init__(self, address: str):
+    def __init__(self, address: HexAddress):
         self.address = address
 
     @abstractmethod

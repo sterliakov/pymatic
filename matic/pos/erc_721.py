@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Sequence
 
+from eth_typing import HexAddress
+
 from matic.constants import LogEventSignature
 from matic.json_types import IExitTransactionOption, ITransactionOption
 from matic.pos.pos_token import TokenWithApproveAll
@@ -24,21 +26,26 @@ class ERC721(TokenWithApproveAll):
         return list(token_ids)
 
     def get_tokens_count(
-        self, user_address: str, options: ITransactionOption | None = None
+        self, user_address: HexAddress, options: ITransactionOption | None = None
     ) -> int:
         """Get tokens count for the user."""
         method = self.method('balanceOf', user_address)
         return int(self.process_read(method, options))
 
     def get_token_id_at_index_for_user(
-        self, index: int, user_address: str, options: ITransactionOption | None = None
+        self,
+        index: int,
+        user_address: HexAddress,
+        options: ITransactionOption | None = None,
     ) -> int:
         """Get token id on supplied index for user."""
         method = self.method('tokenOfOwnerByIndex', user_address, index)
 
         return int(self.process_read(method, options))
 
-    def get_all_tokens(self, user_address: str, limit: int | None = None) -> list[int]:
+    def get_all_tokens(
+        self, user_address: HexAddress, limit: int | None = None
+    ) -> list[int]:
         """Get all tokens for user."""
         count = self.get_tokens_count(user_address)
         if limit is not None and count > limit:
@@ -71,7 +78,7 @@ class ERC721(TokenWithApproveAll):
     def deposit(
         self,
         token_id: int,
-        user_address: str,
+        user_address: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
@@ -89,7 +96,7 @@ class ERC721(TokenWithApproveAll):
     def deposit_many(
         self,
         token_ids: Sequence[int],
-        user_address: str,
+        user_address: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
@@ -175,8 +182,8 @@ class ERC721(TokenWithApproveAll):
     def transfer(
         self,
         token_id: int,
-        from_: str,
-        to: str,
+        from_: HexAddress,
+        to: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):

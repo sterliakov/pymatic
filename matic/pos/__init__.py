@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from typing import cast
+
+from eth_typing import HexAddress
+
 from matic.json_types import IPOSClientConfig, IPOSContracts, ITransactionOption
 from matic.pos.erc_20 import ERC20
 from matic.pos.erc_721 import ERC721
@@ -45,8 +49,8 @@ class POSClient(BridgeClient):
             self.client, RootChain(self.client, config['root_chain'])
         )
 
-    def erc_20(self, token_address: str, is_parent: bool = False) -> ERC20:
-        """Instantiate :class:`~matic.pos.ERC20` for token address.
+    def erc_20(self, token_address: HexAddress, is_parent: bool = False) -> ERC20:
+        """Instantiate :class:`~matic.pos.erc_20.ERC20` for token address.
 
         Args:
             token_address: address where token contract is deployed.
@@ -54,8 +58,8 @@ class POSClient(BridgeClient):
         """
         return ERC20(token_address, is_parent, self.client, self._get_contracts)
 
-    def erc_721(self, token_address: str, is_parent: bool = False) -> ERC721:
-        """Instantiate :class:`~matic.pos.ERC721` for token address.
+    def erc_721(self, token_address: HexAddress, is_parent: bool = False) -> ERC721:
+        """Instantiate :class:`~matic.pos.erc_721.ERC721` for token address.
 
         Args:
             token_address: address where token contract is deployed.
@@ -63,8 +67,8 @@ class POSClient(BridgeClient):
         """
         return ERC721(token_address, is_parent, self.client, self._get_contracts)
 
-    def erc_1155(self, token_address: str, is_parent: bool = False) -> ERC1155:
-        """Instantiate :class:`~matic.pos.ERC1155` for token address.
+    def erc_1155(self, token_address: HexAddress, is_parent: bool = False) -> ERC1155:
+        """Instantiate :class:`~matic.pos.erc_1155.ERC1155` for token address.
 
         Args:
             token_address: address where token contract is deployed.
@@ -75,13 +79,13 @@ class POSClient(BridgeClient):
     def deposit_ether(
         self,
         amount: int,
-        user_address: str,
+        user_address: HexAddress,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ):
         """Deposit given amount of ether to polygon chain."""
         return ERC20(
-            '',
+            cast(HexAddress, ''),  # It won't be used
             True,
             self.client,
             self._get_contracts,
