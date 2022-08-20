@@ -7,15 +7,15 @@ Welcome to matic documentation!
 ===============================
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+    :maxdepth: 3
+    :caption: Contents:
 
-   installation
-   quickstart
-   common
-   pos_bridge
-   utils
-   web3_client
+    installation
+    quickstart
+    common
+    pos_bridge
+    utils
+    web3_client
 
 
 

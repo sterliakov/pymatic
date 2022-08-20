@@ -18,7 +18,7 @@ Exceptions
 -----------------------------------------------------------------
 .. Fails for "from" TDict key, so no tables for members
 .. automodule:: matic.json_types
-	:autosummary-no-nesting:
+    :autosummary-no-nesting:
 
 Services
 --------

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import requests
@@ -7,10 +8,12 @@ import requests
 from matic.json_types import CheckpointedBlock
 from matic.utils.polyfill import removeprefix, removesuffix
 
-DEFAULT_ABI_STORE_URL: str = 'https://static.matic.network/network'
+DEFAULT_ABI_STORE_URL: str = os.getenv(
+    'MATIC_ABI_STORE', 'https://static.matic.network/network'
+)
 """Default url of ABI store. Can be altered if needed."""
 
-DEFAULT_PROOF_API_URL: str = ''
+DEFAULT_PROOF_API_URL: str = os.getenv('MATIC_PROOF_API', '')
 """Default url of proof API. Must be set to use fast proofs."""
 
 

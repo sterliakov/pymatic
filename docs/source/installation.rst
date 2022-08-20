@@ -5,15 +5,15 @@ You can install ``thor_devkit`` with ``pip``:
 
 .. code-block:: bash
 
-	pip install -U matic
+    pip install -U matic
 
 Installing from source:
 
 .. code-block:: bash
 
-	git clone https://github.com/sterliakov/pymatic/
-	cd pymatic
-	pip install .
+    git clone https://github.com/sterliakov/pymatic/
+    cd pymatic
+    pip install .
 
 
 Supported extras:

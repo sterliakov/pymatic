@@ -1,7 +1,10 @@
-Obtaining tokens: initial setup
+Initial setup
 ===============================
 
-To proceed woth testing, you'll need environment configuration based on the following template:
+Configuration
+-------------
+
+To proceed with testing, you'll need environment configuration based on the following template:
 
 .. code-block:: bash
 
@@ -22,10 +25,72 @@ Then, to execute any transactions you'll need some MATIC tokens. You can obtain 
 
 To power transactions originating from parent chain, you'll need some Goerli ETH. You can obtain them via `Goerli faucet <https://goerlifaucet.com/>`_.
 
+Basic usage: clients
+--------------------
+
+.. Note::
+
+    You can also adjust ABI url used by this library. You can do it in any of two ways:
+
+    - Set environmental variable (``export MATIC_ABI_STORE=...`` or via .env file, if you load it);
+    - Set value in python code directly::
+
+        from matic import services
+        services.DEFAULT_ABI_STORE_URL = '...'
+        # See .env.example for one of possible URLs
+
+.. Warning::
+
+    In order to use methods of ``withdraw_exit_faster`` family, you need to set default proof API URI. You can do it in any of two ways:
+
+    - Set environmental variable (``export MATIC_PROOF_API=...`` or via .env file, if you load it);
+    - Set value in python code directly::
+
+        from matic import services
+        services.DEFAULT_PROOF_API_URL = '...'
+        # See .env.example for one of possible URLs
+
+You can create a client to interact with blockchain like in the following snippet:
+
+.. code-block:: python
+
+    #!/usr/bin/env python
+
+    import os
+
+    from dotenv import load_dotenv
+    from matic import POSClient
+    from web3 import Web3
+
+    load_dotenv()
+
+    from_ = os.getenv('USER1_FROM')
+    from_pk = os.getenv('USER1_PRIVATE_KEY')
+
+    parent_contract = '0x02C869F27B0D09004107818B1150e354d38Cb189'
+    rpc_parent = os.getenv('ROOT_RPC', 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161')
+    rpc_child = os.getenv('MATIC_RPC', 'https://rpc-mumbai.maticvigil.com')
+
+    pos_client = POSClient({
+        'network': 'testnet',
+        'version': 'mumbai',
+        'parent': {
+            'provider': Web3.HTTPProvider(rpc_parent),
+            'default_config': {'from': from_},
+        },
+        'child': {
+            'provider': Web3.HTTPProvider(rpc_child),
+            'default_config': {'from': from_},
+        },
+    })
+
+Obtaining tokens
+----------------
+
 If you want to experiment with dummy tokens, read the following sections on how to obtain them.
 
 ERC20
------
+^^^^^
 
 ERC20 token used in this tutorial is "Dummy ERC20 (DERC20)".
 
@@ -37,7 +102,7 @@ Mapped contracts:
 You can obtain them via the `Polygon faucet`_. To avoid resolving unexpected "insufficient balance" errors in future, get this token both on Mumbai and Goerli testnets.
 
 ERC721
-------
+^^^^^^
 
 We use "Test ERC721 (DERC721)" as a ERC721 token example.
 
@@ -101,7 +166,7 @@ You can wait for these tokens to be added with ``pos_client.is_deposited(transac
 If you've spent all of the tokens, you can mint a couple more.
 
 ERC1155
--------
+^^^^^^^
 
 We use "Test ERC1155 (DERC1155)" as a ERC1155 token example.
 

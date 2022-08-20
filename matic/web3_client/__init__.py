@@ -277,7 +277,7 @@ class Web3Client(BaseWeb3Client):
             cast(RPCEndpoint, request['method']), request['params']
         )
 
-    def encode_parameters(self, params: Sequence[Any], types: Sequence[Any]):
+    def encode_parameters(self, params: Sequence[Any], types: Sequence[str]):
         """Encode ABI parameters according to schema."""
         return encode_abi(types, params)
 
