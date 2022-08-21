@@ -87,4 +87,5 @@ autodoc_default_options = {
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'web3': ('https://web3py.readthedocs.io/en/latest/', None),
+    'eth_typing': ('https://eth-typing.readthedocs.io/en/latest/', None),
 }

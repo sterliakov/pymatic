@@ -26,7 +26,7 @@ class ERC20(PlasmaToken):
     """ERC-20-compliant token on plasma bridge."""
 
     WITHDRAW_EXIT_SIGNATURE = PlasmaLogEventSignature.ERC_20_WITHDRAW_EVENT_SIG
-    """Withdraw event signature: used for exit methods."""
+    """Withdraw event signature, used for exit methods."""
 
     def __init__(
         self,

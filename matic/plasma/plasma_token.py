@@ -22,7 +22,7 @@ class PlasmaToken(ABC, BaseToken[IPlasmaClientConfig]):
 
     _predicate: BaseContract | None = None
     WITHDRAW_EXIT_SIGNATURE: bytes
-    """Withdraw event signature: used for exit methods."""
+    """Withdraw event signature, used for exit methods."""
 
     def __init__(
         self,
