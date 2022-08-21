@@ -48,7 +48,9 @@ class ERC20(PlasmaToken):
     def predicate(self) -> BaseContract:
         """Get predicate contract for token."""
         return self._fetch_predicate(
-            'erc20Predicate', 'ERC20Predicate', self.client.config['erc_20_predicate']
+            'erc20Predicate',
+            'ERC20Predicate',
+            self.client.config.get('erc_20_predicate'),
         )
 
     def get_balance(

@@ -10,6 +10,9 @@ from matic.exceptions import NullSpenderAddressException, ProofAPINotSetExceptio
 
 DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
 services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
+WITHDRAW_EXITED_TX_HASH = bytes.fromhex(
+    'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
+)
 
 
 @pytest.mark.read()
@@ -42,24 +45,12 @@ def test_get_allowance_parent(erc_20_parent, from_):
 
 @pytest.mark.read()
 def test_is_checkpointed(pos_client):
-    assert (
-        pos_client.is_checkpointed(
-            bytes.fromhex(
-                'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
-            )
-        )
-        is True
-    )
+    assert pos_client.is_checkpointed(WITHDRAW_EXITED_TX_HASH) is True
 
 
 @pytest.mark.read()
 def test_is_withdraw_exited(erc_20_parent):
-    is_exited = erc_20_parent.is_withdraw_exited(
-        bytes.fromhex(
-            'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
-        )
-    )
-    assert is_exited is True
+    assert erc_20_parent.is_withdraw_exited(WITHDRAW_EXITED_TX_HASH) is True
 
 
 @pytest.mark.read()
@@ -250,26 +241,21 @@ def test_child_transfer(
     result = erc_20_child.transfer(amount, to, from_pk, {'gas_limit': 300_000})
 
     tx_hash = result.transaction_hash
-    logger.info('Forward: %s', tx_hash.hex())
     assert tx_hash
+    logger.info('Forward: %s', tx_hash.hex())
 
     tx_receipt = result.get_receipt(timeout=5 * 60)
+    assert tx_receipt
     assert tx_receipt.transaction_hash == tx_hash
-    # assert(tx_receipt).to.be.an('object')
     assert tx_receipt.from_.lower() == from_.lower()
     assert tx_receipt.to.lower() == erc_20['child'].lower()
     assert tx_receipt.type == '0x2'
     assert tx_receipt.gas_used > 0
     assert tx_receipt.cumulative_gas_used > 0
-
-    # was about hasattr, but it is weird for dataclasses
     assert tx_receipt.block_hash
     assert tx_receipt.block_number
-    # assert tx_receipt.events  # no events in fact
     assert tx_receipt.logs_bloom
     assert tx_receipt.status
-    # assert tx_receipt.transaction_index
-    # assert tx_receipt.logs
 
     new_balance = erc_20_child.get_balance(to)
 
@@ -284,7 +270,9 @@ def test_child_transfer(
 
 
 @pytest.mark.online()
-def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
+def test_approve_and_deposit(pos_client, erc_20_child, erc_20_parent, from_, from_pk):
+    balance_before = erc_20_child.get_balance(from_)
+
     result = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
     assert result.transaction_hash
     logger.info('Approve tx hash: %s', result.transaction_hash.hex())
@@ -292,13 +280,17 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
 
     tx_receipt = result.receipt
     assert tx_receipt.type == '0x2'
+    assert tx_receipt.statusrc_20_parent.get_allowance(from_)
 
     result = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
 
     tx_hash = result.transaction_hash
     assert tx_hash
     logger.info('Deposit tx hash: %s', tx_hash.hex())
-    result.receipt
+
+    tx_receipt = result.receipt
+    assert tx_receipt.type == '0x2'
+    assert tx_receipt.status
 
     start_time = time.time()
     timeout = 60 * 60
@@ -309,6 +301,8 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
             pytest.fail(f'Transaction {tx_hash.hex()} still not deposited')
         else:
             time.sleep(10)
+
+    assert erc_20_child.get_balance(from_) == balance_before + 10
 
 
 @pytest.mark.online()

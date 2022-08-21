@@ -43,31 +43,32 @@ class ERC721(PlasmaToken):
         return self._fetch_predicate(
             'erc721Predicate',
             'ERC721Predicate',
-            self.client.config['erc_721_predicate'],
+            self.client.config.get('erc_721_predicate'),
         )
 
     def get_tokens_count(
-        self, user_address: HexAddress, options: ITransactionOption | None = None
+        self, user_address: HexAddress, option: ITransactionOption | None = None
     ) -> int:
         """Get tokens count for the user."""
         method = self.contract.method('balanceOf', user_address)
-        return self.process_read(method, options)
+        return self.process_read(method, option)
 
     def get_token_id_at_index_for_user(
         self,
         index: int,
         user_address: HexAddress,
-        options: ITransactionOption | None = None,
+        option: ITransactionOption | None = None,
     ) -> int:
         """Returns token id on supplied index for user."""
         method = self.contract.method('tokenOfOwnerByIndex', user_address, index)
-        return self.process_read(method, options)
+        return self.process_read(method, option)
 
     def safe_deposit(
         self,
         token_id: int,
         user_address: HexAddress,
-        options: ITransactionOption | None = None,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ) -> ITransactionWriteResult:
         """Perform safeTransferFrom."""
         self.check_for_root()
@@ -78,16 +79,19 @@ class ERC721(PlasmaToken):
             self.get_helper_contracts().deposit_manager.address,
             token_id,
         )
-        return self.process_write(method, options)
+        return self.process_write(method, option, private_key)
 
     def withdraw_start(
-        self, token_id: int, options: ITransactionOption | None = None
+        self,
+        token_id: int,
+        private_key: str | None = None,
+        option: ITransactionOption | None = None,
     ) -> ITransactionWriteResult:
         """Initialize withdrawal process."""
         self.check_for_child()
 
         method = self.contract.method('withdraw', token_id)
-        return self.process_write(method, options)
+        return self.process_write(method, option, private_key)
 
     def transfer(
         self,
@@ -100,11 +104,14 @@ class ERC721(PlasmaToken):
         """Perform transfer to another address."""
         return self.transfer_erc_721(from_, to, token_id, private_key, option)
 
-    def get_all_tokens(self, user_address: HexAddress) -> list[int]:
+    def get_all_tokens(
+        self, user_address: HexAddress, limit: int | None = None
+    ) -> list[int]:
         """Get all token ids that belong to the given user."""
-        balance = self.get_tokens_count(user_address)
+        if limit is None:
+            limit = self.get_tokens_count(user_address)
         # TODO: should be async
 
         return [
-            self.get_token_id_at_index_for_user(i, user_address) for i in range(balance)
+            self.get_token_id_at_index_for_user(i, user_address) for i in range(limit)
         ]

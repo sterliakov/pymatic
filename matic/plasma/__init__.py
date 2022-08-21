@@ -82,7 +82,7 @@ class PlasmaClient(BridgeClient[IPlasmaClientConfig]):
         if token_address is None and not is_parent:
             token_address = MATIC_TOKEN_ADDRESS_ON_POLYGON
         if not token_address:
-            raise ValueError('Token address required.')
+            raise ValueError('Token address required on parent chain.')
 
         return ERC20(token_address, is_parent, self.client, self._get_contracts)
 
@@ -98,10 +98,11 @@ class PlasmaClient(BridgeClient[IPlasmaClientConfig]):
     def withdraw_exit(
         self,
         tokens: HexAddress | Iterable[HexAddress],
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
     ) -> ITransactionWriteResult:
         """Perform withdraw exit."""
-        return self.withdraw_manager.withdraw_exit(tokens, option)
+        return self.withdraw_manager.withdraw_exit(tokens, private_key, option)
 
     def deposit_ether(
         self,

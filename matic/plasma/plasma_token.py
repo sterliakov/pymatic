@@ -20,7 +20,7 @@ from matic.utils.web3_side_chain_client import Web3SideChainClient
 class PlasmaToken(ABC, BaseToken[IPlasmaClientConfig]):
     """Base class for all tokens based on plasma bridge protocol."""
 
-    _predicate: BaseContract
+    _predicate: BaseContract | None = None
     WITHDRAW_EXIT_SIGNATURE: bytes
     """Withdraw event signature: used for exit methods."""
 
@@ -62,10 +62,12 @@ class PlasmaToken(ABC, BaseToken[IPlasmaClientConfig]):
 
         return self._predicate
 
-    def withdraw_exit(self, option: ITransactionOption | None = None):
+    def withdraw_exit(
+        self, private_key: str | None = None, option: ITransactionOption | None = None
+    ):
         """Complete withdraw process."""
         return self.get_helper_contracts().withdraw_manager.withdraw_exit(
-            self.address, option
+            self.address, private_key, option
         )
 
     @property
@@ -98,7 +100,7 @@ class PlasmaToken(ABC, BaseToken[IPlasmaClientConfig]):
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ) -> ITransactionWriteResult:
-        """Finish withdraw process."""
+        """Continue withdraw process."""
         return self._withdraw_confirm(burn_tx_hash, False, private_key, option)
 
     def withdraw_confirm_faster(
@@ -107,5 +109,5 @@ class PlasmaToken(ABC, BaseToken[IPlasmaClientConfig]):
         private_key: str | None = None,
         option: ITransactionOption | None = None,
     ) -> ITransactionWriteResult:
-        """Finish withdraw process with fast proof."""
+        """Continue withdraw process with fast proof."""
         return self._withdraw_confirm(burn_tx_hash, True, private_key, option)

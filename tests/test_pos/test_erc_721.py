@@ -133,10 +133,16 @@ def test_approve_and_deposit(erc_721_parent, from_, from_pk):
     token = erc_721_parent.get_all_tokens(from_, 1)[0]
 
     approve_tx = erc_721_parent.approve(token, from_pk, {'gas_limit': 200_000})
-    assert approve_tx.receipt
+
+    receipt = approve_tx.receipt
+    assert receipt
+    assert receipt.status
 
     deposit_tx = erc_721_parent.deposit(token, from_, from_pk, {'gas_limit': 200_000})
-    assert deposit_tx.receipt
+
+    receipt = deposit_tx.receipt
+    assert receipt
+    assert receipt.status
 
 
 @pytest.mark.online()
@@ -152,15 +158,17 @@ def test_transfer_write(
     )
 
     tx_hash = result.transaction_hash
-    tx_receipt = result.get_receipt()
+    tx_receipt = result.receipt
 
     try:
+        assert tx_receipt
         assert tx_receipt.transaction_hash == tx_hash
         assert tx_receipt.from_ == from_
         assert tx_receipt.to.lower() == erc_721['child'].lower()
         assert tx_receipt.type == '0x2'
         assert tx_receipt.gas_used > 0
         assert tx_receipt.cumulative_gas_used > 0
+        assert tx_receipt.status
 
         new_all_tokens_from = erc_721_child.get_all_tokens(from_)
         assert len(new_all_tokens_from) == len(all_tokens_from) - 1
@@ -175,6 +183,9 @@ def test_transfer_write(
         )
         tx_hash = result.transaction_hash
         tx_receipt = result.receipt
+
+        assert tx_receipt
+        assert tx_receipt.status
 
         new_from_count = erc_721_child.get_tokens_count(from_)
         new_to_count = erc_721_child.get_tokens_count(to)

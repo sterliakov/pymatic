@@ -118,8 +118,10 @@ def test_transfer_write(
 
     tx_hash = result.transaction_hash
     assert tx_hash
-    tx_receipt = result.receipt
 
+    tx_receipt = result.receipt
+    assert tx_receipt
+    assert tx_receipt.status
     assert tx_receipt.transaction_hash == tx_hash
     assert tx_receipt.from_ == from_
     assert tx_receipt.to.lower() == erc_1155['child'].lower()
@@ -156,7 +158,10 @@ def test_transfer_write(
 @pytest.mark.online()
 def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
     approve_tx = erc_1155_parent.approve_all(from_pk)
-    assert approve_tx.receipt
+
+    receipt = approve_tx.receipt
+    assert receipt
+    assert receipt.status
 
     deposit_tx = erc_1155_parent.deposit(
         amount=1,
@@ -165,4 +170,7 @@ def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
         private_key=from_pk,
         option={'gas_limit': 200_000},
     )
-    assert deposit_tx.receipt
+
+    receipt = deposit_tx.receipt
+    assert receipt
+    assert receipt.status

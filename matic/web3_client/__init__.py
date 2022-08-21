@@ -164,12 +164,32 @@ class Web3Contract(BaseContract):
         self.contract = contract
         self.client = client
 
+    def _get_function_by_name_and_args(
+        self, method_name: str, args: Sequence[Any]
+    ) -> Any:
+        by_name = self.contract.find_functions_by_name(method_name)
+        if not by_name:
+            raise ValueError('No function with matching name.')
+        elif len(by_name) == 1:
+            return by_name.pop()
+        else:
+            by_args = self.contract.find_functions_by_args(*args)
+            # No __eq__, so this weird thing instead of set() & set()
+            both = [fn for fn in by_args if fn.fn_name == method_name]
+
+            if not both:
+                raise ValueError('No function with matching name and args.')
+            elif len(both) == 1:
+                return both.pop()
+            else:
+                raise ValueError('Cannot resolve function by name and args.')
+
     def method(self, method_name: str, *args: Any) -> EthMethod:
         """Obtain a method object by name and call arguments."""
         matic.logger.debug('method_name %s; args method %s', method_name, args)
         return EthMethod(
             self.address,
-            self.contract.get_function_by_name(method_name)(*args),
+            self._get_function_by_name_and_args(method_name, args)(*args),
             self.client,
         )
 

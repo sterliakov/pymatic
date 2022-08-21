@@ -74,8 +74,8 @@ class WithdrawManager(BaseToken[IPlasmaClientConfig]):
     def withdraw_exit(
         self,
         tokens: HexAddress | Iterable[HexAddress],
+        private_key: str | None = None,
         option: ITransactionOption | None = None,
-        private_key: bool = False,
     ) -> ITransactionWriteResult:
         """Finish withdrawal process for given token(s)."""
         if isinstance(tokens, str):
@@ -83,4 +83,4 @@ class WithdrawManager(BaseToken[IPlasmaClientConfig]):
         else:
             method = self.contract.method('processExitsBatch', list(tokens))
 
-        return self.process_write(method, option)
+        return self.process_write(method, option, private_key)
