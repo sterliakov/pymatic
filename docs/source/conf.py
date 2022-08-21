@@ -28,8 +28,7 @@ copyright = '2022, protodjango'
 author = 'protodjango'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
-
+from matic import __version__ as release
 
 # -- General configuration ---------------------------------------------------
 
