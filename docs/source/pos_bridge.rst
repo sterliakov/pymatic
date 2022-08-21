@@ -56,21 +56,10 @@ ERC 1155
 --------
 .. automodule:: matic.pos.erc_1155
 
-Root chain
-----------
-.. automodule:: matic.pos.root_chain
-
 Root chain manager
 ------------------
 .. automodule:: matic.pos.root_chain_manager
 
-Helper classes
---------------
-
-Exit data building
-^^^^^^^^^^^^^^^^^^
-.. automodule:: matic.pos.exit_util
-
 Base POS token
-^^^^^^^^^^^^^^
+--------------
 .. automodule:: matic.pos.pos_token

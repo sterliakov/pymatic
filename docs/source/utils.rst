@@ -15,6 +15,13 @@ Web3 side chain client
 ----------------------
 .. automodule:: matic.utils.web3_side_chain_client
 
+Root chain
+----------
+.. automodule:: matic.utils.root_chain
+
+Exit data building
+------------------
+.. automodule:: matic.utils.exit_util
 
 Implementation details
 ----------------------
