@@ -77,8 +77,8 @@ class ITransactionRequestConfig(ConfigWithFrom, total=False):
     """ERP-1159 fee specification."""
     max_priority_fee_per_gas: int
     """ERP-1159 fee specification."""
-    type: HexStr
-    """Transaction type, hex string (0x)."""
+    type: HexStr | None
+    """Transaction type."""
 
 
 @_with_doc_mro(ITransactionRequestConfig)
@@ -260,6 +260,12 @@ class ITransactionWriteResult(ABC):
     @abstractmethod
     def transaction_hash(self) -> bytes:
         """Get hash of executed transaction."""
+        ...
+
+    @property
+    @abstractmethod
+    def transaction_config(self) -> ITransactionRequestConfig:
+        """Get transaction parameters."""
         ...
 
     @property

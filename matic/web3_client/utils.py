@@ -16,26 +16,48 @@ from matic.json_types import (
 
 
 def matic_tx_request_config_to_web3(
-    data: ITransactionRequestConfig | None = None,
+    config: ITransactionRequestConfig | None = None,
 ) -> TxParams:
     """Transaction request: matic to web3."""
-    config: dict[str, Any] = dict(data or {})
-    type_ = config.get('type')
+    data: dict[str, Any] = dict(config or {})
+    type_ = data.get('type')
     prepared = {
-        'chainId': config.get('chain_id'),
-        'data': config.get('data'),
-        'from': config.get('from'),
-        'gas': config.get('gas_limit'),
-        'gasPrice': config.get('gas_price'),
-        'nonce': config.get('nonce'),
-        'to': config.get('to'),
-        'value': config.get('value'),
-        'maxFeePerGas': config.get('max_fee_per_gas'),
-        'maxPriorityFeePerGas': config.get('max_priority_fee_per_gas'),
+        'chainId': data.get('chain_id'),
+        'data': data.get('data'),
+        'from': data.get('from'),
+        'gas': data.get('gas_limit'),
+        'gasPrice': data.get('gas_price'),
+        'nonce': data.get('nonce'),
+        'to': data.get('to'),
+        'value': data.get('value'),
+        'maxFeePerGas': data.get('max_fee_per_gas'),
+        'maxPriorityFeePerGas': data.get('max_priority_fee_per_gas'),
         'type': Web3.toHex(type_) if type_ else None,
-        'hardfork': config.get('hardfork'),
+        'hardfork': data.get('hardfork'),
     }
     return cast(TxParams, {k: v for k, v in prepared.items() if v is not None})
+
+
+def web3_tx_request_config_to_matic(data: TxParams) -> ITransactionRequestConfig:
+    """Transaction request: web3 to matic."""
+    type_ = data.get('type')
+    prepared = {
+        'chain_id': data.get('chainId'),
+        'data': data.get('data'),
+        'from': data.get('from'),
+        'gas_limit': data.get('gas'),
+        'gas_price': data.get('gasPrice'),
+        'nonce': data.get('nonce'),
+        'to': data.get('to'),
+        'value': data.get('value'),
+        'max_fee_per_gas': data.get('maxFeePerGas'),
+        'max_priority_fee_per_gas': data.get('maxPriorityFeePerGas'),
+        'type': Web3.toHex(type_) if type_ else None,  # type: ignore
+        'hardfork': data.get('hardfork'),
+    }
+    return cast(
+        ITransactionRequestConfig, {k: v for k, v in prepared.items() if v is not None}
+    )
 
 
 def web3_log_to_matic_log(log: LogReceipt) -> ILog:

@@ -44,15 +44,8 @@ class BaseToken:
         if self._contract:
             return self._contract
 
-        abi = self.client.get_abi(
-            self.name,
-            self.bridge_type,
-        )
-        self._contract = self._get_contract(
-            self.is_parent,
-            self.address,
-            abi,
-        )
+        abi = self.client.get_abi(self.name, self.bridge_type)
+        self._contract = self._get_contract(self.is_parent, self.address, abi)
         assert self._contract
         return self._contract
 
@@ -65,7 +58,8 @@ class BaseToken:
         method: BaseContractMethod,
         option: ITransactionOption | None = None,
         private_key: str | None = None,
-    ) -> ITransactionWriteResult | ITransactionRequestConfig:
+        return_transaction: bool = False,
+    ) -> ITransactionWriteResult:
         """Perform write (modifying) operation.
 
         Args:
@@ -80,6 +74,7 @@ class BaseToken:
                 ITransactionRequestConfig if `return_transaction=True`.
                 (builds the final transaction dictionary and returns it).
         """
+        return_tx = bool(option and option.pop('return_transaction', False))
         config = self.create_transaction_config(
             tx_config=option,
             is_write=True,
@@ -88,20 +83,19 @@ class BaseToken:
         )
 
         matic.logger.info('process write config: %s', config)
-        if option and option.get('return_transaction', False):
-            config['data'] = method.encode_abi()
-            config['to'] = method.address
-            return config
-
-        return method.write(config, private_key)
+        return method.write(config, private_key, return_tx)
 
     def send_transaction(
-        self, option: ITransactionOption | None = None, private_key: str | None = None
-    ) -> ITransactionWriteResult | ITransactionRequestConfig:
+        self,
+        option: ITransactionOption | None = None,
+        private_key: str | None = None,
+        return_transaction: bool = False,
+    ) -> ITransactionWriteResult:
         """Sign and send the transaction."""
         is_parent = self.is_parent
         client = self.get_client(is_parent)
 
+        return_tx = bool(option and option.pop('return_transaction', False))
         config = self.create_transaction_config(
             tx_config=option,
             is_write=True,
@@ -110,14 +104,10 @@ class BaseToken:
         )
 
         matic.logger.info('process write config: %s', config)
-        if option and option.get('return_transaction', False):
-            return config
 
-        return client.write(config)
+        return client.write(config, private_key, return_tx)
 
-    def read_transaction(
-        self, option: ITransactionOption | None = None
-    ) -> Any | ITransactionRequestConfig:
+    def read_transaction(self, option: ITransactionOption | None = None) -> Any:
         """Send read (non-modifying) transaction without RPC method.
 
         Args:
@@ -132,6 +122,7 @@ class BaseToken:
         is_parent = self.is_parent
         client = self.get_client(is_parent)
 
+        return_tx = bool(option and option.pop('return_transaction', False))
         config = self.create_transaction_config(
             tx_config=option,
             is_write=True,
@@ -140,10 +131,7 @@ class BaseToken:
         )
 
         matic.logger.info('process read config: %s', config)
-        if option and option.get('return_transaction', False):
-            return config
-
-        return client.read(config)
+        return client.read(config, return_tx)
 
     def process_read(
         self, method: BaseContractMethod, option: ITransactionOption | None = None
@@ -160,6 +148,7 @@ class BaseToken:
                 ITransactionRequestConfig if `return_transaction=True`.
                 (builds the final transaction dictionary and returns it).
         """
+        return_tx = bool(option and option.pop('return_transaction', False))
         config = self.create_transaction_config(
             tx_config=option,
             is_write=False,
@@ -168,12 +157,7 @@ class BaseToken:
         )
         matic.logger.info('read tx config created: %s', config)
 
-        if option and option.get('return_transaction', False):
-            assert self.contract
-            config.update({'data': method.encode_abi(), 'to': self.contract.address})
-            return config
-
-        return method.read(config)
+        return method.read(config, return_tx)
 
     def get_client(self, is_parent: bool) -> BaseWeb3Client:
         """Get web3 client instance."""
@@ -251,10 +235,11 @@ class BaseToken:
         amount: int,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
+        return_transaction: bool = False,
     ):
         """Transfer ERC-20 token."""
         method = self.contract.method('transfer', to, amount)
-        return self.process_write(method, option, private_key)
+        return self.process_write(method, option, private_key, return_transaction)
 
     def transfer_erc_721(
         self,
@@ -263,10 +248,11 @@ class BaseToken:
         token_id: int,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
+        return_transaction: bool = False,
     ):
         """Transfer ERC-721 token."""
         method = self.contract.method('transferFrom', from_, to, token_id)
-        return self.process_write(method, option, private_key)
+        return self.process_write(method, option, private_key, return_transaction)
 
     def check_for_root(self) -> None:
         """Assert that method is called on parent chain instance."""
@@ -287,6 +273,7 @@ class BaseToken:
         data: bytes | None = b'',
         private_key: str | None = None,
         option: ITransactionOption | None = None,
+        return_transaction: bool = False,
     ):
         """Transfer ERC-1155 token."""
         method = self.contract.method(
@@ -297,4 +284,4 @@ class BaseToken:
             amount,
             data or b'',
         )
-        return self.process_write(method, option, private_key)
+        return self.process_write(method, option, private_key, return_transaction)

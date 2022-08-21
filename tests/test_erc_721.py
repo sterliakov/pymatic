@@ -60,7 +60,7 @@ def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
 
     result = erc_721_child.transfer(
         target_token, from_, to, from_pk, {'return_transaction': True}
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_721['child'].lower()
 
 
@@ -69,13 +69,15 @@ def test_approve_return_tx(erc_721_parent, from_, erc_721, from_pk):
     all_tokens = erc_721_parent.get_all_tokens(from_, 1)
     result = erc_721_parent.approve(
         all_tokens[0], from_pk, {'return_transaction': True}
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_721['parent'].lower()
 
 
 @pytest.mark.offline()
 def test_approve_all_return_tx(erc_721_parent, erc_721, from_pk):
-    result = erc_721_parent.approve_all(from_pk, {'return_transaction': True})
+    result = erc_721_parent.approve_all(
+        from_pk, {'return_transaction': True}
+    ).transaction_config
     assert result['to'].lower() == erc_721['parent'].lower()
 
 
@@ -87,7 +89,7 @@ def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
         from_,
         from_pk,
         {'return_transaction': True, 'gas_limit': 300_000},
-    )
+    ).transaction_config
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
     )
@@ -99,7 +101,7 @@ def test_deposit_many_return_tx(erc_721_parent, from_, from_pk, abi_manager):
     all_tokens = erc_721_parent.get_all_tokens(from_)
     tx = erc_721_parent.deposit_many(
         all_tokens, from_, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-    )
+    ).transaction_config
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
     )
@@ -111,7 +113,7 @@ def test_withdraw_start_return_tx(erc_721_child, erc_721, from_, from_pk):
     all_tokens = erc_721_child.get_all_tokens(from_, 1)
     result = erc_721_child.withdraw_start(
         all_tokens[0], from_pk, {'return_transaction': True}
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_721['child'].lower()
 
 
@@ -122,7 +124,7 @@ def test_withdraw_start_with_meta_data_return_tx(
     all_tokens = erc_721_child.get_all_tokens(from_, 1)
     result = erc_721_child.withdraw_start_with_metadata(
         all_tokens[0], from_pk, {'return_transaction': True}
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_721['child'].lower()
 
 

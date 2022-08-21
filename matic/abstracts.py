@@ -27,11 +27,20 @@ class BaseWeb3Client(ABC):
         """Obtain a contract from deployment address and ABI dictionary."""
 
     @abstractmethod
-    def read(self, config: ITransactionRequestConfig) -> Any:
+    def read(
+        self,
+        config: ITransactionRequestConfig,
+        return_transaction: bool = False,
+    ) -> Any:
         """Perform a reading (non-modifying) operation."""
 
     @abstractmethod
-    def write(self, config: ITransactionRequestConfig) -> ITransactionWriteResult:
+    def write(
+        self,
+        config: ITransactionRequestConfig,
+        private_key: str | None = None,
+        return_transaction: bool = False,
+    ) -> ITransactionWriteResult:
         """Perform a writing (modifying) operation."""
 
     @property
@@ -110,7 +119,11 @@ class BaseContractMethod(ABC):
         self.method = method
 
     @abstractmethod
-    def read(self, tx: ITransactionRequestConfig | None = None) -> Any:
+    def read(
+        self,
+        tx: ITransactionRequestConfig | None = None,
+        return_transaction: bool = False,
+    ) -> Any:
         """Perform a read operation.
 
         This does not sign a transaction and does not affect the chain.
@@ -118,7 +131,10 @@ class BaseContractMethod(ABC):
 
     @abstractmethod
     def write(
-        self, tx: ITransactionRequestConfig, private_key: str | None = None
+        self,
+        tx: ITransactionRequestConfig,
+        private_key: str | None = None,
+        return_transaction: bool = False,
     ) -> ITransactionWriteResult:
         """Perform a write operation.
 

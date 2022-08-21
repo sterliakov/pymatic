@@ -47,13 +47,15 @@ def test_transfer_return_tx(erc_1155_child, from_, to, from_pk, erc_1155):
         token_id=TOKEN_ID,
         private_key=from_pk,
         option={'return_transaction': True, 'gas_limit': 200_000},
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_1155['child'].lower()
 
 
 @pytest.mark.offline()
 def test_approve_all_return_tx(erc_1155_parent, from_pk, erc_1155):
-    result = erc_1155_parent.approve_all(from_pk, {'return_transaction': True})
+    result = erc_1155_parent.approve_all(
+        from_pk, {'return_transaction': True}
+    ).transaction_config
     assert result['to'].lower() == erc_1155['parent'].lower()
 
 
@@ -65,7 +67,7 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
         user_address=from_,
         private_key=from_pk,
         option={'return_transaction': True, 'gas_limit': 200_000},
-    )
+    ).transaction_config
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
     )
@@ -86,7 +88,7 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
 def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
     result = erc_1155_child.withdraw_start(
         TOKEN_ID, 1, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_1155['child'].lower()
 
 
@@ -94,7 +96,7 @@ def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
 def test_withdraw_start_many_return_tx(erc_1155_child, erc_1155, from_pk):
     result = erc_1155_child.withdraw_start_many(
         [TOKEN_ID], [1], from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-    )
+    ).transaction_config
     assert result['to'].lower() == erc_1155['child'].lower()
 
 

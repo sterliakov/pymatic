@@ -54,9 +54,6 @@ def test_is_checkpointed(pos_client):
 
 @pytest.mark.read()
 def test_is_withdraw_exited(erc_20_parent):
-    # exit_tx_hash = (
-    #     '0x95844235073da694e311dc90476c861e187c36f86a863a950534c9ac2b7c1a48'
-    # )
     is_exited = erc_20_parent.is_withdraw_exited(
         bytes.fromhex(
             'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
@@ -99,7 +96,7 @@ def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to, from_
             'max_priority_fee_per_gas': 1000,
             'return_transaction': True,
         },
-    )
+    ).transaction_config
     assert result['max_fee_per_gas'] == 1000
     assert result['max_priority_fee_per_gas'] == 1000
     assert 'gas_price' not in result
@@ -107,17 +104,18 @@ def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to, from_
 
 
 @pytest.mark.offline()
-def test_child_transfer_return_transaction(erc_20_child, to, from_pk):
+def test_child_transfer_return_transaction(erc_20_child, to, from_, from_pk, erc_20):
     amount = 1
     result = erc_20_child.transfer(
         amount,
         to,
         from_pk,
         {'return_transaction': True},
-    )
-    assert 'max_fee_per_gas' not in result
-    assert 'max_priority_fee_per_gas' not in result
+    ).transaction_config
     assert result['chain_id'] == 80001
+    assert result['to'] == erc_20['child']
+    assert result['from'] == from_
+    assert result['value'] == 0
 
 
 @pytest.mark.offline()
@@ -132,7 +130,7 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to, fro
             'max_priority_fee_per_gas': 30,
             'return_transaction': True,
         },
-    )
+    ).transaction_config
 
     assert result['max_fee_per_gas'] == 30
     assert result['max_priority_fee_per_gas'] == 30
@@ -142,7 +140,9 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to, fro
 
 @pytest.mark.offline()
 def test_withdraw_start_return_tx(erc_20, erc_20_child, from_pk):
-    result = erc_20_child.withdraw_start(10, from_pk, {'return_transaction': True})
+    result = erc_20_child.withdraw_start(
+        10, from_pk, {'return_transaction': True}
+    ).transaction_config
 
     assert result['to'].lower() == erc_20['child'].lower()
     assert 'data' in result
@@ -154,7 +154,7 @@ def test_approve_parent_return_tx(erc_20, erc_20_parent, from_pk):
         10,
         from_pk,
         {'return_transaction': True},
-    )
+    ).transaction_config
 
     assert result['to'].lower() == erc_20['parent'].lower()
     assert 'data' in result
@@ -167,7 +167,7 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent, fr
         1,
         from_pk,
         {'spender_address': spender_address, 'return_transaction': True},
-    )
+    ).transaction_config
 
     assert result['to'].lower() == erc_20['parent'].lower()
     assert 'data' in result
@@ -183,7 +183,7 @@ def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child, f
 def test_deposit_return_tx(abi_manager, erc_20_parent, from_, from_pk):
     result = erc_20_parent.deposit(
         9, from_, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-    )
+    ).transaction_config
 
     root_chain_manager = abi_manager.get_config(
         'Main.POSContracts.RootChainManagerProxy'
@@ -205,7 +205,7 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
         EXITED_TX_HASH,
         from_pk,
         {'return_transaction': True, 'gas_limit': 200_000},
-    )
+    ).transaction_config
     assert result['data'].hex() == exit_data.hex()
 
     root_chain_manager = abi_manager.get_config(
@@ -232,7 +232,7 @@ def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, fro
 def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
     result = erc_20_parent.withdraw_exit_faster(
         EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-    )
+    ).transaction_config
     assert result['data'].hex() == exit_data.hex()
 
     root_chain_manager = abi_manager.get_config(
@@ -251,7 +251,6 @@ def test_child_transfer(
 
     tx_hash = result.transaction_hash
     logger.info('Forward: %s', tx_hash.hex())
-    print('Forward: ', tx_hash.hex())
     assert tx_hash
 
     tx_receipt = result.get_receipt(timeout=5 * 60)
@@ -280,7 +279,7 @@ def test_child_transfer(
     result = erc_20_child_token.transfer(
         amount, from_, to_private_key, {'gas_limit': 300_000}
     )
-    print('Back: ', result.transaction_hash.hex())
+    logger.info('Back: ', result.transaction_hash.hex())
     result.receipt
 
 
@@ -288,8 +287,8 @@ def test_child_transfer(
 def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
     result = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
     assert result.transaction_hash
-    print(result.transaction_hash.hex())
-    print(erc_20_parent.get_allowance(from_))
+    logger.info('Approve tx hash: %s', result.transaction_hash.hex())
+    logger.info('Allowance: %s', erc_20_parent.get_allowance(from_))
 
     tx_receipt = result.receipt
     assert tx_receipt.type == '0x2'
@@ -298,7 +297,7 @@ def test_approve_and_deposit(pos_client, erc_20_parent, from_, from_pk):
 
     tx_hash = result.transaction_hash
     assert tx_hash
-    print(tx_hash.hex())
+    logger.info('Deposit tx hash: %s', tx_hash.hex())
     result.receipt
 
     start_time = time.time()
