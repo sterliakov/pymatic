@@ -279,7 +279,7 @@ def test_child_transfer(
     result = erc_20_child_token.transfer(
         amount, from_, to_private_key, {'gas_limit': 300_000}
     )
-    logger.info('Back: ', result.transaction_hash.hex())
+    logger.info('Back: %s', result.transaction_hash.hex())
     result.receipt
 
 
