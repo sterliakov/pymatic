@@ -147,24 +147,3 @@ def test_transfer_write(
 
     assert new_from_count == all_tokens_from
     assert new_to_count == all_tokens_to
-
-
-@pytest.mark.online()
-def test_approve_and_deposit(erc_1155_parent, from_, from_pk):
-    approve_tx = erc_1155_parent.approve_all(from_pk)
-
-    receipt = approve_tx.receipt
-    assert receipt
-    assert receipt.status
-
-    deposit_tx = erc_1155_parent.deposit(
-        amount=1,
-        token_id=TOKEN_ID,
-        user_address=from_,
-        private_key=from_pk,
-        option={'gas_limit': 200_000},
-    )
-
-    receipt = deposit_tx.receipt
-    assert receipt
-    assert receipt.status

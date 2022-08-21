@@ -25,12 +25,12 @@ def test_withdraw_full_cycle(
     kinds = ('20', '721', '1155')
 
     balance_child_20 = erc_20_child.get_balance(from_)
-    balance_child_721 = erc_721_child.get_balance(from_)
-    balance_child_1155 = erc_1155_child.get_balance(from_)
+    balance_child_721 = erc_721_child.get_tokens_count(from_)
+    balance_child_1155 = erc_1155_child.get_balance(from_, TOKEN_ID)
 
     balance_parent_20 = erc_20_parent.get_balance(from_)
-    balance_parent_721 = erc_721_parent.get_balance(from_)
-    balance_parent_1155 = erc_1155_parent.get_balance(from_)
+    balance_parent_721 = erc_721_parent.get_tokens_count(from_)
+    balance_parent_1155 = erc_1155_parent.get_balance(from_, TOKEN_ID)
 
     # Start all transactions
     start_20 = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
@@ -105,9 +105,9 @@ def test_withdraw_full_cycle(
     assert end_1155.receipt.status
 
     assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
-    assert balance_child_721 - 1 == erc_721_child.get_balance(from_)
-    assert balance_child_1155 - 1 == erc_1155_child.get_balance(from_)
+    assert balance_child_721 - 1 == erc_721_child.get_tokens_count(from_)
+    assert balance_child_1155 - 1 == erc_1155_child.get_balance(from_, TOKEN_ID)
 
     assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
-    assert balance_parent_721 + 1 == erc_721_parent.get_balance(from_)
-    assert balance_parent_1155 + 1 == erc_1155_parent.get_balance(from_)
+    assert balance_parent_721 + 1 == erc_721_parent.get_tokens_count(from_)
+    assert balance_parent_1155 + 1 == erc_1155_parent.get_balance(from_, TOKEN_ID)

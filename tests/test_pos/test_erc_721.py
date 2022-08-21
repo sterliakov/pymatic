@@ -122,23 +122,6 @@ def test_withdraw_start_with_meta_data_return_tx(
 
 
 @pytest.mark.online()
-def test_approve_and_deposit(erc_721_parent, from_, from_pk):
-    token = erc_721_parent.get_all_tokens(from_, 1)[0]
-
-    approve_tx = erc_721_parent.approve(token, from_pk, {'gas_limit': 200_000})
-
-    receipt = approve_tx.receipt
-    assert receipt
-    assert receipt.status
-
-    deposit_tx = erc_721_parent.deposit(token, from_, from_pk, {'gas_limit': 200_000})
-
-    receipt = deposit_tx.receipt
-    assert receipt
-    assert receipt.status
-
-
-@pytest.mark.online()
 def test_transfer_write(
     erc_721_child, from_, to, erc_721, pos_client_for_to, from_pk, to_private_key
 ):

@@ -9,7 +9,7 @@ from matic import logger
 @pytest.mark.online()
 @pytest.mark.trylast()
 def test_withdraw_full_cycle(
-    pos_client,
+    plasma_client,
     erc_20_child,
     erc_20_parent,
     erc_721_child,
@@ -21,10 +21,10 @@ def test_withdraw_full_cycle(
     kinds = ('20', '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
-    balance_child_721 = erc_721_child.get_balance(from_)
+    balance_child_721 = erc_721_child.get_tokens_count(from_)
 
     balance_parent_20 = erc_20_parent.get_balance(from_)
-    balance_parent_721 = erc_721_parent.get_balance(from_)
+    balance_parent_721 = erc_721_parent.get_tokens_count(from_)
 
     # Start all transactions
     start_20 = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
@@ -50,7 +50,7 @@ def test_withdraw_full_cycle(
         for key in kinds:
             if checkpointed[key]:
                 continue
-            elif pos_client.is_checkpointed(tx_hashes[key]):
+            elif plasma_client.is_checkpointed(tx_hashes[key]):
                 checkpointed[key] = True
                 continue
             else:

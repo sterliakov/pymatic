@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import time
-
 import pytest
 
 from matic import logger
@@ -246,39 +244,3 @@ def test_child_transfer(
     )
     logger.info('Back: %s', result.transaction_hash.hex())
     result.receipt
-
-
-@pytest.mark.online()
-def test_approve_and_deposit(
-    plasma_client, erc_20_child, erc_20_parent, from_, from_pk
-):
-    # Same
-    balance_before = erc_20_child.get_balance(from_)
-
-    result = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
-    assert result.transaction_hash
-    logger.info('Approve tx hash: %s', result.transaction_hash.hex())
-    logger.info('Allowance: %s', erc_20_parent.get_allowance(from_))
-
-    tx_receipt = result.receipt
-    assert tx_receipt.type == '0x2'
-    assert tx_receipt.status
-
-    result = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
-
-    tx_hash = result.transaction_hash
-    assert tx_hash
-    logger.info('Deposit tx hash: %s', tx_hash.hex())
-    result.receipt
-
-    start_time = time.time()
-    timeout = 60 * 60
-    while True:
-        if plasma_client.is_deposited(tx_hash):
-            break
-        elif time.time() - start_time > timeout:
-            pytest.fail(f'Transaction {tx_hash.hex()} still not deposited')
-        else:
-            time.sleep(30)
-
-    assert erc_20_child.get_balance(from_) == balance_before + 10
