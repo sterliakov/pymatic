@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Callable, Sequence, TypedDict, TypeVar
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
@@ -301,7 +302,7 @@ class ITransactionWriteResult(ABC):
         """Get transaction parameters."""
         ...
 
-    @property
+    @cached_property
     def receipt(self) -> ITransactionReceipt:
         """Property for convenient access to receipt."""
         return self.get_receipt()
