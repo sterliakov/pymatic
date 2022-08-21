@@ -8,6 +8,7 @@ from eth_typing import ChecksumAddress, HexAddress, HexStr
 from typing_extensions import NotRequired, Required
 
 if TYPE_CHECKING:
+    from matic.plasma.contracts import DepositManager, RegistryContract, WithdrawManager
     from matic.pos.exit_util import ExitUtil
     from matic.pos.root_chain_manager import RootChainManager
 
@@ -171,6 +172,24 @@ class IPOSClientConfig(IBaseClientConfig):
     """Mintable predicate for ERC-1155 token address."""
 
 
+@_with_doc_mro(IBaseClientConfig)
+class IPlasmaClientConfig(IBaseClientConfig):
+    """Configuration for plasma bridge client."""
+
+    deposit_manager: NotRequired[HexAddress | None]
+    """Deposit manager address."""
+    withdraw_manager: NotRequired[HexAddress | None]
+    """Withdraw manager address."""
+    registry: NotRequired[HexAddress | None]
+    """Registry address."""
+    root_chain: NotRequired[HexAddress | None]
+    """Root chain address."""
+    erc_20_predicate: NotRequired[HexAddress | None]
+    """Predicate address for ERC-20 tokens."""
+    erc_721_predicate: NotRequired[HexAddress | None]
+    """Predicate address for ERC-721 tokens."""
+
+
 @dataclass
 class IBaseBlock:
     """Base block parameters."""
@@ -237,8 +256,22 @@ class IPOSContracts:
 
     root_chain_manager: RootChainManager
     """Root chain manager."""
-    exit_util: ExitUtil
+    exit_util: ExitUtil[IPOSClientConfig]
     """Helper class instance for building exit data."""
+
+
+@dataclass
+class IPlasmaContracts:
+    """Return type of ``get_helper_contracts`` parameter of :class:`matic.plasma.plasma_token.PlasmaToken`."""  # noqa
+
+    deposit_manager: DepositManager
+    """Deposit manager instance."""
+    registry: RegistryContract
+    """Registry contract instance."""
+    exit_util: ExitUtil[IPlasmaClientConfig]
+    """Helper class instance for building exit data."""
+    withdraw_manager: WithdrawManager
+    """Withdraw manager instance."""
 
 
 @dataclass

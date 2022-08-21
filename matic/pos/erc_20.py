@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from eth_typing import HexAddress
 
-from matic.constants import MAX_AMOUNT, LogEventSignature
+from matic.constants import MAX_AMOUNT, POSLogEventSignature
 from matic.exceptions import NullSpenderAddressException
 from matic.json_types import IAllowanceTransactionOption, ITransactionOption
 from matic.pos.pos_token import POSToken
@@ -13,7 +13,7 @@ class ERC20(POSToken):
 
     CONTRACT_NAME: str = 'ChildERC20'
     """Name of a contract."""
-    BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_20_TRANSFER
+    BURN_EVENT_SIGNATURE: bytes = POSLogEventSignature.ERC_20_TRANSFER
     """Burn event signature: used for exit methods."""
 
     def get_balance(

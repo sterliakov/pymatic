@@ -1,24 +1,28 @@
 from __future__ import annotations
 
-from matic.constants import LogEventSignature
+from typing import Generic, TypeVar
+
+from matic.constants import POSLogEventSignature
 from matic.json_types import IBaseClientConfig
 from matic.pos.exit_util import ExitUtil
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
+_C = TypeVar('_C', bound=IBaseClientConfig)
 
-class BridgeClient:
+
+class BridgeClient(Generic[_C]):
     """Base class for POS bridge with reusable methods."""
 
-    client: Web3SideChainClient
+    client: Web3SideChainClient[_C]
     """Actual connecting client."""
-    exit_util: ExitUtil
+    exit_util: ExitUtil[_C]
     """Helper class for exit data building.
 
     Should be set after instantiation to prevent cycles.
     """
 
-    def __init__(self, config: IBaseClientConfig):
+    def __init__(self, config: _C):
         self.client = Web3SideChainClient(config)
 
     def is_checkpointed(self, tx_hash: bytes) -> bool:
@@ -42,7 +46,7 @@ class BridgeClient:
         receipt = client.parent.get_transaction_receipt(deposit_tx_hash)
         last_state_id = token.process_read(token.contract.method('lastStateId'))
 
-        event_signature = LogEventSignature.STATE_SYNCED_EVENT
+        event_signature = POSLogEventSignature.STATE_SYNCED_EVENT
         try:
             target_log = next(
                 log for log in receipt.logs if log.topics[0] == event_signature

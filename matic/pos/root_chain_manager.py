@@ -2,15 +2,17 @@ from __future__ import annotations
 
 from eth_typing import HexAddress
 
-from matic.json_types import ITransactionOption
+from matic.json_types import IPOSClientConfig, ITransactionOption
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 
-class RootChainManager(BaseToken):
+class RootChainManager(BaseToken[IPOSClientConfig]):
     """Root chain manager handles common operations related to POS bridge withdrawal."""
 
-    def __init__(self, client: Web3SideChainClient, address: HexAddress) -> None:
+    def __init__(
+        self, client: Web3SideChainClient[IPOSClientConfig], address: HexAddress
+    ) -> None:
         super().__init__(
             address=address,
             name='RootChainManager',

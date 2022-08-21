@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, Generic, TypeVar, cast
 
 from eth_typing import HexAddress
 
@@ -12,14 +12,17 @@ from matic.exceptions import (
     EIP1559NotSupportedException,
 )
 from matic.json_types import (
+    IBaseClientConfig,
     ITransactionOption,
     ITransactionRequestConfig,
     ITransactionWriteResult,
 )
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
+_C = TypeVar('_C', bound=IBaseClientConfig)
 
-class BaseToken:
+
+class BaseToken(Generic[_C]):
     """Base class for all tokens."""
 
     _contract: BaseContract | None = None
@@ -29,7 +32,7 @@ class BaseToken:
         address: HexAddress,
         is_parent: bool,
         name: str,
-        client: Web3SideChainClient,
+        client: Web3SideChainClient[_C],
         bridge_type: str | None = None,
     ):
         self.address = address
@@ -48,6 +51,14 @@ class BaseToken:
         self._contract = self._get_contract(self.is_parent, self.address, abi)
         assert self._contract
         return self._contract
+
+    def _check_option(
+        self, option: ITransactionOption | None = None
+    ) -> ITransactionOption:
+        if option is not None:
+            return option
+
+        return cast(ITransactionOption, {})
 
     def method(self, method_name: str, *args: Any) -> Any:
         """Call arbitrary JSON-RPC method."""
@@ -180,13 +191,13 @@ class BaseToken:
             pass ``gas_limit`` to prevent it from happening.
         """
         if is_parent:
-            default_config = (self.client.config.get('parent') or {}).get(
-                'default_config'  # type: ignore
-            )
+            default_config = (  # type: ignore[attr-defined]
+                self.client.config.get('parent') or {}
+            ).get('default_config')
         else:
-            default_config = (self.client.config.get('child') or {}).get(
-                'default_config'  # type: ignore
-            )
+            default_config = (  # type: ignore[attr-defined]
+                self.client.config.get('child') or {}
+            ).get('default_config')
 
         merged_config = dict(default_config or {})
         merged_config.update(tx_config or {})

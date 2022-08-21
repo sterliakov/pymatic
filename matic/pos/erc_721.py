@@ -4,7 +4,7 @@ from typing import Sequence
 
 from eth_typing import HexAddress
 
-from matic.constants import LogEventSignature
+from matic.constants import POSLogEventSignature
 from matic.json_types import IExitTransactionOption, ITransactionOption
 from matic.pos.pos_token import TokenWithApproveAll
 
@@ -14,7 +14,7 @@ class ERC721(TokenWithApproveAll):
 
     CONTRACT_NAME: str = 'ChildERC721'
     """Name of a contract."""
-    BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_721_TRANSFER
+    BURN_EVENT_SIGNATURE: bytes = POSLogEventSignature.ERC_721_TRANSFER
     """Burn event signature: used for exit methods."""
 
     @staticmethod
@@ -171,12 +171,12 @@ class ERC721(TokenWithApproveAll):
 
     def is_withdraw_exited_many(self, tx_hash: bytes) -> bool:
         """Check if batch withdrawal is already exited for given transaction."""
-        return self.is_withdrawn(tx_hash, LogEventSignature.ERC_721_BATCH_TRANSFER)
+        return self.is_withdrawn(tx_hash, POSLogEventSignature.ERC_721_BATCH_TRANSFER)
 
     def is_withdraw_exited_on_index(self, tx_hash: bytes, index: int) -> bool:
         """Check if withdrawal is already exited for given transaction on index."""
         return self.is_withdrawn_on_index(
-            tx_hash, index, LogEventSignature.ERC_721_TRANSFER
+            tx_hash, index, POSLogEventSignature.ERC_721_TRANSFER
         )
 
     def transfer(

@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+from typing import TypeVar
+
 from eth_typing import HexAddress
 
+from matic.json_types import IBaseClientConfig
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
+_C = TypeVar('_C', bound=IBaseClientConfig)
 
-class RootChain(BaseToken):
+
+class RootChain(BaseToken[_C]):
     """Root chain implementation.
 
     This represents a connection between parent (root) and child chains.
     For example, Goerli testnet is a root chain for Mumbai testnet.
     """
 
-    def __init__(self, client: Web3SideChainClient, address: HexAddress):
+    def __init__(self, client: Web3SideChainClient[_C], address: HexAddress):
         super().__init__(
             address=address,
             name='RootChain',

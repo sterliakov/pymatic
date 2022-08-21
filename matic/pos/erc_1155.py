@@ -4,7 +4,7 @@ from typing import Iterable, Sequence
 
 from eth_typing import HexAddress
 
-from matic.constants import LogEventSignature
+from matic.constants import POSLogEventSignature
 from matic.json_types import IExitTransactionOption, ITransactionOption
 from matic.pos.pos_token import TokenWithApproveAll
 
@@ -14,7 +14,7 @@ class ERC1155(TokenWithApproveAll):
 
     CONTRACT_NAME: str = 'ChildERC1155'
     """Name of a contract."""
-    BURN_EVENT_SIGNATURE: bytes = LogEventSignature.ERC_1155_TRANSFER
+    BURN_EVENT_SIGNATURE: bytes = POSLogEventSignature.ERC_1155_TRANSFER
     """Burn event signature: used for exit methods."""
 
     @property
@@ -133,7 +133,7 @@ class ERC1155(TokenWithApproveAll):
         """
         return self.withdraw_exit_pos(
             burn_transaction_hash,
-            LogEventSignature.ERC_1155_BATCH_TRANSFER,
+            POSLogEventSignature.ERC_1155_BATCH_TRANSFER,
             private_key,
             False,
             option=option,
@@ -154,7 +154,7 @@ class ERC1155(TokenWithApproveAll):
         """
         return self.withdraw_exit_pos(
             burn_transaction_hash,
-            LogEventSignature.ERC_1155_BATCH_TRANSFER,
+            POSLogEventSignature.ERC_1155_BATCH_TRANSFER,
             private_key,
             True,
             option=option,
@@ -162,7 +162,7 @@ class ERC1155(TokenWithApproveAll):
 
     def is_withdraw_exited_many(self, tx_hash: bytes) -> bool:
         """Check if batch exit has been completed for a transaction hash."""
-        return self.is_withdrawn(tx_hash, LogEventSignature.ERC_1155_BATCH_TRANSFER)
+        return self.is_withdrawn(tx_hash, POSLogEventSignature.ERC_1155_BATCH_TRANSFER)
 
     def transfer(
         self,

@@ -13,8 +13,10 @@ from matic.pos.root_chain import RootChain
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.bridge_client import BridgeClient
 
+__all__ = ['POSClient', 'ERC20', 'ERC721', 'ERC1155']
 
-class POSClient(BridgeClient):
+
+class POSClient(BridgeClient[IPOSClientConfig]):
     """POS bridge client.
 
     Used to manage instantiation of

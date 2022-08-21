@@ -4,14 +4,19 @@ from typing import Callable
 
 from eth_typing import HexAddress
 
-from matic.json_types import IExitTransactionOption, IPOSContracts, ITransactionOption
+from matic.json_types import (
+    IExitTransactionOption,
+    IPOSClientConfig,
+    IPOSContracts,
+    ITransactionOption,
+)
 from matic.pos.exit_util import ExitUtil
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.base_token import BaseToken
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 
-class POSToken(BaseToken):
+class POSToken(BaseToken[IPOSClientConfig]):
     """Base class for all tokens based on POS bridge protocol."""
 
     _predicate_address: HexAddress | None = None
@@ -24,7 +29,7 @@ class POSToken(BaseToken):
         self,
         token_address: HexAddress,
         is_parent: bool,
-        client: Web3SideChainClient,
+        client: Web3SideChainClient[IPOSClientConfig],
         get_pos_contracts: Callable[[], IPOSContracts],
     ) -> None:
         super().__init__(
@@ -42,7 +47,7 @@ class POSToken(BaseToken):
         return self.get_pos_contracts().root_chain_manager
 
     @property
-    def exit_util(self) -> ExitUtil:
+    def exit_util(self) -> ExitUtil[IPOSClientConfig]:
         """Get ExitUtil instance."""
         return self.get_pos_contracts().exit_util
 

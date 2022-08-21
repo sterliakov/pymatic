@@ -1,27 +1,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Final
+from typing import Callable, Final, Generic, TypeVar
 
 import rlp
 
 import matic
 from matic import services
 from matic.abstracts import BaseWeb3Client
-from matic.constants import LogEventSignature
+from matic.constants import POSLogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
 from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
 from matic.pos.root_chain import RootChain
 from matic.utils import proof_utils
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
+_C = TypeVar('_C', bound=IBaseClientConfig)
+
 _ERC_721_HASHES: Final = {
-    LogEventSignature.ERC_721_TRANSFER,
-    LogEventSignature.ERC_721_TRANSFER_WITH_METADATA,
+    POSLogEventSignature.ERC_721_TRANSFER,
+    POSLogEventSignature.ERC_721_TRANSFER_WITH_METADATA,
 }
 _ERC_1155_HASHES: Final = {
-    LogEventSignature.ERC_1155_TRANSFER,
-    LogEventSignature.ERC_1155_BATCH_TRANSFER,
+    POSLogEventSignature.ERC_1155_TRANSFER,
+    POSLogEventSignature.ERC_1155_BATCH_TRANSFER,
 }
 _ZERO_SIG: Final = bytes(32)
 
@@ -34,16 +36,16 @@ class _IChainBlockInfo:
     tx_block_number: int
 
 
-class ExitUtil:
+class ExitUtil(Generic[_C]):
     """Helper utility class for building and performing exit actions with POS bridge."""
 
     _matic_client: BaseWeb3Client
-    root_chain: RootChain
+    root_chain: RootChain[_C]
     """Root chain address."""
-    config: IBaseClientConfig
+    config: _C
     """Configuration (same as of client)."""
 
-    def __init__(self, client: Web3SideChainClient, root_chain: RootChain):
+    def __init__(self, client: Web3SideChainClient[_C], root_chain: RootChain[_C]):
         self._matic_client = client.child
         self.root_chain = root_chain
         self.config = client.config
@@ -114,13 +116,13 @@ class ExitUtil:
                     and log.topics[3].lower() == _ZERO_SIG
                 )
             ]
-        elif log_event_sig == LogEventSignature.ERC_721_BATCH_TRANSFER:
+        elif log_event_sig == POSLogEventSignature.ERC_721_BATCH_TRANSFER:
             log_indices = [
                 i
                 for i, log in enumerate(receipt.logs)
                 if (
                     len(log.topics) >= 2
-                    and log.topics[0].lower() == LogEventSignature.ERC_20_TRANSFER
+                    and log.topics[0].lower() == POSLogEventSignature.ERC_20_TRANSFER
                     and log.topics[2].lower() == _ZERO_SIG
                 )
             ]

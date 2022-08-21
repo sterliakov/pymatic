@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 import matic.utils
 from matic.abstracts import BaseWeb3Client
 from matic.json_types import IBaseClientConfig
 from matic.utils.abi_manager import ABIManager
 
+_C = TypeVar('_C', bound=IBaseClientConfig)
 
-class Web3SideChainClient:
+
+class Web3SideChainClient(Generic[_C]):
     """Web3 client class for a side chain."""
 
     parent: BaseWeb3Client
@@ -18,7 +20,7 @@ class Web3SideChainClient:
     abi_manager: ABIManager
     """ABI manager instance."""
 
-    def __init__(self, config: IBaseClientConfig) -> None:
+    def __init__(self, config: _C) -> None:
         # config.parent.default_config = config.parent.default_config or {}
         # config.child.default_config = config.child.default_config or {}
         self.config = config
