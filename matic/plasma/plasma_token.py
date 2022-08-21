@@ -64,7 +64,7 @@ class PlasmaToken(ABC, BaseToken[IPlasmaClientConfig]):
 
     def withdraw_exit(
         self, private_key: str | None = None, option: ITransactionOption | None = None
-    ):
+    ) -> ITransactionWriteResult:
         """Complete withdraw process."""
         return self.get_helper_contracts().withdraw_manager.withdraw_exit(
             self.address, private_key, option

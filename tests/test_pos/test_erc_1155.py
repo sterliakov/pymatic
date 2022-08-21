@@ -1,13 +1,7 @@
 from __future__ import annotations
 
-import os
-
 import pytest
 
-from matic import services
-
-DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
-services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 TOKEN_ID = 123
 
 
@@ -113,7 +107,7 @@ def test_transfer_write(
         from_=from_,
         amount=amount_to_transfer,
         private_key=from_pk,
-        option={'gas_limit': 200_000},
+        option={'gas_limit': 300_000},
     )
 
     tx_hash = result.transaction_hash
@@ -143,7 +137,7 @@ def test_transfer_write(
         from_=to,
         amount=amount_to_transfer,
         private_key=to_private_key,
-        option={'gas_limit': 200_000},
+        option={'gas_limit': 300_000},
     )
     tx_hash = result.transaction_hash
     tx_receipt = result.receipt

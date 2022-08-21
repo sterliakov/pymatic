@@ -4,9 +4,13 @@ import pytest
 from dotenv import load_dotenv
 from web3 import Web3
 
+from matic import services
 from matic.utils.abi_manager import ABIManager
 
 load_dotenv()
+
+DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
+services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 
 
 @pytest.fixture()

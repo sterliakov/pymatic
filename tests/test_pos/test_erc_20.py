@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import time
 
 import pytest
@@ -8,8 +7,8 @@ import pytest
 from matic import logger, services
 from matic.exceptions import NullSpenderAddressException, ProofAPINotSetException
 
-DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
-services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
+from ..conftest import DEFAULT_PROOF_API_URL
+
 WITHDRAW_EXITED_TX_HASH = bytes.fromhex(
     'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
 )

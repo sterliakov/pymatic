@@ -1,14 +1,8 @@
 from __future__ import annotations
 
-import os
 import time
 
 import pytest
-
-from matic import services
-
-DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
-services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 
 
 @pytest.mark.read()
@@ -103,6 +97,7 @@ def test_transfer_write(
     tx_receipt = result.receipt
 
     try:
+        assert tx_receipt.status
         assert tx_receipt.transaction_hash == tx_hash
         assert tx_receipt.from_ == from_
         assert tx_receipt.to.lower() == erc_721['child'].lower()

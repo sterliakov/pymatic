@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import os
 import time
 
 import pytest
 
-from matic import logger, services
+from matic import logger
 from matic.exceptions import NullSpenderAddressException
 
-DEFAULT_PROOF_API_URL = os.getenv('PROOF_API', 'https://apis.matic.network/api/v1/')
-services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
 WITHDRAW_EXITED_TX_HASH = bytes.fromhex(
     'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
 )
@@ -53,54 +50,12 @@ def test_is_checkpointed(plasma_client):
     assert plasma_client.is_checkpointed(WITHDRAW_EXITED_TX_HASH) is True
 
 
-# # Rm
-# @pytest.mark.read()
-# def test_is_withdraw_exited(erc_20_parent):
-#     assert erc_20_parent.is_withdraw_exited(WITHDRAW_EXITED_TX_HASH) is True
-
-
-# # Rm
-# @pytest.mark.read()
-# def test_call_get_block_included():
-#     result = services.get_block_included('testnet', 1000)
-#     assert isinstance(result.start, int)
-#     assert isinstance(result.end, int)
-#     assert isinstance(result.header_block_number, int)
-#     assert result.proposer.startswith('0x')
-#     assert result.root.startswith('0x')
-#     assert result.block_number == 1000
-#     assert isinstance(result.created_at, int)
-
-
 @pytest.mark.read()
 def test_is_deposited(plasma_client):
     # Diff hashes
     tx_hash = '0xc3245a99dfbf2cf91d92ad535de9ee828208f0be3c0e101cba14d88e7849ed01'
     is_deposited = plasma_client.is_deposited(tx_hash)
     assert is_deposited is True
-
-
-# # Rm
-# @pytest.mark.offline()
-# def test_child_transfer_return_transaction_with_erp_1159(erc_20_child, to, from_pk):
-#     amount = 1
-#     # Using enormous max_fee_per_gas, otherwise this test sometimes fails with
-#     # > max fee per gas less than block base fee:
-#     # > address ***, maxFeePerGas: 30 baseFee: 879 (supplied gas 10010499)'}
-#     result = erc_20_child.transfer(
-#         amount,
-#         to,
-#         from_pk,
-#         {
-#             'max_fee_per_gas': 1000,
-#             'max_priority_fee_per_gas': 1000,
-#             'return_transaction': True,
-#         },
-#     ).transaction_config
-#     assert result['max_fee_per_gas'] == 1000
-#     assert result['max_priority_fee_per_gas'] == 1000
-#     assert 'gas_price' not in result
-#     assert result['chain_id'] == 80001
 
 
 @pytest.mark.offline()
@@ -256,34 +211,6 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
     assert result['to'].lower() == withdraw_manager.lower()
 
 
-# Rm
-# @pytest.mark.offline()
-# def test_withdraw_exit_faster_return_tx_without_set_proof_api(erc_20_parent, from_pk):
-#     services.DEFAULT_PROOF_API_URL = ''  # Without initialization it's empty string
-#     try:
-#         with pytest.raises(ProofAPINotSetException):
-#             erc_20_parent.withdraw_exit_faster(
-#                 EXITED_TX_HASH,
-#                 from_pk,
-#                 {'return_transaction': True, 'gas_limit': 200_000},
-#             )
-#     finally:
-#         services.DEFAULT_PROOF_API_URL = DEFAULT_PROOF_API_URL
-
-# Rm
-# @pytest.mark.offline()
-# def test_withdraw_exit_faster_return_tx(abi_manager, erc_20_parent, from_pk):
-#     result = erc_20_parent.withdraw_exit_faster(
-#         EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
-#     ).transaction_config
-#     assert result['data'].hex() == exit_data.hex()
-
-#     root_chain_manager = abi_manager.get_config(
-#         'Main.POSContracts.RootChainManagerProxy'
-#     )
-#     assert result['to'].lower() == root_chain_manager.lower()
-
-
 @pytest.mark.online()
 def test_child_transfer(
     erc_20, erc_20_child, plasma_client_for_to, to, from_, from_pk, to_private_key
@@ -299,21 +226,15 @@ def test_child_transfer(
 
     tx_receipt = result.get_receipt(timeout=5 * 60)
     assert tx_receipt.transaction_hash == tx_hash
-    # assert(tx_receipt).to.be.an('object')
     assert tx_receipt.from_.lower() == from_.lower()
     assert tx_receipt.to.lower() == erc_20['child'].lower()
     assert tx_receipt.type == '0x2'
     assert tx_receipt.gas_used > 0
     assert tx_receipt.cumulative_gas_used > 0
-
-    # was about hasattr, but it is weird for dataclasses
     assert tx_receipt.block_hash
     assert tx_receipt.block_number
-    # assert tx_receipt.events  # no events in fact
     assert tx_receipt.logs_bloom
     assert tx_receipt.status
-    # assert tx_receipt.transaction_index
-    # assert tx_receipt.logs
 
     new_balance = erc_20_child.get_balance(to)
 
@@ -341,6 +262,7 @@ def test_approve_and_deposit(
 
     tx_receipt = result.receipt
     assert tx_receipt.type == '0x2'
+    assert tx_receipt.status
 
     result = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
 
@@ -357,6 +279,6 @@ def test_approve_and_deposit(
         elif time.time() - start_time > timeout:
             pytest.fail(f'Transaction {tx_hash.hex()} still not deposited')
         else:
-            time.sleep(10)
+            time.sleep(30)
 
     assert erc_20_child.get_balance(from_) == balance_before + 10
