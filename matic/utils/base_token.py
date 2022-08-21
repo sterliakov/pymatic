@@ -58,7 +58,6 @@ class BaseToken:
         method: BaseContractMethod,
         option: ITransactionOption | None = None,
         private_key: str | None = None,
-        return_transaction: bool = False,
     ) -> ITransactionWriteResult:
         """Perform write (modifying) operation.
 
@@ -89,7 +88,6 @@ class BaseToken:
         self,
         option: ITransactionOption | None = None,
         private_key: str | None = None,
-        return_transaction: bool = False,
     ) -> ITransactionWriteResult:
         """Sign and send the transaction."""
         is_parent = self.is_parent
@@ -235,11 +233,10 @@ class BaseToken:
         amount: int,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
-        return_transaction: bool = False,
     ):
         """Transfer ERC-20 token."""
         method = self.contract.method('transfer', to, amount)
-        return self.process_write(method, option, private_key, return_transaction)
+        return self.process_write(method, option, private_key)
 
     def transfer_erc_721(
         self,
@@ -248,11 +245,10 @@ class BaseToken:
         token_id: int,
         private_key: str | None = None,
         option: ITransactionOption | None = None,
-        return_transaction: bool = False,
     ):
         """Transfer ERC-721 token."""
         method = self.contract.method('transferFrom', from_, to, token_id)
-        return self.process_write(method, option, private_key, return_transaction)
+        return self.process_write(method, option, private_key)
 
     def check_for_root(self) -> None:
         """Assert that method is called on parent chain instance."""
@@ -273,7 +269,6 @@ class BaseToken:
         data: bytes | None = b'',
         private_key: str | None = None,
         option: ITransactionOption | None = None,
-        return_transaction: bool = False,
     ):
         """Transfer ERC-1155 token."""
         method = self.contract.method(
@@ -284,4 +279,4 @@ class BaseToken:
             amount,
             data or b'',
         )
-        return self.process_write(method, option, private_key, return_transaction)
+        return self.process_write(method, option, private_key)
