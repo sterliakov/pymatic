@@ -29,8 +29,6 @@ class Web3SideChainClient(Generic[_C]):
         if not web3_client_cls:
             raise ValueError('web3_client_cls is not set')
 
-        self.resolution = matic.utils.UnstoppableDomains or None
-
         self.parent = web3_client_cls(
             (config.get('parent') or {}).get('provider')  # type: ignore
         )

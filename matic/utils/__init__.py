@@ -7,7 +7,7 @@ import sha3  # pysha3
 from matic.abstracts import BaseWeb3Client
 from matic.web3_client import Web3Client as Web3ClientClass
 
-__all__ = ['keccak256', 'resolve', 'UnstoppableDomains', 'Web3Client']
+__all__ = ['keccak256', 'resolve', 'Web3Client']
 
 
 def keccak256(list_of_bytes: Iterable[bytes]) -> bytes:
@@ -42,8 +42,6 @@ def resolve(obj: dict[str, Any], path: str | Iterable[str]) -> Any:
         obj = obj[key]
     return obj
 
-
-UnstoppableDomains: dict[str, str] = {}
 
 Web3Client: type[BaseWeb3Client] = Web3ClientClass
 """This can be assigned to use any other client class."""
