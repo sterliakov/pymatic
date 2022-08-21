@@ -11,8 +11,8 @@ from matic.abstracts import BaseWeb3Client
 from matic.constants import POSLogEventSignature
 from matic.exceptions import BurnTxNotCheckPointedException, ProofAPINotSetException
 from matic.json_types import IBaseClientConfig, IRootBlockInfo, ITransactionReceipt
-from matic.pos.root_chain import RootChain
 from matic.utils import proof_utils
+from matic.utils.root_chain import RootChain
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 _C = TypeVar('_C', bound=IBaseClientConfig)

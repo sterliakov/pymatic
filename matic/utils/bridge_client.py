@@ -4,8 +4,8 @@ from typing import Generic, TypeVar
 
 from matic.constants import POSLogEventSignature
 from matic.json_types import IBaseClientConfig
-from matic.pos.exit_util import ExitUtil
 from matic.utils.base_token import BaseToken
+from matic.utils.exit_util import ExitUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 _C = TypeVar('_C', bound=IBaseClientConfig)

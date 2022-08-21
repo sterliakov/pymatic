@@ -10,9 +10,9 @@ from matic.json_types import (
     IPOSContracts,
     ITransactionOption,
 )
-from matic.pos.exit_util import ExitUtil
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.base_token import BaseToken
+from matic.utils.exit_util import ExitUtil
 from matic.utils.web3_side_chain_client import Web3SideChainClient
 
 

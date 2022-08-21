@@ -10,8 +10,8 @@ from typing_extensions import NotRequired, Required
 
 if TYPE_CHECKING:
     from matic.plasma.contracts import DepositManager, RegistryContract, WithdrawManager
-    from matic.pos.exit_util import ExitUtil
     from matic.pos.root_chain_manager import RootChainManager
+    from matic.utils.exit_util import ExitUtil
 
 
 _Class = TypeVar('_Class', bound='type[Any]')

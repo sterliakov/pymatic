@@ -8,10 +8,10 @@ from matic.json_types import IPOSClientConfig, IPOSContracts, ITransactionOption
 from matic.pos.erc_20 import ERC20
 from matic.pos.erc_721 import ERC721
 from matic.pos.erc_1155 import ERC1155
-from matic.pos.exit_util import ExitUtil
-from matic.pos.root_chain import RootChain
 from matic.pos.root_chain_manager import RootChainManager
 from matic.utils.bridge_client import BridgeClient
+from matic.utils.exit_util import ExitUtil
+from matic.utils.root_chain import RootChain
 
 __all__ = ['POSClient', 'ERC20', 'ERC721', 'ERC1155']
 

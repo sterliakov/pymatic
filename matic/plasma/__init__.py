@@ -14,9 +14,9 @@ from matic.json_types import (
 from matic.plasma.contracts import DepositManager, RegistryContract, WithdrawManager
 from matic.plasma.erc_20 import ERC20
 from matic.plasma.erc_721 import ERC721
-from matic.pos.exit_util import ExitUtil
-from matic.pos.root_chain import RootChain
 from matic.utils.bridge_client import BridgeClient
+from matic.utils.exit_util import ExitUtil
+from matic.utils.root_chain import RootChain
 
 __all__ = ['PlasmaClient', 'ERC20', 'ERC721']
 
