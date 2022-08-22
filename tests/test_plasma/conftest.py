@@ -87,6 +87,16 @@ def erc_20_parent(plasma_client, erc_20):
 
 
 @pytest.fixture()
+def erc_20_matic_child(plasma_client: PlasmaClient, erc_20):
+    return plasma_client.erc_20(None)
+
+
+@pytest.fixture()
+def erc_20_matic_parent(plasma_client: PlasmaClient, erc_20):
+    return plasma_client.erc_20(erc_20['matic'], True)
+
+
+@pytest.fixture()
 def erc_721(plasma):
     return {
         'parent': plasma['parent']['erc_721'],

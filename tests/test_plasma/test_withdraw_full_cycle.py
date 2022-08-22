@@ -14,24 +14,34 @@ def test_withdraw_full_cycle(
     plasma_client: PlasmaClient,
     erc_20_child: ERC20,
     erc_20_parent: ERC20,
+    erc_20_matic_child: ERC20,
+    erc_20_matic_parent: ERC20,
     erc_721_child: ERC721,
     erc_721_parent: ERC721,
     from_pk: HexStr,
     from_: HexAddress,
 ):
     tx_hashes = {}
-    kinds = ('20', '721')
+    kinds = ('20', 'MATIC', '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
+    balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
     balance_child_721 = erc_721_child.get_tokens_count(from_)
 
     balance_parent_20 = erc_20_parent.get_balance(from_)
+    balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
     balance_parent_721 = erc_721_parent.get_tokens_count(from_)
 
     # Start all transactions
     start_20 = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
     tx_hashes['20'] = start_20.transaction_hash
     logger.info('Start hash [ERC20]: %s', tx_hashes['20'].hex())
+
+    start_20_matic = erc_20_matic_child.withdraw_start(
+        10, from_pk, {'gas_limit': 300_000}
+    )
+    tx_hashes['MATIC'] = start_20_matic.transaction_hash
+    logger.info('Start hash [MATIC]: %s', tx_hashes['MATIC'].hex())
 
     token = erc_721_child.get_all_tokens(from_, 1)[0]
     start_721 = erc_721_child.withdraw_start(
@@ -42,6 +52,7 @@ def test_withdraw_full_cycle(
 
     # Wait for them to be dispatched
     assert start_20.receipt.status
+    assert start_20_matic.receipt.status
     assert start_721.receipt.status
 
     # Wait for all checkpoint events
@@ -81,26 +92,38 @@ def test_withdraw_full_cycle(
     assert confirm_20.transaction_hash
     logger.info('End hash [ERC20]: %s', confirm_20.transaction_hash.hex())
 
+    confirm_20_matic = erc_20_matic_parent.withdraw_confirm(tx_hashes['MATIC'], from_pk)
+    assert confirm_20_matic.transaction_hash
+    logger.info('End hash [MATIC]: %s', confirm_20_matic.transaction_hash.hex())
+
     confirm_721 = erc_721_parent.withdraw_confirm_faster(tx_hashes['721'], from_pk)
-    logger.info('End hash [ERC721]: %s', confirm_721.transaction_hash.hex())
     assert confirm_721.transaction_hash
+    logger.info('End hash [ERC721]: %s', confirm_721.transaction_hash.hex())
 
     assert confirm_20.receipt.status
+    assert confirm_20_matic.receipt.status
     assert confirm_721.receipt.status
 
     end_20 = erc_20_parent.withdraw_exit(from_pk)
     assert end_20.transaction_hash
     logger.info('End hash [ERC20]: %s', end_20.transaction_hash.hex())
 
+    end_20_matic = erc_20_matic_parent.withdraw_exit(from_pk)
+    assert end_20_matic.transaction_hash
+    logger.info('End hash [MATIC]: %s', end_20_matic.transaction_hash.hex())
+
     end_721 = erc_721_parent.withdraw_exit(from_pk)
-    logger.info('End hash [ERC721]: %s', end_721.transaction_hash.hex())
     assert end_721.transaction_hash
+    logger.info('End hash [ERC721]: %s', end_721.transaction_hash.hex())
 
     assert end_20.receipt.status
+    assert end_20_matic.receipt.status
     assert end_721.receipt.status
 
     assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
+    assert balance_child_matic_20 - 10 == erc_20_matic_child.get_balance(from_)
     assert balance_child_721 - 1 == erc_721_child.get_tokens_count(from_)
 
     assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
+    assert balance_parent_matic_20 + 10 == erc_20_matic_parent.get_balance(from_)
     assert balance_parent_721 + 1 == erc_721_parent.get_tokens_count(from_)

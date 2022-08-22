@@ -79,30 +79,6 @@ def test_child_transfer_return_transaction(
     assert result['value'] == 0
 
 
-# New
-@pytest.mark.offline()
-def test_child_transfer_matic_return_transaction(
-    plasma_client: PlasmaClient,
-    to: HexAddress,
-    from_: HexAddress,
-    from_pk: HexStr,
-    erc_20,
-):
-    amount = 1
-    matic_token = plasma_client.erc_20(None)
-    result = matic_token.transfer(
-        amount,
-        to,
-        from_pk,
-        {'return_transaction': True},
-    ).transaction_config
-    assert 'data' not in result
-    assert result['chain_id'] == 80001
-    assert result['value'] == amount
-    assert result['from'] == from_
-    assert result['to'] == to
-
-
 @pytest.mark.offline()
 def test_parent_transfer_return_transaction_with_erp_1159(
     erc_20_parent: ERC20, to: HexAddress, from_pk: HexStr

@@ -14,31 +14,45 @@ def test_deposit(
     plasma_client: PlasmaClient,
     erc_20_child: ERC20,
     erc_20_parent: ERC20,
+    erc_20_matic_child: ERC20,
+    erc_20_matic_parent: ERC20,
     erc_721_child: ERC721,
     erc_721_parent: ERC721,
     from_pk: HexStr,
     from_: HexAddress,
 ):
     tx_hashes = {}
-    kinds = ('20', '721')
+    kinds = ('20', 'MATIC', '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
+    balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
     balance_child_721 = erc_721_child.get_tokens_count(from_)
 
     balance_parent_20 = erc_20_parent.get_balance(from_)
+    balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
     balance_parent_721 = erc_721_parent.get_tokens_count(from_)
 
     # Approve
     approve_20 = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
     logger.info('Approve tx hash [ERC20]: %s', approve_20.transaction_hash.hex())
+    approve_20_matic = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
+    logger.info('Approve tx hash [MATIC]: %s', approve_20_matic.transaction_hash.hex())
 
     assert approve_20.receipt.status
+    assert approve_20_matic.receipt.status
     logger.info('Allowance [ERC20]: %s', erc_20_parent.get_allowance(from_))
+    logger.info('Allowance [MATIC]: %s', erc_20_matic_parent.get_allowance(from_))
 
     # Deposit
     deposit_20 = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
     tx_hashes['20'] = deposit_20.transaction_hash
     logger.info('Deposit tx hash [ERC20]: %s', tx_hashes['20'].hex())
+
+    deposit_20_matic = erc_20_matic_parent.deposit(
+        10, from_, from_pk, {'gas_limit': 300_000}
+    )
+    tx_hashes['MATIC'] = deposit_20_matic.transaction_hash
+    logger.info('Deposit tx hash [MATIC]: %s', tx_hashes['MATIC'].hex())
 
     token = erc_721_parent.get_all_tokens(from_, 1)[0]
     deposit_721 = erc_721_parent.safe_deposit(
@@ -49,6 +63,7 @@ def test_deposit(
 
     # Finish both deposits
     assert deposit_20.receipt.status
+    assert deposit_20_matic.receipt.status
     assert deposit_721.receipt.status
 
     # Wait for all checkpoint events
@@ -85,7 +100,9 @@ def test_deposit(
         )
 
     assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
+    assert balance_child_matic_20 + 10 == erc_20_matic_child.get_balance(from_)
     assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)
 
     assert balance_parent_20 - 10 == erc_20_parent.get_balance(from_)
+    assert balance_parent_matic_20 - 10 == erc_20_matic_parent.get_balance(from_)
     assert balance_parent_721 - 1 == erc_721_parent.get_tokens_count(from_)
