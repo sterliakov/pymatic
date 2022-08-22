@@ -192,7 +192,7 @@ Plasma ERC20
 Mapped contracts:
 
 - parent: `0x3f152B63Ec5CA5831061B2DccFb29a874C317502 <https://goerli.etherscan.io/address/0x3f152B63Ec5CA5831061B2DccFb29a874C317502>`_
-- child: `0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1 <https://mumbai.polygonscan.com/address/0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1>`_
+- child: `0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e <https://mumbai.polygonscan.com/address/0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e>`_
 
 You can obtain them via the `Polygon faucet`_. To avoid resolving unexpected "insufficient balance" errors in future, get this token both on Mumbai and Goerli testnets.
 

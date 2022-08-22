@@ -16,7 +16,7 @@ def plasma():
             'matic': '0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae',
         },
         'child': {
-            'erc_20': '0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1',
+            'erc_20': '0x2d7882beDcbfDDce29Ba99965dd3cdF7fcB10A1e',
             'erc_721': '0x33FC58F12A56280503b04AC7911D1EceEBcE179c',
             'matic': '0x0000000000000000000000000000000000001010',
         },

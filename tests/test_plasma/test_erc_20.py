@@ -29,12 +29,13 @@ def test_get_balance_parent(erc_20_parent: ERC20, from_: HexAddress):
     assert balance > 0
 
 
-@pytest.mark.read()
-def test_get_allowance_child(erc_20_child: ERC20, from_: HexAddress):
-    # Same
-    allowance = erc_20_child.get_allowance(from_)
-    assert isinstance(allowance, int)
-    assert allowance >= 0
+# Not available for this contract
+# @pytest.mark.read()
+# def test_get_allowance_child(erc_20_child: ERC20, from_: HexAddress):
+#     # Same
+#     allowance = erc_20_child.get_allowance(from_)
+#     assert isinstance(allowance, int)
+#     assert allowance >= 0
 
 
 @pytest.mark.read()
