@@ -25,11 +25,11 @@ def test_deposit(
     tx_hashes = {}
 
     balance_child_20 = erc_20_child.get_balance(from_)
-    balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
+    # balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
     balance_child_721 = erc_721_child.get_tokens_count(from_)
 
     balance_parent_20 = erc_20_parent.get_balance(from_)
-    balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
+    # balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
     balance_parent_721 = erc_721_parent.get_tokens_count(from_)
 
     # Approve
@@ -110,10 +110,6 @@ def test_deposit(
     with subtests.test('Confirm ERC20 balance'):
         assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
         assert balance_parent_20 - 10 == erc_20_parent.get_balance(from_)
-
-    with subtests.test('Confirm MATIC balance'):
-        assert balance_child_matic_20 + 10 == erc_20_matic_child.get_balance(from_)
-        assert balance_parent_matic_20 - 10 == erc_20_matic_parent.get_balance(from_)
 
     with subtests.test('Confirm ERC721 balance'):
         assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)

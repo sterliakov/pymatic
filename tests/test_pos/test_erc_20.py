@@ -89,6 +89,7 @@ def test_child_transfer_return_transaction_with_erp_1159(
         {
             'max_fee_per_gas': 1000,
             'max_priority_fee_per_gas': 1000,
+            'gas_limit': 120_000,
             'return_transaction': True,
         },
     ).transaction_config
@@ -127,6 +128,7 @@ def test_parent_transfer_return_transaction_with_erp_1159(
         {
             'max_fee_per_gas': 80,
             'max_priority_fee_per_gas': 80,
+            'gas_limit': 120_000,
             'return_transaction': True,
         },
     ).transaction_config
