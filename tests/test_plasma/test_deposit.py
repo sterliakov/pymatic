@@ -25,11 +25,9 @@ def test_deposit(
     tx_hashes = {}
 
     balance_child_20 = erc_20_child.get_balance(from_)
-    # balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
     balance_child_721 = erc_721_child.get_tokens_count(from_)
 
     balance_parent_20 = erc_20_parent.get_balance(from_)
-    # balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
     balance_parent_721 = erc_721_parent.get_tokens_count(from_)
 
     # Approve

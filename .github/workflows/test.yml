@@ -81,10 +81,11 @@ jobs:
           pip install .[test]
       - name: Run real-chain tests
         run: |
-          pytest -m 'online and not can_timeout' -vv -s -x
+          pytest -m 'online and not can_timeout' -vv -s
       - name: Run loong tests
+        if: ${{ always() }}
         run: |
-          pytest -m 'online and can_timeout' -vv -s -x
+          pytest -m 'online and can_timeout' -vv -s
 
   docs:
     runs-on: ubuntu-latest
