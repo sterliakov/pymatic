@@ -22,7 +22,7 @@ def test_withdraw_full_cycle(
     from_: HexAddress,
 ):
     tx_hashes = {}
-    kinds = ('20', 'MATIC', '721')
+    kinds = ('20', 'MATIC')  # , '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
     balance_child_matic_20 = erc_20_matic_child.get_balance(from_)

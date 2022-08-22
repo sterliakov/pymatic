@@ -35,7 +35,7 @@ def test_deposit(
     # Approve
     approve_20 = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
     logger.info('Approve tx hash [ERC20]: %s', approve_20.transaction_hash.hex())
-    approve_20_matic = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
+    approve_20_matic = erc_20_matic_parent.approve(10, from_pk, {'gas_limit': 300_000})
     logger.info('Approve tx hash [MATIC]: %s', approve_20_matic.transaction_hash.hex())
 
     assert approve_20.receipt.status

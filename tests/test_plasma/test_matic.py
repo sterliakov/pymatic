@@ -179,7 +179,7 @@ def test_child_transfer(
         {
             'gas_limit': 300_000,
             'max_fee_per_gas': Web3.toWei(300, 'gwei'),
-            'max_priority_fee_per_gas': Web3.toWei(4, 'gwei'),
+            'max_priority_fee_per_gas': Web3.toWei(30, 'gwei'),
         },
     )
 
