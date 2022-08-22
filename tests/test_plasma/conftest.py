@@ -20,13 +20,6 @@ def plasma():
             'erc_721': '0x33FC58F12A56280503b04AC7911D1EceEBcE179c',
             'matic': '0x0000000000000000000000000000000000001010',
         },
-        'registry_address': '0x56B082d0a590A7ce5d170402D6f7f88B58F71988',
-        # The address for the main Plasma contract in  Ropsten testnet
-        'root_chain_address': '0x82a72315E16cE224f28E1F1fB97856d3bF83f010',
-        # An address for the WithdrawManager contract on Ropsten testnet
-        'withdraw_manager_address': '0x3cf9aD3395028a42EAfc949e2EC4588396b8A7D4',
-        # An address for a DepositManager contract in Ropsten testnet
-        'deposit_manager_address': '0x3Bc6701cA1C32BBaC8D1ffA2294EE3444Ad93989',
     }
 
 

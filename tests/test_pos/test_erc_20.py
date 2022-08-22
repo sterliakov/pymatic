@@ -125,14 +125,14 @@ def test_parent_transfer_return_transaction_with_erp_1159(
         to,
         from_pk,
         {
-            'max_fee_per_gas': 30,
-            'max_priority_fee_per_gas': 30,
+            'max_fee_per_gas': 80,
+            'max_priority_fee_per_gas': 80,
             'return_transaction': True,
         },
     ).transaction_config
 
-    assert result['max_fee_per_gas'] == 30
-    assert result['max_priority_fee_per_gas'] == 30
+    assert result['max_fee_per_gas'] == 80
+    assert result['max_priority_fee_per_gas'] == 80
     assert 'gas_price' not in result
     assert result['chain_id'] == 5
 
