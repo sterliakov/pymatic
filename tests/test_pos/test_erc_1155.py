@@ -1,39 +1,50 @@
 from __future__ import annotations
 
 import pytest
+from eth_typing import HexAddress, HexStr
+
+from matic.pos import ERC1155, POSClient
+from matic.utils.abi_manager import ABIManager
 
 TOKEN_ID = 123
 
 
 @pytest.mark.read()
-def test_get_balance_child(erc_1155_child, from_):
+def test_get_balance_child(erc_1155_child: ERC1155, from_: HexAddress):
     balance = erc_1155_child.get_balance(from_, TOKEN_ID)
     assert balance > 0
 
 
 @pytest.mark.read()
-def test_get_balance_parent(erc_1155_parent, from_):
+def test_get_balance_parent(erc_1155_parent: ERC1155, from_: HexAddress):
     balance = erc_1155_parent.get_balance(from_, TOKEN_ID)
     assert balance > 0
 
 
 @pytest.mark.read()
-def test_is_withdraw_exited(erc_1155_parent):
-    is_exited = erc_1155_parent.is_withdraw_exited(
-        '0xbc48c0ccd9821141779a200586ef52033a3487c4e1419625fe7a0ea984521052'
+def test_is_withdraw_exited(erc_1155_parent: ERC1155):
+    tx_hash = bytes.fromhex(
+        'bc48c0ccd9821141779a200586ef52033a3487c4e1419625fe7a0ea984521052'
     )
-    assert is_exited is True
+    assert erc_1155_parent.is_withdraw_exited(tx_hash) is True
 
 
 @pytest.mark.read()
-def test_is_deposited(pos_client):
-    tx_hash = '0x507ea7267693d477917265f52c23c08f1830215a0c7d86643b9c1fb4997a021e'
-    is_deposited = pos_client.is_deposited(tx_hash)
-    assert is_deposited is True
+def test_is_deposited(pos_client: POSClient):
+    tx_hash = bytes.fromhex(
+        '507ea7267693d477917265f52c23c08f1830215a0c7d86643b9c1fb4997a021e'
+    )
+    assert pos_client.is_deposited(tx_hash) is True
 
 
 @pytest.mark.offline()
-def test_transfer_return_tx(erc_1155_child, from_, to, from_pk, erc_1155):
+def test_transfer_return_tx(
+    erc_1155_child: ERC1155,
+    from_: HexAddress,
+    to: HexAddress,
+    from_pk: HexStr,
+    erc_1155,
+):
     result = erc_1155_child.transfer(
         amount=1,
         from_=from_,
@@ -46,7 +57,7 @@ def test_transfer_return_tx(erc_1155_child, from_, to, from_pk, erc_1155):
 
 
 @pytest.mark.offline()
-def test_approve_all_return_tx(erc_1155_parent, from_pk, erc_1155):
+def test_approve_all_return_tx(erc_1155_parent: ERC1155, from_pk: HexStr, erc_1155):
     result = erc_1155_parent.approve_all(
         from_pk, {'return_transaction': True}
     ).transaction_config
@@ -54,7 +65,12 @@ def test_approve_all_return_tx(erc_1155_parent, from_pk, erc_1155):
 
 
 @pytest.mark.offline()
-def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
+def test_deposit_return_tx(
+    abi_manager: ABIManager,
+    erc_1155_parent: ERC1155,
+    from_: HexAddress,
+    from_pk: HexStr,
+):
     tx = erc_1155_parent.deposit(
         amount=1,
         token_id=TOKEN_ID,
@@ -79,7 +95,7 @@ def test_deposit_return_tx(abi_manager, erc_1155_parent, from_, from_pk):
 
 
 @pytest.mark.offline()
-def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
+def test_withdraw_start_return_tx(erc_1155_child: ERC1155, erc_1155, from_pk: HexStr):
     result = erc_1155_child.withdraw_start(
         TOKEN_ID, 1, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     ).transaction_config
@@ -87,7 +103,9 @@ def test_withdraw_start_return_tx(erc_1155_child, erc_1155, from_pk):
 
 
 @pytest.mark.offline()
-def test_withdraw_start_many_return_tx(erc_1155_child, erc_1155, from_pk):
+def test_withdraw_start_many_return_tx(
+    erc_1155_child: ERC1155, erc_1155, from_pk: HexStr
+):
     result = erc_1155_child.withdraw_start_many(
         [TOKEN_ID], [1], from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     ).transaction_config
@@ -96,7 +114,13 @@ def test_withdraw_start_many_return_tx(erc_1155_child, erc_1155, from_pk):
 
 @pytest.mark.online()
 def test_transfer_write(
-    erc_1155_child, pos_client_for_to, to, from_, from_pk, to_private_key, erc_1155
+    erc_1155_child: ERC1155,
+    pos_client_for_to: POSClient,
+    to: HexAddress,
+    from_: HexAddress,
+    from_pk: HexStr,
+    to_private_key: HexStr,
+    erc_1155,
 ):
     all_tokens_from = erc_1155_child.get_balance(from_, TOKEN_ID)
     all_tokens_to = erc_1155_child.get_balance(to, TOKEN_ID)

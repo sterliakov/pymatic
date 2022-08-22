@@ -6,7 +6,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Callable, Sequence, TypedDict, TypeVar
 
 from eth_typing import ChecksumAddress, HexAddress, HexStr
-from typing_extensions import NotRequired, Required
+from typing_extensions import NotRequired
 
 if TYPE_CHECKING:
     from matic.plasma.contracts import DepositManager, RegistryContract, WithdrawManager
@@ -49,8 +49,8 @@ def _with_doc_mro(*bases: type[Any]) -> Callable[[_Class], _Class]:
     return wrapper
 
 
-ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': Required[HexAddress]})
-"""Configuration dictionary with required key "from" (type str) and any other keys."""
+ConfigWithFrom = TypedDict('ConfigWithFrom', {'from': NotRequired[HexAddress]})
+"""Configuration dictionary with (not required) key "from" (type str) and any other keys."""  # noqa
 
 
 @_with_doc_mro(ConfigWithFrom)
@@ -95,7 +95,7 @@ class ITransactionOption(ITransactionRequestConfig):
 class IAllowanceTransactionOption(ITransactionOption):
     """Transaction config for approve/allowance methods."""
 
-    spender_address: NotRequired[bytes]
+    spender_address: NotRequired[HexAddress]
     """Address of spender.
 
     **spender** - third-party user or a smart contract which can transfer

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import pytest
+from eth_typing import HexAddress, HexStr
 
 from matic import logger
 from matic.exceptions import NullSpenderAddressException
+from matic.plasma import ERC20, PlasmaClient
+from matic.utils.abi_manager import ABIManager
 
 WITHDRAW_EXITED_TX_HASH = bytes.fromhex(
     'd6f7f4c6052611761946519076de28fbd091693af974e7d4abc1b17fd7926fd7'
@@ -11,7 +14,7 @@ WITHDRAW_EXITED_TX_HASH = bytes.fromhex(
 
 
 @pytest.mark.read()
-def test_get_balance_child(erc_20_child, from_):
+def test_get_balance_child(erc_20_child: ERC20, from_: HexAddress):
     # Same
     balance = erc_20_child.get_balance(from_)
     assert isinstance(balance, int)
@@ -19,7 +22,7 @@ def test_get_balance_child(erc_20_child, from_):
 
 
 @pytest.mark.read()
-def test_get_balance_parent(erc_20_parent, from_):
+def test_get_balance_parent(erc_20_parent: ERC20, from_: HexAddress):
     # Same
     balance = erc_20_parent.get_balance(from_)
     assert isinstance(balance, int)
@@ -27,7 +30,7 @@ def test_get_balance_parent(erc_20_parent, from_):
 
 
 @pytest.mark.read()
-def test_get_allowance_child(erc_20_child, from_):
+def test_get_allowance_child(erc_20_child: ERC20, from_: HexAddress):
     # Same
     allowance = erc_20_child.get_allowance(from_)
     assert isinstance(allowance, int)
@@ -35,7 +38,7 @@ def test_get_allowance_child(erc_20_child, from_):
 
 
 @pytest.mark.read()
-def test_get_allowance_parent(erc_20_parent, from_):
+def test_get_allowance_parent(erc_20_parent: ERC20, from_: HexAddress):
     # Same
     allowance = erc_20_parent.get_allowance(from_)
     assert isinstance(allowance, int)
@@ -43,21 +46,24 @@ def test_get_allowance_parent(erc_20_parent, from_):
 
 
 @pytest.mark.read()
-def test_is_checkpointed(plasma_client):
+def test_is_checkpointed(plasma_client: PlasmaClient):
     # Same
     assert plasma_client.is_checkpointed(WITHDRAW_EXITED_TX_HASH) is True
 
 
 @pytest.mark.read()
-def test_is_deposited(plasma_client):
+def test_is_deposited(plasma_client: PlasmaClient):
     # Diff hashes
-    tx_hash = '0xc3245a99dfbf2cf91d92ad535de9ee828208f0be3c0e101cba14d88e7849ed01'
-    is_deposited = plasma_client.is_deposited(tx_hash)
-    assert is_deposited is True
+    tx_hash = bytes.fromhex(
+        'c3245a99dfbf2cf91d92ad535de9ee828208f0be3c0e101cba14d88e7849ed01'
+    )
+    assert plasma_client.is_deposited(tx_hash) is True
 
 
 @pytest.mark.offline()
-def test_child_transfer_return_transaction(erc_20_child, to, from_, from_pk, erc_20):
+def test_child_transfer_return_transaction(
+    erc_20_child: ERC20, to: HexAddress, from_: HexAddress, from_pk: HexStr, erc_20
+):
     # Same
     amount = 1
     result = erc_20_child.transfer(
@@ -75,7 +81,11 @@ def test_child_transfer_return_transaction(erc_20_child, to, from_, from_pk, erc
 # New
 @pytest.mark.offline()
 def test_child_transfer_matic_return_transaction(
-    plasma_client, to, from_, from_pk, erc_20
+    plasma_client: PlasmaClient,
+    to: HexAddress,
+    from_: HexAddress,
+    from_pk: HexStr,
+    erc_20,
 ):
     amount = 1
     matic_token = plasma_client.erc_20(None)
@@ -93,7 +103,9 @@ def test_child_transfer_matic_return_transaction(
 
 
 @pytest.mark.offline()
-def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to, from_pk):
+def test_parent_transfer_return_transaction_with_erp_1159(
+    erc_20_parent: ERC20, to: HexAddress, from_pk: HexStr
+):
     # Same
     amount = 1
     result = erc_20_parent.transfer(
@@ -114,7 +126,7 @@ def test_parent_transfer_return_transaction_with_erp_1159(erc_20_parent, to, fro
 
 
 @pytest.mark.offline()
-def test_withdraw_start_return_tx(erc_20, erc_20_child, from_pk):
+def test_withdraw_start_return_tx(erc_20, erc_20_child: ERC20, from_pk: HexStr):
     # Same
     result = erc_20_child.withdraw_start(
         10, from_pk, {'return_transaction': True}
@@ -125,7 +137,7 @@ def test_withdraw_start_return_tx(erc_20, erc_20_child, from_pk):
 
 
 @pytest.mark.offline()
-def test_approve_parent_return_tx(erc_20, erc_20_parent, from_pk):
+def test_approve_parent_return_tx(erc_20, erc_20_parent: ERC20, from_pk: HexStr):
     # Same
     result = erc_20_parent.approve(
         10,
@@ -138,7 +150,9 @@ def test_approve_parent_return_tx(erc_20, erc_20_parent, from_pk):
 
 
 @pytest.mark.offline()
-def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent, from_pk):
+def test_approve_parent_return_tx_with_spender_address(
+    erc_20, erc_20_parent: ERC20, from_pk: HexStr
+):
     # Diff
     spender_address = erc_20_parent.predicate.address
     result = erc_20_parent.approve(
@@ -152,14 +166,18 @@ def test_approve_parent_return_tx_with_spender_address(erc_20, erc_20_parent, fr
 
 
 @pytest.mark.offline()
-def test_approve_child_return_tx_without_spender_address(erc_20, erc_20_child, from_pk):
+def test_approve_child_return_tx_without_spender_address(
+    erc_20, erc_20_child, from_pk: HexStr
+):
     # Same
     with pytest.raises(NullSpenderAddressException):
         erc_20_child.approve(1, from_pk)
 
 
 @pytest.mark.offline()
-def test_deposit_return_tx(abi_manager, erc_20_parent, from_, from_pk):
+def test_deposit_return_tx(
+    abi_manager: ABIManager, erc_20_parent: ERC20, from_: HexAddress, from_pk: HexStr
+):
     # Diff
     result = erc_20_parent.deposit(
         9, from_, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
@@ -176,7 +194,9 @@ EXITED_TX_HASH = bytes.fromhex(
 
 # New
 @pytest.mark.offline()
-def test_withdraw_confirm_return_tx(erc_20_parent, from_pk, abi_manager):
+def test_withdraw_confirm_return_tx(
+    erc_20_parent: ERC20, from_pk: HexStr, abi_manager: ABIManager
+):
     result = erc_20_parent.withdraw_confirm(
         EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     ).transaction_config
@@ -187,7 +207,9 @@ def test_withdraw_confirm_return_tx(erc_20_parent, from_pk, abi_manager):
 
 # New
 @pytest.mark.offline()
-def test_withdraw_confirm_faster_return_tx(erc_20_parent, from_pk, abi_manager):
+def test_withdraw_confirm_faster_return_tx(
+    erc_20_parent: ERC20, from_pk: HexStr, abi_manager: ABIManager
+):
     result = erc_20_parent.withdraw_confirm_faster(
         EXITED_TX_HASH, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
     ).transaction_config
@@ -198,7 +220,9 @@ def test_withdraw_confirm_faster_return_tx(erc_20_parent, from_pk, abi_manager):
 
 
 @pytest.mark.offline()
-def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
+def test_withdraw_exit_return_tx(
+    abi_manager: ABIManager, erc_20_parent: ERC20, from_pk: HexStr
+):
     # Diff
     result = erc_20_parent.withdraw_exit(
         from_pk,
@@ -211,7 +235,13 @@ def test_withdraw_exit_return_tx(abi_manager, erc_20_parent, from_pk):
 
 @pytest.mark.online()
 def test_child_transfer(
-    erc_20, erc_20_child, plasma_client_for_to, to, from_, from_pk, to_private_key
+    erc_20,
+    erc_20_child: ERC20,
+    plasma_client_for_to: PlasmaClient,
+    to: HexAddress,
+    from_: HexAddress,
+    from_pk: HexStr,
+    to_private_key: HexStr,
 ):
     # Same
     old_balance = erc_20_child.get_balance(to)

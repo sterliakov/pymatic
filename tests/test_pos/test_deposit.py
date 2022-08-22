@@ -1,8 +1,10 @@
 import time
 
 import pytest
+from eth_typing import HexAddress, HexStr
 
 from matic import logger
+from matic.pos import ERC20, ERC721, ERC1155, POSClient
 
 from .test_erc_1155 import TOKEN_ID
 
@@ -11,15 +13,15 @@ from .test_erc_1155 import TOKEN_ID
 @pytest.mark.online()
 @pytest.mark.trylast()
 def test_deposit(
-    pos_client,
-    erc_20_child,
-    erc_20_parent,
-    erc_721_child,
-    erc_721_parent,
-    erc_1155_child,
-    erc_1155_parent,
-    from_pk,
-    from_,
+    pos_client: POSClient,
+    erc_20_child: ERC20,
+    erc_20_parent: ERC20,
+    erc_721_child: ERC721,
+    erc_721_parent: ERC721,
+    erc_1155_child: ERC1155,
+    erc_1155_parent: ERC1155,
+    from_pk: HexStr,
+    from_: HexAddress,
 ):
     tx_hashes = {}
     kinds = ('20', '721')

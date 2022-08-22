@@ -1,24 +1,28 @@
 from __future__ import annotations
 
 import pytest
+from eth_typing import HexAddress, HexStr
+
+from matic.plasma import ERC721, PlasmaClient
+from matic.utils.abi_manager import ABIManager
 
 
 @pytest.mark.read()
-def test_get_tokens_counts_child(erc_721_child, from_):
+def test_get_tokens_counts_child(erc_721_child: ERC721, from_: HexAddress):
     # Same
     tokens_count = erc_721_child.get_tokens_count(from_)
     assert tokens_count > 0
 
 
 @pytest.mark.read()
-def test_get_tokens_count_parent(erc_721_parent, from_):
+def test_get_tokens_count_parent(erc_721_parent: ERC721, from_: HexAddress):
     # Same
     tokens_count = erc_721_parent.get_tokens_count(from_)
     assert tokens_count > 0
 
 
 @pytest.mark.read()
-def test_get_all_tokens_child(erc_721_child, from_):
+def test_get_all_tokens_child(erc_721_child: ERC721, from_: HexAddress):
     # Same
     tokens_count = erc_721_child.get_tokens_count(from_)
     all_tokens = erc_721_child.get_all_tokens(from_)
@@ -26,7 +30,7 @@ def test_get_all_tokens_child(erc_721_child, from_):
 
 
 @pytest.mark.read()
-def test_get_all_tokens_parent(erc_721_parent, from_):
+def test_get_all_tokens_parent(erc_721_parent: ERC721, from_: HexAddress):
     # Same
     tokens_count = erc_721_parent.get_tokens_count(from_)
     all_tokens = erc_721_parent.get_all_tokens(from_)
@@ -34,7 +38,7 @@ def test_get_all_tokens_parent(erc_721_parent, from_):
 
 
 @pytest.mark.read()
-def test_is_deposited(plasma_client):
+def test_is_deposited(plasma_client: PlasmaClient):
     # Diff
     deposit_txhash = bytes.fromhex(
         '041fd0e39d523b78aaeea92638f076b3d51fec5f587e0eebdfa2e0e11025c610'
@@ -44,7 +48,9 @@ def test_is_deposited(plasma_client):
 
 # New
 @pytest.mark.offline()
-def test_withdraw_exit_return_tx(erc_721_parent, abi_manager, from_pk):
+def test_withdraw_exit_return_tx(
+    erc_721_parent: ERC721, abi_manager: ABIManager, from_pk: HexStr
+):
     result = erc_721_parent.withdraw_exit(
         from_pk, {'return_transaction': True}
     ).transaction_config
@@ -54,7 +60,13 @@ def test_withdraw_exit_return_tx(erc_721_parent, abi_manager, from_pk):
 
 @pytest.mark.online()
 def test_transfer_write(
-    erc_721_child, from_, to, erc_721, plasma_client_for_to, from_pk, to_private_key
+    erc_721_child: ERC721,
+    from_: HexAddress,
+    to: HexAddress,
+    erc_721,
+    plasma_client_for_to: PlasmaClient,
+    from_pk: HexStr,
+    to_private_key: HexStr,
 ):
     all_tokens_from = erc_721_child.get_all_tokens(from_)
     all_tokens_to = erc_721_child.get_all_tokens(to)

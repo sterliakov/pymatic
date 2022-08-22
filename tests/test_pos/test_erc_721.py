@@ -1,53 +1,58 @@
 from __future__ import annotations
 
 import pytest
+from eth_typing import HexAddress, HexStr
+
+from matic.pos import ERC721, POSClient
+from matic.utils.abi_manager import ABIManager
 
 
 @pytest.mark.read()
-def test_get_tokens_counts_child(erc_721_child, from_):
+def test_get_tokens_counts_child(erc_721_child: ERC721, from_: HexAddress):
     tokens_count = erc_721_child.get_tokens_count(from_)
     assert tokens_count > 0
 
 
 @pytest.mark.read()
-def test_get_tokens_count_parent(erc_721_parent, from_):
+def test_get_tokens_count_parent(erc_721_parent: ERC721, from_: HexAddress):
     tokens_count = erc_721_parent.get_tokens_count(from_)
     assert tokens_count > 0
 
 
 @pytest.mark.read()
-def test_get_all_tokens_child(erc_721_child, from_):
+def test_get_all_tokens_child(erc_721_child: ERC721, from_: HexAddress):
     tokens_count = erc_721_child.get_tokens_count(from_)
     all_tokens = erc_721_child.get_all_tokens(from_)
     assert len(all_tokens) == tokens_count
 
 
 @pytest.mark.read()
-def test_get_all_tokens_parent(erc_721_parent, from_):
+def test_get_all_tokens_parent(erc_721_parent: ERC721, from_: HexAddress):
     tokens_count = erc_721_parent.get_tokens_count(from_)
     all_tokens = erc_721_parent.get_all_tokens(from_)
     assert len(all_tokens) == tokens_count
 
 
 @pytest.mark.read()
-def test_is_withdraw_exited(erc_721_parent):
-    is_exited = erc_721_parent.is_withdraw_exited(
-        '0x2697a930ae883dd28c40a263a6a3b4d41a027cab56836de987ed2c2896abcdeb'
+def test_is_withdraw_exited(erc_721_parent: ERC721):
+    tx_hash = bytes.fromhex(
+        '2697a930ae883dd28c40a263a6a3b4d41a027cab56836de987ed2c2896abcdeb'
     )
-    assert is_exited is True
+    assert erc_721_parent.is_withdraw_exited(tx_hash) is True
 
 
 @pytest.mark.read()
-def test_is_deposited_for_deposit_many(pos_client):
-    deposit_txhash = (
-        '0x2ae0f5073e0c0f96f622268ef8bc61ecec7349ffc97c61412e4f5cc157cb418e'
+def test_is_deposited_for_deposit_many(pos_client: POSClient):
+    deposit_txhash = bytes.fromhex(
+        '2ae0f5073e0c0f96f622268ef8bc61ecec7349ffc97c61412e4f5cc157cb418e'
     )
-    is_exited = pos_client.is_deposited(deposit_txhash)
-    assert is_exited is True
+    assert pos_client.is_deposited(deposit_txhash) is True
 
 
 @pytest.mark.offline()
-def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
+def test_transfer_return_tx(
+    erc_721_child: ERC721, from_: HexAddress, to: HexAddress, from_pk: HexStr, erc_721
+):
     all_tokens_from = erc_721_child.get_all_tokens(from_, 1)
     target_token = all_tokens_from[0]
 
@@ -58,7 +63,9 @@ def test_transfer_return_tx(erc_721_child, from_, to, from_pk, erc_721):
 
 
 @pytest.mark.offline()
-def test_approve_return_tx(erc_721_parent, from_, erc_721, from_pk):
+def test_approve_return_tx(
+    erc_721_parent: ERC721, from_: HexAddress, erc_721, from_pk: HexStr
+):
     all_tokens = erc_721_parent.get_all_tokens(from_, 1)
     result = erc_721_parent.approve(
         all_tokens[0], from_pk, {'return_transaction': True}
@@ -67,7 +74,7 @@ def test_approve_return_tx(erc_721_parent, from_, erc_721, from_pk):
 
 
 @pytest.mark.offline()
-def test_approve_all_return_tx(erc_721_parent, erc_721, from_pk):
+def test_approve_all_return_tx(erc_721_parent: ERC721, erc_721, from_pk: HexStr):
     result = erc_721_parent.approve_all(
         from_pk, {'return_transaction': True}
     ).transaction_config
@@ -75,7 +82,9 @@ def test_approve_all_return_tx(erc_721_parent, erc_721, from_pk):
 
 
 @pytest.mark.offline()
-def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
+def test_deposit_return_tx(
+    erc_721_parent: ERC721, from_: HexAddress, abi_manager: ABIManager, from_pk: HexStr
+):
     all_tokens = erc_721_parent.get_all_tokens(from_, 1)
     tx = erc_721_parent.deposit(
         all_tokens[0],
@@ -90,7 +99,9 @@ def test_deposit_return_tx(erc_721_parent, from_, abi_manager, from_pk):
 
 
 @pytest.mark.offline()
-def test_deposit_many_return_tx(erc_721_parent, from_, from_pk, abi_manager):
+def test_deposit_many_return_tx(
+    erc_721_parent: ERC721, from_: HexAddress, from_pk: HexStr, abi_manager: ABIManager
+):
     all_tokens = erc_721_parent.get_all_tokens(from_)
     tx = erc_721_parent.deposit_many(
         all_tokens, from_, from_pk, {'return_transaction': True, 'gas_limit': 200_000}
@@ -102,7 +113,9 @@ def test_deposit_many_return_tx(erc_721_parent, from_, from_pk, abi_manager):
 
 
 @pytest.mark.offline()
-def test_withdraw_start_return_tx(erc_721_child, erc_721, from_, from_pk):
+def test_withdraw_start_return_tx(
+    erc_721_child: ERC721, erc_721, from_: HexAddress, from_pk: HexStr
+):
     all_tokens = erc_721_child.get_all_tokens(from_, 1)
     result = erc_721_child.withdraw_start(
         all_tokens[0], from_pk, {'return_transaction': True}
@@ -112,7 +125,7 @@ def test_withdraw_start_return_tx(erc_721_child, erc_721, from_, from_pk):
 
 @pytest.mark.offline()
 def test_withdraw_start_with_meta_data_return_tx(
-    erc_721_child, erc_721, from_, from_pk
+    erc_721_child: ERC721, erc_721, from_: HexAddress, from_pk: HexStr
 ):
     all_tokens = erc_721_child.get_all_tokens(from_, 1)
     result = erc_721_child.withdraw_start_with_metadata(
@@ -123,7 +136,13 @@ def test_withdraw_start_with_meta_data_return_tx(
 
 @pytest.mark.online()
 def test_transfer_write(
-    erc_721_child, from_, to, erc_721, pos_client_for_to, from_pk, to_private_key
+    erc_721_child: ERC721,
+    from_: HexAddress,
+    to: HexAddress,
+    erc_721,
+    pos_client_for_to: POSClient,
+    from_pk: HexStr,
+    to_private_key: HexStr,
 ):
     all_tokens_from = erc_721_child.get_all_tokens(from_)
     all_tokens_to = erc_721_child.get_all_tokens(to)

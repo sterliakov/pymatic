@@ -1,21 +1,23 @@
 import time
 
 import pytest
+from eth_typing import HexAddress, HexStr
 
 from matic import logger
+from matic.plasma import ERC20, ERC721, PlasmaClient
 
 
 @pytest.mark.can_timeout()
 @pytest.mark.online()
 @pytest.mark.trylast()
 def test_withdraw_full_cycle(
-    plasma_client,
-    erc_20_child,
-    erc_20_parent,
-    erc_721_child,
-    erc_721_parent,
-    from_pk,
-    from_,
+    plasma_client: PlasmaClient,
+    erc_20_child: ERC20,
+    erc_20_parent: ERC20,
+    erc_721_child: ERC721,
+    erc_721_parent: ERC721,
+    from_pk: HexStr,
+    from_: HexAddress,
 ):
     tx_hashes = {}
     kinds = ('20', '721')
@@ -67,7 +69,7 @@ def test_withdraw_full_cycle(
             pytest.fail(
                 'Some transactions still not checkpointed: '
                 + '\n'.join(
-                    f'{kind}: {tx_hash}'
+                    f'{kind}: {tx_hash.hex()}'
                     for kind, tx_hash in tx_hashes.items()
                     if not checkpointed[kind]
                 )
@@ -98,7 +100,7 @@ def test_withdraw_full_cycle(
     assert end_721.receipt.status
 
     assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
-    assert balance_child_721 - 1 == erc_721_child.get_balance(from_)
+    assert balance_child_721 - 1 == erc_721_child.get_tokens_count(from_)
 
     assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
-    assert balance_parent_721 + 1 == erc_721_parent.get_balance(from_)
+    assert balance_parent_721 + 1 == erc_721_parent.get_tokens_count(from_)
