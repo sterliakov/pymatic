@@ -190,7 +190,7 @@ def test_child_transfer(
     tx_receipt = result.get_receipt(timeout=5 * 60)
     assert tx_receipt.transaction_hash == tx_hash
     assert tx_receipt.from_.lower() == from_.lower()
-    assert tx_receipt.to.lower() == erc_20['child'].lower()
+    assert tx_receipt.to.lower() == to.lower()
     assert tx_receipt.type == '0x2'
     assert tx_receipt.gas_used > 0
     assert tx_receipt.cumulative_gas_used > 0
