@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 from eth_typing import HexAddress, HexStr
+from web3 import Web3
 
 from matic import logger
 from matic.plasma import ERC20, PlasmaClient
@@ -171,7 +172,16 @@ def test_child_transfer(
     # Same
     old_balance = erc_20_matic_child.get_balance(to)
     amount = 10
-    result = erc_20_matic_child.transfer(amount, to, from_pk, {'gas_limit': 300_000})
+    result = erc_20_matic_child.transfer(
+        amount,
+        to,
+        from_pk,
+        {
+            'gas_limit': 300_000,
+            'max_fee_per_gas': Web3.toWei(300, 'gwei'),
+            'max_priority_fee_per_gas': Web3.toWei(4, 'gwei'),
+        },
+    )
 
     tx_hash = result.transaction_hash
     logger.info('Forward: %s', tx_hash.hex())
