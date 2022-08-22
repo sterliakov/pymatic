@@ -1,7 +1,7 @@
 Installation
 ============
 
-You can install ``thor_devkit`` with ``pip``:
+You can install ``matic`` with ``pip``:
 
 .. code-block:: bash
 
