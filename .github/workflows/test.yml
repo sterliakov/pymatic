@@ -81,10 +81,10 @@ jobs:
           pip install .[test]
       - name: Run real-chain tests
         run: |
-          pytest -m 'online and not can_timeout' -vv
+          pytest -m 'online and not can_timeout' -vv -s -x
       - name: Run loong tests
         run: |
-          pytest -m 'online and can_timeout' -vv
+          pytest -m 'online and can_timeout' -vv -s -x
 
   docs:
     runs-on: ubuntu-latest
