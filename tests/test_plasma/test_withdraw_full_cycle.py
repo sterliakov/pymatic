@@ -57,9 +57,9 @@ def test_withdraw_full_cycle(
     erc_20_matic_parent: ERC20,
     from_pk: HexStr,
     from_: HexAddress,
+    subtests,
 ):
     tx_hashes = {}
-    kinds = ('20', 'MATIC')  # , '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
     balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
@@ -79,15 +79,19 @@ def test_withdraw_full_cycle(
     logger.info('Start hash [MATIC]: %s', tx_hashes['MATIC'].hex())
 
     # Wait for them to be dispatched
-    assert start_20.receipt.status
-    assert start_20_matic.receipt.status
+    checkpointed = {}
+    with subtests.test('Begin ERC20'):
+        assert start_20.receipt.status
+        checkpointed['20'] = False
+    with subtests.test('Begin MATIC'):
+        assert start_20_matic.receipt.status
+        checkpointed['MATIC'] = False
 
     # Wait for all checkpoint events
-    checkpointed = {key: False for key in kinds}
 
     def are_all_checkpointed():
         ok = True  # No direct return, so we check all.
-        for key in kinds:
+        for key in checkpointed:
             if checkpointed[key]:
                 continue
             elif plasma_client.is_checkpointed(tx_hashes[key]):
@@ -123,8 +127,10 @@ def test_withdraw_full_cycle(
     assert confirm_20_matic.transaction_hash
     logger.info('Confirm hash [MATIC]: %s', confirm_20_matic.transaction_hash.hex())
 
-    assert confirm_20.receipt.status
-    assert confirm_20_matic.receipt.status
+    with subtests.test('Confirm ERC20'):
+        assert confirm_20.receipt.status
+    with subtests.test('Confirm MATIC'):
+        assert confirm_20_matic.receipt.status
 
     end_20 = erc_20_parent.withdraw_exit(from_pk)
     assert end_20.transaction_hash
@@ -134,11 +140,15 @@ def test_withdraw_full_cycle(
     assert end_20_matic.transaction_hash
     logger.info('End hash [MATIC]: %s', end_20_matic.transaction_hash.hex())
 
-    assert end_20.receipt.status
-    assert end_20_matic.receipt.status
+    with subtests.test('Finish ERC20'):
+        assert end_20.receipt.status
+    with subtests.test('Finish MATIC'):
+        assert end_20_matic.receipt.status
 
-    assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
-    assert balance_child_matic_20 - 10 == erc_20_matic_child.get_balance(from_)
+    with subtests.test('Verify ERC20 balance'):
+        assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
+        assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
 
-    assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
-    assert balance_parent_matic_20 + 10 == erc_20_matic_parent.get_balance(from_)
+    with subtests.test('Verify MATIC balance'):
+        assert balance_child_matic_20 - 10 == erc_20_matic_child.get_balance(from_)
+        assert balance_parent_matic_20 + 10 == erc_20_matic_parent.get_balance(from_)

@@ -22,9 +22,9 @@ def test_withdraw_full_cycle(
     erc_1155_parent: ERC1155,
     from_pk: HexStr,
     from_: HexAddress,
+    subtests,
 ):
     tx_hashes = {}
-    kinds = ('20', '721', '1155')
 
     balance_child_20 = erc_20_child.get_balance(from_)
     balance_child_721 = erc_721_child.get_tokens_count(from_)
@@ -53,16 +53,22 @@ def test_withdraw_full_cycle(
     logger.info('Start hash [ERC1155]: %s', tx_hashes['1155'].hex())
 
     # Wait for them to be dispatched
-    assert start_20.receipt.status
-    assert start_721.receipt.status
-    assert start_1155.receipt.status
+    checkpointed = {}
+    with subtests.test('Start ERC20'):
+        assert start_20.receipt.status
+        checkpointed['20'] = False
+    with subtests.test('Start ERC721'):
+        assert start_721.receipt.status
+        checkpointed['721'] = False
+    with subtests.test('Start ERC1155'):
+        assert start_1155.receipt.status
+        checkpointed['1155'] = False
 
     # Wait for all checkpoint events
-    checkpointed = {key: False for key in kinds}
 
     def are_all_checkpointed():
         ok = True  # No direct return, so we check all.
-        for key in kinds:
+        for key in checkpointed:
             if checkpointed[key]:
                 continue
             elif pos_client.is_checkpointed(tx_hashes[key]):
@@ -102,14 +108,21 @@ def test_withdraw_full_cycle(
     logger.info('End hash [ERC1155]: %s', end_1155.transaction_hash.hex())
     assert end_1155.transaction_hash
 
-    assert end_20.receipt.status
-    assert end_721.receipt.status
-    assert end_1155.receipt.status
+    with subtests.test('Finish ERC20'):
+        assert end_20.receipt.status
+    with subtests.test('Finish ERC721'):
+        assert end_721.receipt.status
+    with subtests.test('Finish ERC1155'):
+        assert end_1155.receipt.status
 
-    assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
-    assert balance_child_721 - 1 == erc_721_child.get_tokens_count(from_)
-    assert balance_child_1155 - 1 == erc_1155_child.get_balance(from_, TOKEN_ID)
+    with subtests.test('Verify ERC20 balance'):
+        assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
+        assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
 
-    assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
-    assert balance_parent_721 + 1 == erc_721_parent.get_tokens_count(from_)
-    assert balance_parent_1155 + 1 == erc_1155_parent.get_balance(from_, TOKEN_ID)
+    with subtests.test('Verify ERC721 balance'):
+        assert balance_child_721 - 1 == erc_721_child.get_tokens_count(from_)
+        assert balance_parent_721 + 1 == erc_721_parent.get_tokens_count(from_)
+
+    with subtests.test('Verify ERC1155 balance'):
+        assert balance_child_1155 - 1 == erc_1155_child.get_balance(from_, TOKEN_ID)
+        assert balance_parent_1155 + 1 == erc_1155_parent.get_balance(from_, TOKEN_ID)

@@ -20,9 +20,9 @@ def test_deposit(
     erc_721_parent: ERC721,
     from_pk: HexStr,
     from_: HexAddress,
+    subtests,
 ):
     tx_hashes = {}
-    kinds = ('20', 'MATIC', '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
     balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
@@ -38,10 +38,12 @@ def test_deposit(
     approve_20_matic = erc_20_matic_parent.approve(10, from_pk, {'gas_limit': 300_000})
     logger.info('Approve tx hash [MATIC]: %s', approve_20_matic.transaction_hash.hex())
 
-    assert approve_20.receipt.status
-    assert approve_20_matic.receipt.status
-    logger.info('Allowance [ERC20]: %s', erc_20_parent.get_allowance(from_))
-    logger.info('Allowance [MATIC]: %s', erc_20_matic_parent.get_allowance(from_))
+    with subtests.test('Approve ERC20'):
+        assert approve_20.receipt.status
+        logger.info('Allowance [ERC20]: %s', erc_20_parent.get_allowance(from_))
+    with subtests.test('Approve MATIC'):
+        assert approve_20_matic.receipt.status
+        logger.info('Allowance [MATIC]: %s', erc_20_matic_parent.get_allowance(from_))
 
     # Deposit
     deposit_20 = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
@@ -62,16 +64,22 @@ def test_deposit(
     logger.info('Deposit tx hash [ERC721]: %s', tx_hashes['721'].hex())
 
     # Finish both deposits
-    assert deposit_20.receipt.status
-    assert deposit_20_matic.receipt.status
-    assert deposit_721.receipt.status
+    deposited = {}
+    with subtests.test('Deposit ERC20'):
+        assert deposit_20.receipt.status
+        deposited['20'] = False
+    with subtests.test('Deposit MATIC'):
+        assert deposit_20_matic.receipt.status
+        deposited['MATIC'] = False
+    with subtests.test('Deposit ERC721'):
+        assert deposit_721.receipt.status
+        deposited['721'] = False
 
     # Wait for all checkpoint events
-    deposited = {key: False for key in kinds}
 
     def are_all_deposited():
         ok = True  # No direct return, so we check all.
-        for key in kinds:
+        for key in deposited:
             if deposited[key]:
                 continue
             elif plasma_client.is_deposited(tx_hashes[key]):
@@ -99,10 +107,14 @@ def test_deposit(
             )
         )
 
-    assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
-    assert balance_child_matic_20 + 10 == erc_20_matic_child.get_balance(from_)
-    assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)
+    with subtests.test('Confirm ERC20 balance'):
+        assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
+        assert balance_parent_20 - 10 == erc_20_parent.get_balance(from_)
 
-    assert balance_parent_20 - 10 == erc_20_parent.get_balance(from_)
-    assert balance_parent_matic_20 - 10 == erc_20_matic_parent.get_balance(from_)
-    assert balance_parent_721 - 1 == erc_721_parent.get_tokens_count(from_)
+    with subtests.test('Confirm MATIC balance'):
+        assert balance_child_matic_20 + 10 == erc_20_matic_child.get_balance(from_)
+        assert balance_parent_matic_20 - 10 == erc_20_matic_parent.get_balance(from_)
+
+    with subtests.test('Confirm ERC721 balance'):
+        assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)
+        assert balance_parent_721 - 1 == erc_721_parent.get_tokens_count(from_)

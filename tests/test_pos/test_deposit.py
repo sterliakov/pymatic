@@ -22,9 +22,9 @@ def test_deposit(
     erc_1155_parent: ERC1155,
     from_pk: HexStr,
     from_: HexAddress,
+    subtests,
 ):
     tx_hashes = {}
-    kinds = ('20', '721')
 
     balance_child_20 = erc_20_child.get_balance(from_)
     balance_child_721 = erc_721_child.get_tokens_count(from_)
@@ -45,9 +45,12 @@ def test_deposit(
     approve_1155 = erc_1155_parent.approve_all(from_pk)
     logger.info('Approve tx hash [ERC1155]: %s', approve_1155.transaction_hash.hex())
 
-    assert approve_20.receipt.status
-    assert approve_721.receipt.status
-    assert approve_1155.receipt.status
+    with subtests.test('Approve ERC20'):
+        assert approve_20.receipt.status
+    with subtests.test('Approve ERC721'):
+        assert approve_721.receipt.status
+    with subtests.test('Approve ERC1155'):
+        assert approve_1155.receipt.status
 
     # Deposit
     deposit_20 = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
@@ -70,16 +73,22 @@ def test_deposit(
     tx_hashes['1155'] = deposit_1155.transaction_hash
     logger.info('Deposit tx hash [ERC1155]: %s', tx_hashes['1155'].hex())
 
-    assert deposit_20.receipt.status
-    assert deposit_721.receipt.status
-    assert deposit_1155.receipt.status
+    deposited = {}
+    with subtests.test('Deposit ERC20'):
+        assert deposit_20.receipt.status
+        deposited['20'] = False
+    with subtests.test('Deposit ERC721'):
+        assert deposit_721.receipt.status
+        deposited['721'] = False
+    with subtests.test('Deposit ERC1155'):
+        assert deposit_1155.receipt.status
+        deposited['1155'] = False
 
     # Wait for all checkpoint events
-    deposited = {key: False for key in kinds}
 
     def are_all_deposited():
         ok = True  # No direct return, so we check all.
-        for key in kinds:
+        for key in deposited:
             if deposited[key]:
                 continue
             elif pos_client.is_deposited(tx_hashes[key]):
@@ -107,10 +116,14 @@ def test_deposit(
             )
         )
 
-    assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
-    assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)
-    assert balance_child_1155 + 1 == erc_1155_child.get_balance(from_, TOKEN_ID)
+    with subtests.test('Verify ERC20 balance'):
+        assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
+        assert balance_parent_20 - 10 == erc_20_parent.get_balance(from_)
 
-    assert balance_parent_20 - 10 == erc_20_parent.get_balance(from_)
-    assert balance_parent_721 - 1 == erc_721_parent.get_tokens_count(from_)
-    assert balance_parent_1155 - 1 == erc_1155_parent.get_balance(from_, TOKEN_ID)
+    with subtests.test('Verify ERC721 balance'):
+        assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)
+        assert balance_parent_721 - 1 == erc_721_parent.get_tokens_count(from_)
+
+    with subtests.test('Verify ERC1155 balance'):
+        assert balance_child_1155 + 1 == erc_1155_child.get_balance(from_, TOKEN_ID)
+        assert balance_parent_1155 - 1 == erc_1155_parent.get_balance(from_, TOKEN_ID)

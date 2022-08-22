@@ -49,6 +49,7 @@ test = [
     'pytest>=6.4.0',
     "pytest-cov",
     "pytest-mock",
+    "pytest-subtests",
     "pre-commit",
 ]
 docs = [
