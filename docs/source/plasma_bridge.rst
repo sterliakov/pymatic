@@ -50,6 +50,20 @@ ERC 20 tokens
 
 ERC 721 tokens
 --------------
+
+.. Warning::
+    Please don't feel upset if you cannot withdraw ERC-721 from Mumbai to Goerli. I cannot too.
+
+    ``ERC721PredicateBurnOnly`` contract was deployed with wrong (?) ``WithdrawManager`` address
+    (see `on etherscan <https://goerli.etherscan.io/address/0x473cb675c9214f79dee10948443509c441a678e7#code>`_), so all transactions with ``WithdrawManager`` for ERC721 fail.
+
+    I tried deploying separate contract with this fixed (just a copy via Remix),
+    and everything is OK until ``checkPredicateAndTokenMapping`` modifier check fires
+    on ``WithdrawManager`` (and this failure is 100% valid, since my contract is not
+    acknowledged as proper ERC721 predicate). Proper addresses are ``DepositManagerProxy`` and ``WithdrawManagerProxy`` values from `ABI index <https://static.matic.network/network/testnet/mumbai/index.json>`_.
+
+    For further investigation, contracts can be found in `this repo <https://github.com/maticnetwork/contracts/blob/main/contracts/>`_.
+
 .. automodule:: matic.plasma.erc_721
 
 Helper contracts interaction
