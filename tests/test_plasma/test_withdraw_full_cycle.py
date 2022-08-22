@@ -68,22 +68,22 @@ def test_withdraw_full_cycle(
     balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
 
     # Start all transactions
-    start_20 = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
-    tx_hashes['20'] = start_20.transaction_hash
-    logger.info('Start hash [ERC20]: %s', tx_hashes['20'].hex())
-
-    start_20_matic = erc_20_matic_child.withdraw_start(
-        10, from_pk, {'gas_limit': 300_000}
-    )
-    tx_hashes['MATIC'] = start_20_matic.transaction_hash
-    logger.info('Start hash [MATIC]: %s', tx_hashes['MATIC'].hex())
 
     # Wait for them to be dispatched
     checkpointed = {}
     with subtests.test('Begin ERC20'):
+        start_20 = erc_20_child.withdraw_start(10, from_pk, {'gas_limit': 300_000})
+        tx_hashes['20'] = start_20.transaction_hash
+        logger.info('Start hash [ERC20]: %s', tx_hashes['20'].hex())
         assert start_20.receipt.status
         checkpointed['20'] = False
+
     with subtests.test('Begin MATIC'):
+        start_20_matic = erc_20_matic_child.withdraw_start(
+            10, from_pk, {'gas_limit': 300_000}
+        )
+        tx_hashes['MATIC'] = start_20_matic.transaction_hash
+        logger.info('Start hash [MATIC]: %s', tx_hashes['MATIC'].hex())
         assert start_20_matic.receipt.status
         checkpointed['MATIC'] = False
 
@@ -119,30 +119,30 @@ def test_withdraw_full_cycle(
             )
         )
 
-    confirm_20 = erc_20_parent.withdraw_confirm(tx_hashes['20'], from_pk)
-    assert confirm_20.transaction_hash
-    logger.info('Confirm hash [ERC20]: %s', confirm_20.transaction_hash.hex())
-
-    confirm_20_matic = erc_20_matic_parent.withdraw_confirm(tx_hashes['MATIC'], from_pk)
-    assert confirm_20_matic.transaction_hash
-    logger.info('Confirm hash [MATIC]: %s', confirm_20_matic.transaction_hash.hex())
-
     with subtests.test('Confirm ERC20'):
+        confirm_20 = erc_20_parent.withdraw_confirm(tx_hashes['20'], from_pk)
+        assert confirm_20.transaction_hash
+        logger.info('Confirm hash [ERC20]: %s', confirm_20.transaction_hash.hex())
         assert confirm_20.receipt.status
+
     with subtests.test('Confirm MATIC'):
+        confirm_20_matic = erc_20_matic_parent.withdraw_confirm(
+            tx_hashes['MATIC'], from_pk
+        )
+        assert confirm_20_matic.transaction_hash
+        logger.info('Confirm hash [MATIC]: %s', confirm_20_matic.transaction_hash.hex())
         assert confirm_20_matic.receipt.status
 
-    end_20 = erc_20_parent.withdraw_exit(from_pk)
-    assert end_20.transaction_hash
-    logger.info('End hash [ERC20]: %s', end_20.transaction_hash.hex())
-
-    end_20_matic = erc_20_matic_parent.withdraw_exit(from_pk)
-    assert end_20_matic.transaction_hash
-    logger.info('End hash [MATIC]: %s', end_20_matic.transaction_hash.hex())
-
     with subtests.test('Finish ERC20'):
+        end_20 = erc_20_parent.withdraw_exit(from_pk)
+        assert end_20.transaction_hash
+        logger.info('End hash [ERC20]: %s', end_20.transaction_hash.hex())
         assert end_20.receipt.status
+
     with subtests.test('Finish MATIC'):
+        end_20_matic = erc_20_matic_parent.withdraw_exit(from_pk)
+        assert end_20_matic.transaction_hash
+        logger.info('End hash [MATIC]: %s', end_20_matic.transaction_hash.hex())
         assert end_20_matic.receipt.status
 
     with subtests.test('Verify ERC20 balance'):

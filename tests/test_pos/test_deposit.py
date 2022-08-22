@@ -35,52 +35,53 @@ def test_deposit(
     balance_parent_1155 = erc_1155_parent.get_balance(from_, TOKEN_ID)
 
     # Approve
-    approve_20 = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
-    logger.info('Approve tx hash [ERC20]: %s', approve_20.transaction_hash.hex())
-
-    token_721 = erc_721_parent.get_all_tokens(from_, 1)[0]
-    approve_721 = erc_721_parent.approve(token_721, from_pk, {'gas_limit': 200_000})
-    logger.info('Approve tx hash [ERC721]: %s', approve_721.transaction_hash.hex())
-
-    approve_1155 = erc_1155_parent.approve_all(from_pk)
-    logger.info('Approve tx hash [ERC1155]: %s', approve_1155.transaction_hash.hex())
 
     with subtests.test('Approve ERC20'):
+        approve_20 = erc_20_parent.approve(10, from_pk, {'gas_limit': 300_000})
+        logger.info('Approve tx hash [ERC20]: %s', approve_20.transaction_hash.hex())
         assert approve_20.receipt.status
     with subtests.test('Approve ERC721'):
+        token_721 = erc_721_parent.get_all_tokens(from_, 1)[0]
+        approve_721 = erc_721_parent.approve(token_721, from_pk, {'gas_limit': 200_000})
+        logger.info('Approve tx hash [ERC721]: %s', approve_721.transaction_hash.hex())
         assert approve_721.receipt.status
     with subtests.test('Approve ERC1155'):
+        approve_1155 = erc_1155_parent.approve_all(from_pk)
+        logger.info(
+            'Approve tx hash [ERC1155]: %s', approve_1155.transaction_hash.hex()
+        )
         assert approve_1155.receipt.status
 
     # Deposit
-    deposit_20 = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
-    tx_hashes['20'] = deposit_20.transaction_hash
-    logger.info('Deposit tx hash [ERC20]: %s', tx_hashes['20'].hex())
-
-    deposit_721 = erc_721_parent.deposit(
-        token_721, from_, from_pk, {'gas_limit': 200_000}
-    )
-    tx_hashes['721'] = deposit_721.transaction_hash
-    logger.info('Deposit tx hash [ERC721]: %s', tx_hashes['721'].hex())
-
-    deposit_1155 = erc_1155_parent.deposit(
-        amount=1,
-        token_id=TOKEN_ID,
-        user_address=from_,
-        private_key=from_pk,
-        option={'gas_limit': 200_000},
-    )
-    tx_hashes['1155'] = deposit_1155.transaction_hash
-    logger.info('Deposit tx hash [ERC1155]: %s', tx_hashes['1155'].hex())
 
     deposited = {}
+
     with subtests.test('Deposit ERC20'):
+        deposit_20 = erc_20_parent.deposit(10, from_, from_pk, {'gas_limit': 300_000})
+        tx_hashes['20'] = deposit_20.transaction_hash
+        logger.info('Deposit tx hash [ERC20]: %s', tx_hashes['20'].hex())
         assert deposit_20.receipt.status
         deposited['20'] = False
+
     with subtests.test('Deposit ERC721'):
+        deposit_721 = erc_721_parent.deposit(
+            token_721, from_, from_pk, {'gas_limit': 200_000}
+        )
+        tx_hashes['721'] = deposit_721.transaction_hash
+        logger.info('Deposit tx hash [ERC721]: %s', tx_hashes['721'].hex())
         assert deposit_721.receipt.status
         deposited['721'] = False
+
     with subtests.test('Deposit ERC1155'):
+        deposit_1155 = erc_1155_parent.deposit(
+            amount=1,
+            token_id=TOKEN_ID,
+            user_address=from_,
+            private_key=from_pk,
+            option={'gas_limit': 200_000},
+        )
+        tx_hashes['1155'] = deposit_1155.transaction_hash
+        logger.info('Deposit tx hash [ERC1155]: %s', tx_hashes['1155'].hex())
         assert deposit_1155.receipt.status
         deposited['1155'] = False
 
