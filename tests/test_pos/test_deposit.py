@@ -90,22 +90,22 @@ def test_deposit(
 
         return ok
 
-    start_time = time.time()
-    timeout = 3 * 60 * 60
-    while True:
+    timeout, interval = 3 * 60 * 60, 60
+    for elapsed in range(timeout // interval):
+        logger.info('Elapsed time: %d minutes.', elapsed)
         if are_all_deposited():
             break
-        elif time.time() - start_time > timeout:
-            pytest.fail(
-                'Some transactions still not deposited: '
-                + '\n'.join(
-                    f'{kind}: {tx_hash}'
-                    for kind, tx_hash in tx_hashes.items()
-                    if not deposited[kind]
-                )
-            )
         else:
-            time.sleep(30)
+            time.sleep(interval)
+    else:
+        pytest.fail(
+            'Some transactions still not deposited: '
+            + '\n'.join(
+                f'{kind}: {tx_hash.hex()}'
+                for kind, tx_hash in tx_hashes.items()
+                if not deposited[kind]
+            )
+        )
 
     assert balance_child_20 + 10 == erc_20_child.get_balance(from_)
     assert balance_child_721 + 1 == erc_721_child.get_tokens_count(from_)

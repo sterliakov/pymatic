@@ -73,22 +73,22 @@ def test_withdraw_full_cycle(
 
         return ok
 
-    start_time = time.time()
-    timeout = 3 * 60 * 60
-    while True:
+    timeout, interval = 3 * 60 * 60, 60
+    for elapsed in range(timeout // interval):
+        logger.info('Elapsed time: %d minutes.', elapsed)
         if are_all_checkpointed():
             break
-        elif time.time() - start_time > timeout:
-            pytest.fail(
-                'Some transactions still not checkpointed: '
-                + '\n'.join(
-                    f'{kind}: {tx_hash}'
-                    for kind, tx_hash in tx_hashes.items()
-                    if not checkpointed[kind]
-                )
-            )
         else:
-            time.sleep(30)
+            time.sleep(interval)
+    else:
+        pytest.fail(
+            'Some transactions still not checkpointed: '
+            + '\n'.join(
+                f'{kind}: {tx_hash.hex()}'
+                for kind, tx_hash in tx_hashes.items()
+                if not checkpointed[kind]
+            )
+        )
 
     end_20 = erc_20_parent.withdraw_exit(tx_hashes['20'], from_pk)
     assert end_20.transaction_hash
