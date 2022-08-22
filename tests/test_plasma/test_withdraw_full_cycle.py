@@ -62,10 +62,7 @@ def test_withdraw_full_cycle(
     tx_hashes = {}
 
     balance_child_20 = erc_20_child.get_balance(from_)
-    balance_child_matic_20 = erc_20_matic_child.get_balance(from_)
-
     balance_parent_20 = erc_20_parent.get_balance(from_)
-    balance_parent_matic_20 = erc_20_matic_parent.get_balance(from_)
 
     # Start all transactions
 
@@ -148,7 +145,3 @@ def test_withdraw_full_cycle(
     with subtests.test('Verify ERC20 balance'):
         assert balance_child_20 - 10 == erc_20_child.get_balance(from_)
         assert balance_parent_20 + 10 == erc_20_parent.get_balance(from_)
-
-    with subtests.test('Verify MATIC balance'):
-        assert balance_child_matic_20 - 10 == erc_20_matic_child.get_balance(from_)
-        assert balance_parent_matic_20 + 10 == erc_20_matic_parent.get_balance(from_)

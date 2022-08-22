@@ -170,7 +170,6 @@ def test_child_transfer(
     to_private_key: HexStr,
 ):
     # Same
-    old_balance = erc_20_matic_child.get_balance(to)
     amount = 10
     result = erc_20_matic_child.transfer(
         amount,
@@ -198,9 +197,6 @@ def test_child_transfer(
     assert tx_receipt.block_number
     assert tx_receipt.logs_bloom
     assert tx_receipt.status
-
-    new_balance = erc_20_matic_child.get_balance(to)
-    assert new_balance == old_balance + amount
 
     # transfer money back to user
     erc_20_child_token = plasma_client_for_to.erc_20(erc_20['child'])
